@@ -1,12 +1,10 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<!-- originally got some ideas from http://www.benjoffe.com/code/demos/interpolate/ -->
-
-<html dir="ltr" lang="en-US"><head><title>AAR DSV demo</title>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html dir="ltr" lang="en-US" xmlns="http://www.w3.org/1999/xhtml"><head><title>AAR DSV demo</title>
 
 <link href="style.css" rel="stylesheet" type="text/css" />
-<meta name="Content-Type" content="text/html" />
-<meta name="Content-Script-Type" content="text/javascript" />
-<meta name="Content-Style-Type" content="text/css" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
 <meta name="author" content="Rob LeGrand" />
 <meta name="description" content="An interactive demo of AAR DSV and other ratings-aggregation procedures." />
 <meta name="keywords" content="rob legrand, legrand, angelo state, asu, computer science, computational social choice, voting, aar dsv" />
@@ -14,29 +12,52 @@
 <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
 
 <style type="text/css">
-#content em {
-   color: #3377dd;
-   font-style: normal;
-   font-weight: bold;
-}
-#content label {
-   display: block;
-   margin-top: 8px;
-}
 #votespace {
    border: 1px solid #000000;
-   box-shadow: 0px 0px 64px 0px #000000;
+   background-color: #ffffff;
    display: block;
    margin-left: auto;
    margin-right: auto;
 }
 </style>
+</head><body>
+<div class="bigtop">AAR DSV demo</div>
+<p>Drag the vote points around inside the votespace and the outcomes will be updated automatically.
+   <div>
+      <label for="select-n">Number of voters:&nbsp;</label>
+      <select id="select-n">
+         <option>2</option>
+         <option>3</option>
+         <option>4</option>
+         <option selected="selected">5</option>
+         <option>6</option>
+         <option>7</option>
+         <option>8</option>
+         <option>9</option>
+      </select>
+   </div>
+</p>
+<canvas height="601" id="votespace" width="601">
+For this demo you need a browser that supports the <code>&lt;canvas&gt;</code> element with JavaScript enabled.&nbsp; <a href="http://www.opera.com/">Opera</a> and
+<a href="http://www.google.com/chrome/">Google Chrome</a> are recommended.
+</canvas>
+<ul>
+<li><span style="background-color: #000000; color: #ff5555; font-weight: bold;">Red</span> = Per-dimension midrange</li>
+<li><span style="background-color: #000000; color: #ffaa00; font-weight: bold;">Orange</span> = Average</li>
+<li><span style="background-color: #000000; color: #ffff00; font-weight: bold;">Yellow</span> = AAR DSV</li>
+<li><span style="background-color: #000000; color: #aaff00; font-weight: bold;">Lime</span> = Per-dimension median</li>
+<li><span style="background-color: #000000; color: #55ff55; font-weight: bold;">Green</span> = Fermat-Weber point</li>
+</ul>
+
 <script type="text/javascript">
 var runDemo = function () {
+
    var getTrueOffsetLeft = function (ele) {
       var n = 0;
-      while (ele) {
-         n += ele.offsetLeft || 0;
+      while (ele !== null) {
+         if (ele.offsetLeft !== null) {
+            n += ele.offsetLeft;
+         }
          ele = ele.offsetParent;
       }
       return n;
@@ -44,20 +65,24 @@ var runDemo = function () {
 
    var getTrueOffsetTop = function (ele) {
       var n = 0;
-      while (ele) {
-         n += ele.offsetTop || 0;
+      while (ele !== null) {
+         if (ele.offsetTop !== null) {
+            n += ele.offsetTop;
+         }
          ele = ele.offsetParent;
       }
       return n;
    };
 
-   var numVoters = 3, x, y;
+   var x, y;
+   var numVoters = 5;
    var votespaceCanvas = document.getElementById('votespace');
    var width = votespaceCanvas.width;
    var height = votespaceCanvas.height;
 
-   if (!votespaceCanvas.getContext)
+   if (!votespaceCanvas.getContext) {
       return;
+   }
 
    var randomizePoints = function () {
       var i;
@@ -70,21 +95,20 @@ var runDemo = function () {
    };
    randomizePoints();
 
-   var redrawSpace = function (hoveringPoint, draggingPoint) {
+   var redrawSpace = function (pointBeingDragged) {
       var i;
       votespaceContext.clearRect(-width / 2, -height / 2, width, height);
 
-      votespaceContext.fillStyle = '#ccccff';
-
+      // draw vote points
       for (i = 0; i < numVoters; ++i) {
          votespaceContext.beginPath();
-         votespaceContext.fillStyle = draggingPoint === i ? '#ff6699' : '#6699ff';
+         votespaceContext.fillStyle = pointBeingDragged === i ? '#aa55ff' : '#55aaff';
          votespaceContext.moveTo(x[i], -y[i]);
          votespaceContext.arc(x[i], -y[i], 6, 0, Math.PI * 2, true);
          votespaceContext.fill();
       }
 
-      // find average of vote points and draw it
+      // find Average outcome of vote points
       var avgX = 0;
       var avgY = 0;
       for (i = 0; i < numVoters; ++i) {
@@ -93,15 +117,124 @@ var runDemo = function () {
       }
       avgX /= numVoters;
       avgY /= numVoters;
+
+      // find Median outcome of vote points
+      var sortX = x.slice(0);
+      var sortY = y.slice(0);
+      if (numVoters % 2 === 0) {
+         sortX = sortX.concat(0);
+         sortY = sortY.concat(0);
+      }
+      sortX.sort(function (a, b) {
+         return a - b;
+      });
+      sortY.sort(function (a, b) {
+         return a - b;
+      });
+      var medX = sortX[Math.floor(numVoters / 2)];
+      var medY = sortY[Math.floor(numVoters / 2)];
+
+      // find AAR DSV outcome of vote points
+      sortX = x.slice(0);
+      sortY = y.slice(0);
+      for (i = 1; i < numVoters; ++i) {
+         sortX = sortX.concat(-width / 2 + i * width / numVoters);
+         sortY = sortY.concat(-height / 2 + i * height / numVoters);
+      }
+      sortX.sort(function (a, b) {
+         return a - b;
+      });
+      sortY.sort(function (a, b) {
+         return a - b;
+      });
+      var dsvX = sortX[numVoters - 1];
+      var dsvY = sortY[numVoters - 1];
+
+      // find Midrange outcome of vote points
+      sortX = x.slice(0);
+      sortY = y.slice(0);
+      sortX.sort(function (a, b) {
+         return a - b;
+      });
+      sortY.sort(function (a, b) {
+         return a - b;
+      });
+      var midX = (sortX[0] + sortX[numVoters - 1]) / 2;
+      var midY = (sortY[0] + sortY[numVoters - 1]) / 2;
+
+      // find Fermat-Weber outcome of vote points with Weiszfeld's algorithm
+      var ferX = (Math.random() - 0.5) * width;
+      var ferY = (Math.random() - 0.5) * height;
+      var numX, numY, den, oldFerX, oldFerY;
+      do {
+         numX = 0;
+         numY = 0;
+         den = 0;
+         for (i = 0; i < numVoters; ++i) {
+            sumSqDiff = (x[i] - ferX) * (x[i] - ferX) + (y[i] - ferY) * (y[i] - ferY);
+            if (sumSqDiff > 0) {
+               dist = Math.sqrt(sumSqDiff);
+               numX += x[i] / dist;
+               numY += y[i] / dist;
+               den += 1 / dist;
+            }
+         }
+         oldFerX = ferX;
+         oldFerY = ferY;
+         ferX = numX / den;
+         ferY = numY / den;
+      } while (ferX > oldFerX + 0.01 || ferX + 0.01 < oldFerX || ferY > oldFerY + 0.01 || ferY + 0.01 < oldFerY);
+
+      // draw outcome points
+      votespaceContext.beginPath();
+      votespaceContext.fillStyle = '#000000';
+      votespaceContext.moveTo(midX, -midY);
+      votespaceContext.arc(midX, -midY, 8, 0, Math.PI * 2, true);
+      votespaceContext.fill();
+      votespaceContext.beginPath();
+      votespaceContext.fillStyle = '#000000';
+      votespaceContext.moveTo(medX, -medY);
+      votespaceContext.arc(medX, -medY, 8, 0, Math.PI * 2, true);
+      votespaceContext.fill();
+      votespaceContext.beginPath();
+      votespaceContext.fillStyle = '#000000';
+      votespaceContext.moveTo(ferX, -ferY);
+      votespaceContext.arc(ferX, -ferY, 8, 0, Math.PI * 2, true);
+      votespaceContext.fill();
       votespaceContext.beginPath();
       votespaceContext.fillStyle = '#000000';
       votespaceContext.moveTo(avgX, -avgY);
       votespaceContext.arc(avgX, -avgY, 8, 0, Math.PI * 2, true);
       votespaceContext.fill();
       votespaceContext.beginPath();
-      votespaceContext.fillStyle = '#ffff00';
+      votespaceContext.fillStyle = '#000000';
+      votespaceContext.moveTo(dsvX, -dsvY);
+      votespaceContext.arc(dsvX, -dsvY, 8, 0, Math.PI * 2, true);
+      votespaceContext.fill();
+      votespaceContext.beginPath();
+      votespaceContext.fillStyle = '#ff5555';
+      votespaceContext.moveTo(midX, -midY);
+      votespaceContext.arc(midX, -midY, 6, 0, Math.PI * 2, true);
+      votespaceContext.fill();
+      votespaceContext.beginPath();
+      votespaceContext.fillStyle = '#aaff00';
+      votespaceContext.moveTo(medX, -medY);
+      votespaceContext.arc(medX, -medY, 6, 0, Math.PI * 2, true);
+      votespaceContext.fill();
+      votespaceContext.beginPath();
+      votespaceContext.fillStyle = '#55ff55';
+      votespaceContext.moveTo(ferX, -ferY);
+      votespaceContext.arc(ferX, -ferY, 6, 0, Math.PI * 2, true);
+      votespaceContext.fill();
+      votespaceContext.beginPath();
+      votespaceContext.fillStyle = '#ffaa00';
       votespaceContext.moveTo(avgX, -avgY);
       votespaceContext.arc(avgX, -avgY, 6, 0, Math.PI * 2, true);
+      votespaceContext.fill();
+      votespaceContext.beginPath();
+      votespaceContext.fillStyle = '#ffff00';
+      votespaceContext.moveTo(dsvX, -dsvY);
+      votespaceContext.arc(dsvX, -dsvY, 6, 0, Math.PI * 2, true);
       votespaceContext.fill();
    };
 
@@ -124,6 +257,7 @@ var runDemo = function () {
 
    votespaceCanvas.onmousedown = function (e) {
       var i, mouse = getMouse(e);
+
       // for each point
       for (i = 0; i < numVoters; ++i) {
          // if the Euclidean distance between the mouse click and this point is less than 10 pixels
@@ -132,7 +266,7 @@ var runDemo = function () {
                var mouse = getMouse(e);
                x[i] = mouse[0] - width / 2 + i / numVoters;
                y[i] = height / 2 - mouse[1] + i / numVoters;
-               redrawSpace(-1, i);
+               redrawSpace(i);
             };
             document.onmousemove(e);
             document.onmouseup = function () {
@@ -145,32 +279,8 @@ var runDemo = function () {
       return true;
    };
 };
+
+runDemo();
 </script>
-
-</head><body>
-
-<div id="content">
-<div class="bigtop">AAR DSV demo</div>
-<p>
-   Drag and drop the vote points inside the votespace and the average outcome will be updated automatically.
-   <label>
-      Number of voters:&nbsp;
-      <select id="select-n">
-         <option>2</option>
-         <option selected>3</option>
-         <option>4</option>
-         <option>5</option>
-         <option>6</option>
-         <option>7</option>
-         <option>8</option>
-         <option>9</option>
-      </select>
-   </label>
-</p>
-<canvas height="601" id="votespace" width="601">
-For this demo you need a browser that supports the <code>&lt;canvas&gt;</code> HTML element with JavaScript enabled such as <a href="http://www.opera.com/">Opera</a>.
-</canvas>
-<script type="text/javascript">runDemo();</script>
-</div>
 
 </body></html>
