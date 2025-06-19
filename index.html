@@ -12,6 +12,7 @@
 <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
 
 <style type="text/css">
+<!--
 body {
    background-color: #ddeeff;
 }
@@ -25,6 +26,7 @@ body {
    margin-left: auto;
    margin-right: auto;
 }
+-->
 </style>
 </head><body>
 <div class="bigtop">AAR DSV demo</div>
@@ -48,19 +50,31 @@ body {
 <fieldset class="options-area">
    <legend>Outcomes to display</legend>
    <div class="black">
-   <input checked="checked" id="display-per-dim-midrange" type="checkbox" /><label for="display-per-dim-midrange">&nbsp;<span style="background-color: #000000; color: #ff5555; font-weight: bold;">Per-dimension midrange</span></label><br />
-   <input checked="checked" id="display-average" type="checkbox" /><label for="display-average">&nbsp;<span style="background-color: #000000; color: #ffaa00; font-weight: bold;">Average</span></label><br />
-   <input checked="checked" id="display-aar-dsv" onchange="" type="checkbox" /><label for="display-aar-dsv">&nbsp;<span style="background-color: #000000; color: #ffff00; font-weight: bold;">AAR DSV</span></label><br />
-   <input checked="checked" id="display-per-dim-median" type="checkbox" /><label for="display-per-dim-median">&nbsp;<span style="background-color: #000000; color: #aaff00; font-weight: bold;">Per-dimension median</span></label><br />
-   <input checked="checked" id="display-fermat-weber" type="checkbox" /><label for="display-fermat-weber">&nbsp;<span style="background-color: #000000; color: #55ff55; font-weight: bold;">Fermat-Weber point</span></label><br />
+   <input id="display-per-dim-midrange" type="checkbox" /><label for="display-per-dim-midrange">&nbsp;<span style="background-color: #000000; color: #ff5555; font-weight: bold;">Per-dimension midrange</span></label><br />
+   <input id="display-average" type="checkbox" /><label for="display-average">&nbsp;<span style="background-color: #000000; color: #ffaa00; font-weight: bold;">Average</span></label><br />
+   <input checked="checked" id="display-aar-dsv" type="checkbox" /><label for="display-aar-dsv">&nbsp;<span style="background-color: #000000; color: #ffff00; font-weight: bold;">AAR DSV</span></label><br />
+   <input id="display-fermat-weber" type="checkbox" /><label for="display-fermat-weber">&nbsp;<span style="background-color: #000000; color: #aaff00; font-weight: bold;">Fermat-Weber point</span></label><br />
+   <input id="display-per-dim-median" type="checkbox" /><label for="display-per-dim-median">&nbsp;<span style="background-color: #000000; color: #55ff55; font-weight: bold;">Per-dimension median</span></label><br />
    </div>
 </fieldset>
    </div>
 </td><td>
-<canvas height="601" id="votespace" width="601">
-For this demo you need a browser that supports the <code>&lt;canvas&gt;</code> element with JavaScript enabled.&nbsp; <a href="http://www.opera.com/">Opera</a> and
-<a href="http://www.google.com/chrome/">Google Chrome</a> are recommended.
-</canvas>
+   <table><tr>
+      <td>(0, 1)</td>
+      <td></td>
+      <td>(1, 1)</td>
+   </tr><tr>
+      <td></td>
+      <td><canvas height="601" id="votespace" width="601">
+      For this demo you need a browser that supports the <code>&lt;canvas&gt;</code> element with JavaScript enabled.&nbsp; <a href="http://www.opera.com/">Opera</a> and
+      <a href="http://www.google.com/chrome/">Google Chrome</a> are recommended.
+      </canvas></td>
+      <td></td>
+   </tr><tr>
+      <td>(0, 0)</td>
+      <td></td>
+      <td>(1, 0)</td>
+   </td></tr></table>
 </td><td>
 <div style="margin-right: auto;"></div>
 </td></tr></table>
@@ -118,7 +132,7 @@ var runDemo = function () {
       // draw vote points
       for (i = 0; i < numVoters; ++i) {
          votespaceContext.beginPath();
-         votespaceContext.fillStyle = pointBeingDragged === i ? '#aa55ff' : '#55aaff';
+         votespaceContext.fillStyle = pointBeingDragged === i ? '#9966cc' : '#6699cc';
          votespaceContext.moveTo(x[i], -y[i]);
          votespaceContext.arc(x[i], -y[i], 6, 0, Math.PI * 2, true);
          votespaceContext.fill();
@@ -197,24 +211,24 @@ var runDemo = function () {
          // find Fermat-Weber outcome of vote points with Weiszfeld's algorithm
          ferX = (Math.random() - 0.5) * width;
          ferY = (Math.random() - 0.5) * height;
-         var numX, numY, den, oldFerX, oldFerY;
+         var numerX, numerY, denom, oldFerX, oldFerY;
          do {
-            numX = 0;
-            numY = 0;
-            den = 0;
+            numerX = 0;
+            numerY = 0;
+            denom = 0;
             for (i = 0; i < numVoters; ++i) {
                sumSqDiff = (x[i] - ferX) * (x[i] - ferX) + (y[i] - ferY) * (y[i] - ferY);
                if (sumSqDiff > 0) {
                   dist = Math.sqrt(sumSqDiff);
-                  numX += x[i] / dist;
-                  numY += y[i] / dist;
-                  den += 1 / dist;
+                  numerX += x[i] / dist;
+                  numerY += y[i] / dist;
+                  denom += 1 / dist;
                }
             }
             oldFerX = ferX;
             oldFerY = ferY;
-            ferX = numX / den;
-            ferY = numY / den;
+            ferX = numerX / denom;
+            ferY = numerY / denom;
          } while (ferX > oldFerX + 0.01 || ferX + 0.01 < oldFerX || ferY > oldFerY + 0.01 || ferY + 0.01 < oldFerY);
       }
 
@@ -263,14 +277,14 @@ var runDemo = function () {
       }
       if (displayPerDimMedianCheckbox.checked) {
          votespaceContext.beginPath();
-         votespaceContext.fillStyle = '#aaff00';
+         votespaceContext.fillStyle = '#55ff55';
          votespaceContext.moveTo(medX, -medY);
          votespaceContext.arc(medX, -medY, 6, 0, Math.PI * 2, true);
          votespaceContext.fill();
       }
       if (displayFermatWeberCheckbox.checked) {
          votespaceContext.beginPath();
-         votespaceContext.fillStyle = '#55ff55';
+         votespaceContext.fillStyle = '#aaff00';
          votespaceContext.moveTo(ferX, -ferY);
          votespaceContext.arc(ferX, -ferY, 6, 0, Math.PI * 2, true);
          votespaceContext.fill();
@@ -324,8 +338,10 @@ var runDemo = function () {
       var i, mouse = getMouse(e);
       // for each point
       for (i = 0; i < numVoters; ++i) {
+         var xDiff = mouse[0] - x[i] - width / 2;
+         var yDiff = height / 2 - mouse[1] - y[i];
          // if the Euclidean distance between the mouse click and this point is less than 10 pixels
-         if ((mouse[0] - x[i] - width / 2) * (mouse[0] - x[i] - width / 2) + (height / 2 - mouse[1] - y[i]) * (height / 2 - mouse[1] - y[i]) < 100) {
+         if (xDiff * xDiff + yDiff * yDiff < 100) {
             document.onmousemove = function (e) {
                var mouse = getMouse(e);
                x[i] = mouse[0] - width / 2 + i / numVoters;
