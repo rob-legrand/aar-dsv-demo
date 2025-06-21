@@ -1,8 +1,9 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html dir="ltr" lang="en-US" xmlns="http://www.w3.org/1999/xhtml"><head><title>AAR DSV demo</title>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html dir="ltr" lang="en-US" xml:lang="en-US" xmlns="http://www.w3.org/1999/xhtml">
+<head><title>AAR DSV demo</title>
 
 <link href="style.css" rel="stylesheet" type="text/css" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
 <meta http-equiv="Content-Script-Type" content="text/javascript" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <meta name="author" content="Rob LeGrand" />
@@ -16,7 +17,7 @@
 body {
    background-color: #ddeeff;
 }
-.black {
+.outcome-choices {
    background-color: #000000;
 }
 #votespace {
@@ -26,12 +27,11 @@ body {
    margin-left: auto;
    margin-right: auto;
 }
--->
 </style>
 </head><body>
 <div class="bigtop">AAR DSV demo</div>
 <p>Drag the vote points around inside the votespace and the outcomes will be updated automatically.</p>
-<table width="0%"><tr><td>
+<table><tr><td>
    <div>
       <label for="select-n">Number of voters:&nbsp;</label>
       <select id="select-n">
@@ -45,19 +45,17 @@ body {
          <option>9</option>
       </select>
    </div>
-<br />
-   <div>
-<fieldset class="options-area">
-   <legend>Outcomes to display</legend>
-   <div class="black">
-   <input id="display-per-dim-midrange" type="checkbox" /><label for="display-per-dim-midrange">&nbsp;<span style="background-color: #000000; color: #ff5555; font-weight: bold;">Per-dimension midrange</span></label><br />
-   <input id="display-average" type="checkbox" /><label for="display-average">&nbsp;<span style="background-color: #000000; color: #ffaa00; font-weight: bold;">Average</span></label><br />
-   <input checked="checked" id="display-aar-dsv" type="checkbox" /><label for="display-aar-dsv">&nbsp;<span style="background-color: #000000; color: #ffff00; font-weight: bold;">AAR DSV</span></label><br />
-   <input id="display-fermat-weber" type="checkbox" /><label for="display-fermat-weber">&nbsp;<span style="background-color: #000000; color: #aaff00; font-weight: bold;">Fermat-Weber point</span></label><br />
-   <input id="display-per-dim-median" type="checkbox" /><label for="display-per-dim-median">&nbsp;<span style="background-color: #000000; color: #55ff55; font-weight: bold;">Per-dimension median</span></label><br />
-   </div>
-</fieldset>
-   </div>
+   <br />
+   <fieldset class="options-area">
+      <legend>Outcomes to display</legend>
+      <div class="outcome-choices">
+         <input id="display-per-dim-midrange" type="checkbox" /><label for="display-per-dim-midrange">&nbsp;<span style="background-color: #000000; color: #ff5555; font-weight: bold;">Per-dimension midrange</span></label><br />
+         <input id="display-average" type="checkbox" /><label for="display-average">&nbsp;<span style="background-color: #000000; color: #ffaa00; font-weight: bold;">Average</span></label><br />
+         <input checked="checked" id="display-aar-dsv" type="checkbox" /><label for="display-aar-dsv">&nbsp;<span style="background-color: #000000; color: #ffff00; font-weight: bold;">AAR DSV</span></label><br />
+         <input id="display-fermat-weber" type="checkbox" /><label for="display-fermat-weber">&nbsp;<span style="background-color: #000000; color: #aaff00; font-weight: bold;">Fermat-Weber point</span></label><br />
+         <input id="display-per-dim-median" type="checkbox" /><label for="display-per-dim-median">&nbsp;<span style="background-color: #000000; color: #55ff55; font-weight: bold;">Per-dimension median</span></label><br />
+      </div>
+   </fieldset>
 </td><td>
    <table><tr>
       <td>(0, 1)</td>
@@ -74,10 +72,10 @@ body {
       <td>(0, 0)</td>
       <td></td>
       <td>(1, 0)</td>
-   </td></tr></table>
-</td><td>
-<div style="margin-right: auto;"></div>
+   </tr></table>
 </td></tr></table>
+
+<p><a href="http://validator.w3.org/unicorn/"><img alt="[valid XHTML 1.1]" src="http://www.w3.org/Icons/valid-xhtml11-blue" /><img alt="[valid CSS]" src="http://www.w3.org/Icons/valid-css-blue" /></a></p>
 
 <script type="text/javascript">
 var runDemo = function () {
