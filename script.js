@@ -1,30 +1,32 @@
 /*jslint white: true, browser: true, nomen: true, regexp: true, bitwise: true, newcap: true, indent: 3 */
 
 var runDemo = function () {
+   'use strict';
 
    var getTrueOffsetLeft = function (ele) {
-      var n = 0;
+      var trueOffsetLeft = 0;
       while (ele !== null) {
          if (ele.offsetLeft !== null) {
-            n += ele.offsetLeft;
+            trueOffsetLeft += ele.offsetLeft;
          }
          ele = ele.offsetParent;
       }
-      return n;
+      return trueOffsetLeft;
    };
 
    var getTrueOffsetTop = function (ele) {
-      var n = 0;
+      var trueOffsetTop = 0;
       while (ele !== null) {
          if (ele.offsetTop !== null) {
-            n += ele.offsetTop;
+            trueOffsetTop += ele.offsetTop;
          }
          ele = ele.offsetParent;
       }
-      return n;
+      return trueOffsetTop;
    };
 
-   var x, y;
+   // the voters' voted points
+   var votePoint; // each votePoint[whichPoint][whichDimension] must be between 0 and 1
 
    var votespaceCanvas = document.getElementById('votespace');
    if (!votespaceCanvas.getContext) {
@@ -47,11 +49,11 @@ var runDemo = function () {
 
    randomizePoints = function () {
       var i;
-      x = [];
-      y = [];
+      votePoint = [];
       for (i = 0; i < numVoters; ++i) {
-         x[i] = (Math.random() - 0.5) * width;
-         y[i] = (Math.random() - 0.5) * height;
+         votePoint[i] = [];
+         votePoint[i][0] = (Math.random() - 0.5) * width;
+         votePoint[i][1] = (Math.random() - 0.5) * height;
       }
    };
    randomizePoints();
@@ -73,174 +75,206 @@ var runDemo = function () {
       for (i = 0; i < numVoters; ++i) {
          votespaceContext.beginPath();
          votespaceContext.fillStyle = pointBeingDragged === i ? '#9966cc' : '#6699cc';
-         votespaceContext.moveTo(x[i], -y[i]);
-         votespaceContext.arc(x[i], -y[i], 6, 0, Math.PI * 2, true);
+         votespaceContext.moveTo(votePoint[i][0], -votePoint[i][1]);
+         votespaceContext.arc(votePoint[i][0], -votePoint[i][1], 6, 0, Math.PI * 2, true);
          votespaceContext.fill();
       }
 
-      var sortX, sortY;
-      var avgX, avgY;
-      var dsvX, dsvY;
-      var medX, medY;
-      var midX, midY;
-      var ferX, ferY;
+      var smallestToLargest = function (a, b) {
+         return a - b;
+      };
 
-      if (displayAverageCheckbox.checked) {
-         // find Average outcome of vote points
-         avgX = 0;
-         avgY = 0;
-         for (i = 0; i < numVoters; ++i) {
-            avgX += x[i];
-            avgY += y[i];
+      var calcAarDsv = function (point) {
+         // find AAR DSV outcome of input points
+         var numDims = point[0].length;
+         var numPoints = point.length;
+         var outcome = [];
+         var sortPoint, whichDim, whichPoint;
+         for (whichDim = 0; whichDim < numDims; ++whichDim) {
+            sortPoint = [];
+            for (whichPoint = 0; whichPoint < numPoints; ++whichPoint) {
+               sortPoint.push(point[whichPoint][whichDim]);
+            }
+            var limit = whichDim === 0 ? width : height;
+            for (whichPoint = 1; whichPoint < numPoints; ++whichPoint) {
+               sortPoint.push(limit * whichPoint / numPoints - limit / 2);
+            }
+            sortPoint.sort(smallestToLargest);
+            outcome.push(sortPoint[numPoints - 1]);
          }
-         avgX /= numVoters;
-         avgY /= numVoters;
-      }
+         return outcome;
+      };
 
-      if (displayPerDimMedianCheckbox.checked) {
-         // find Median outcome of vote points
-         sortX = x.slice(0);
-         sortY = y.slice(0);
-         if (numVoters % 2 === 0) {
-            sortX = sortX.concat(0);
-            sortY = sortY.concat(0);
+      var calcAverage = function (point) {
+         // find Average outcome of input points
+         var numDims = point[0].length;
+         var numPoints = point.length;
+         var outcome = [];
+         var whichDim, whichPoint;
+         for (whichDim = 0; whichDim < numDims; ++whichDim) {
+            outcome[whichDim] = 0;
+            for (whichPoint = 0; whichPoint < numPoints; ++whichPoint) {
+               outcome[whichDim] += point[whichPoint][whichDim];
+            }
+            outcome[whichDim] /= numPoints;
          }
-         sortX.sort(function (a, b) {
-            return a - b;
-         });
-         sortY.sort(function (a, b) {
-            return a - b;
-         });
-         medX = sortX[Math.floor(numVoters / 2)];
-         medY = sortY[Math.floor(numVoters / 2)];
-      }
+         return outcome;
+      };
 
-      if (displayAarDsvCheckbox.checked) {
-         // find AAR DSV outcome of vote points
-         sortX = x.slice(0);
-         sortY = y.slice(0);
-         for (i = 1; i < numVoters; ++i) {
-            sortX = sortX.concat(-width / 2 + i * width / numVoters);
-            sortY = sortY.concat(-height / 2 + i * height / numVoters);
+      var calcFermatWeber = function (point) {
+         // find Fermat-Weber outcome of input points with Weiszfeld's algorithm
+         var numer, denom, dist, lastFWPoint, notCloseEnough;
+         var numDims = point[0].length;
+         var numPoints = point.length;
+         var outcome = [];
+         var sumSqDiff, whichDim, whichPoint;
+         for (whichDim = 0; whichDim < numDims; ++whichDim) {
+            var limit = whichDim === 0 ? width : height;
+            outcome.push((Math.random() - 0.5) * limit);
          }
-         sortX.sort(function (a, b) {
-            return a - b;
-         });
-         sortY.sort(function (a, b) {
-            return a - b;
-         });
-         dsvX = sortX[numVoters - 1];
-         dsvY = sortY[numVoters - 1];
-      }
-
-      if (displayPerDimMidrangeCheckbox.checked) {
-         // find Midrange outcome of vote points
-         sortX = x.slice(0);
-         sortY = y.slice(0);
-         sortX.sort(function (a, b) {
-            return a - b;
-         });
-         sortY.sort(function (a, b) {
-            return a - b;
-         });
-         midX = (sortX[0] + sortX[numVoters - 1]) / 2;
-         midY = (sortY[0] + sortY[numVoters - 1]) / 2;
-      }
-
-      if (displayFermatWeberCheckbox.checked) {
-         // find Fermat-Weber outcome of vote points with Weiszfeld's algorithm
-         ferX = (Math.random() - 0.5) * width;
-         ferY = (Math.random() - 0.5) * height;
-         var numerX, numerY, denom, oldFerX, oldFerY;
+         numer = [];
          do {
-            numerX = 0;
-            numerY = 0;
+            for (whichDim = 0; whichDim < numDims; ++whichDim) {
+               numer[whichDim] = 0;
+            }
             denom = 0;
-            for (i = 0; i < numVoters; ++i) {
-               var sumSqDiff = (x[i] - ferX) * (x[i] - ferX) + (y[i] - ferY) * (y[i] - ferY);
-               if (sumSqDiff > 0) {
-                  var dist = Math.sqrt(sumSqDiff);
-                  numerX += x[i] / dist;
-                  numerY += y[i] / dist;
+            for (whichPoint = 0; whichPoint < numPoints; ++whichPoint) {
+               sumSqDiff = 0;
+               for (whichDim = 0; whichDim < numDims; ++whichDim) {
+                  sumSqDiff += (point[whichPoint][whichDim] - outcome[whichDim]) * (point[whichPoint][whichDim] - outcome[whichDim]);
+               }
+               if (sumSqDiff) {
+                  dist = Math.sqrt(sumSqDiff);
+                  for (whichDim = 0; whichDim < numDims; ++whichDim) {
+                     numer[whichDim] += point[whichPoint][whichDim] / dist;
+                  }
                   denom += 1 / dist;
                }
             }
-            oldFerX = ferX;
-            oldFerY = ferY;
-            ferX = numerX / denom;
-            ferY = numerY / denom;
-         } while (ferX > oldFerX + 0.01 || ferX + 0.01 < oldFerX || ferY > oldFerY + 0.01 || ferY + 0.01 < oldFerY);
-      }
+            notCloseEnough = false;
+            for (whichDim = 0; whichDim < numDims; ++whichDim) {
+               lastFWPoint = outcome[whichDim];
+               outcome[whichDim] = numer[whichDim] / denom;
+               if (outcome[whichDim] > lastFWPoint + 0.001 || outcome[whichDim] + 0.001 < lastFWPoint) {
+                  notCloseEnough = true;
+               }
+            }
+         } while (notCloseEnough);
+         return outcome;
+      };
+
+      var calcPerDimMedian = function (point) {
+         // find Median outcome of input points
+         var numDims = point[0].length;
+         var numPoints = point.length;
+         var outcome = [];
+         var sortPoint, whichDim, whichPoint;
+         for (whichDim = 0; whichDim < numDims; ++whichDim) {
+            sortPoint = [];
+            for (whichPoint = 0; whichPoint < numPoints; ++whichPoint) {
+               sortPoint.push(point[whichPoint][whichDim]);
+            }
+            if (numPoints % 2 === 0) {
+               sortPoint[numPoints] = 0;
+            }
+            sortPoint.sort(smallestToLargest);
+            outcome.push(sortPoint[Math.floor(numPoints / 2)]);
+         }
+         return outcome;
+      };
+
+      var calcPerDimMidrange = function (point) {
+         // find Midrange outcome of input points
+         var numDims = point[0].length;
+         var numPoints = point.length;
+         var outcome = [];
+         var sortPoint, whichDim, whichPoint;
+         for (whichDim = 0; whichDim < numDims; ++whichDim) {
+            sortPoint = [];
+            for (whichPoint = 0; whichPoint < numPoints; ++whichPoint) {
+               sortPoint.push(point[whichPoint][whichDim]);
+            }
+            sortPoint.sort(smallestToLargest);
+            outcome.push((sortPoint[0] + sortPoint[numPoints - 1]) / 2);
+         }
+         return outcome;
+      };
 
       // draw outcome points
+      var avgOutcome, dsvOutcome, ferOutcome, medOutcome, midOutcome;
       if (displayPerDimMidrangeCheckbox.checked) {
+         midOutcome = calcPerDimMidrange(votePoint);
          votespaceContext.beginPath();
          votespaceContext.fillStyle = '#000000';
-         votespaceContext.moveTo(midX, -midY);
-         votespaceContext.arc(midX, -midY, 8, 0, Math.PI * 2, true);
+         votespaceContext.moveTo(midOutcome[0], -midOutcome[1]);
+         votespaceContext.arc(midOutcome[0], -midOutcome[1], 8, 0, Math.PI * 2, true);
          votespaceContext.fill();
       }
       if (displayPerDimMedianCheckbox.checked) {
+         medOutcome = calcPerDimMedian(votePoint);
          votespaceContext.beginPath();
          votespaceContext.fillStyle = '#000000';
-         votespaceContext.moveTo(medX, -medY);
-         votespaceContext.arc(medX, -medY, 8, 0, Math.PI * 2, true);
+         votespaceContext.moveTo(medOutcome[0], -medOutcome[1]);
+         votespaceContext.arc(medOutcome[0], -medOutcome[1], 8, 0, Math.PI * 2, true);
          votespaceContext.fill();
       }
       if (displayFermatWeberCheckbox.checked) {
+         ferOutcome = calcFermatWeber(votePoint);
          votespaceContext.beginPath();
          votespaceContext.fillStyle = '#000000';
-         votespaceContext.moveTo(ferX, -ferY);
-         votespaceContext.arc(ferX, -ferY, 8, 0, Math.PI * 2, true);
+         votespaceContext.moveTo(ferOutcome[0], -ferOutcome[1]);
+         votespaceContext.arc(ferOutcome[0], -ferOutcome[1], 8, 0, Math.PI * 2, true);
          votespaceContext.fill();
       }
       if (displayAverageCheckbox.checked) {
+         avgOutcome = calcAverage(votePoint);
          votespaceContext.beginPath();
          votespaceContext.fillStyle = '#000000';
-         votespaceContext.moveTo(avgX, -avgY);
-         votespaceContext.arc(avgX, -avgY, 8, 0, Math.PI * 2, true);
+         votespaceContext.moveTo(avgOutcome[0], -avgOutcome[1]);
+         votespaceContext.arc(avgOutcome[0], -avgOutcome[1], 8, 0, Math.PI * 2, true);
          votespaceContext.fill();
       }
       if (displayAarDsvCheckbox.checked) {
+         dsvOutcome = calcAarDsv(votePoint);
          votespaceContext.beginPath();
          votespaceContext.fillStyle = '#000000';
-         votespaceContext.moveTo(dsvX, -dsvY);
-         votespaceContext.arc(dsvX, -dsvY, 8, 0, Math.PI * 2, true);
+         votespaceContext.moveTo(dsvOutcome[0], -dsvOutcome[1]);
+         votespaceContext.arc(dsvOutcome[0], -dsvOutcome[1], 8, 0, Math.PI * 2, true);
          votespaceContext.fill();
       }
       if (displayPerDimMidrangeCheckbox.checked) {
          votespaceContext.beginPath();
          votespaceContext.fillStyle = '#ff5555';
-         votespaceContext.moveTo(midX, -midY);
-         votespaceContext.arc(midX, -midY, 6, 0, Math.PI * 2, true);
+         votespaceContext.moveTo(midOutcome[0], -midOutcome[1]);
+         votespaceContext.arc(midOutcome[0], -midOutcome[1], 6, 0, Math.PI * 2, true);
          votespaceContext.fill();
       }
       if (displayPerDimMedianCheckbox.checked) {
          votespaceContext.beginPath();
          votespaceContext.fillStyle = '#55ff55';
-         votespaceContext.moveTo(medX, -medY);
-         votespaceContext.arc(medX, -medY, 6, 0, Math.PI * 2, true);
+         votespaceContext.moveTo(medOutcome[0], -medOutcome[1]);
+         votespaceContext.arc(medOutcome[0], -medOutcome[1], 6, 0, Math.PI * 2, true);
          votespaceContext.fill();
       }
       if (displayFermatWeberCheckbox.checked) {
          votespaceContext.beginPath();
          votespaceContext.fillStyle = '#aaff00';
-         votespaceContext.moveTo(ferX, -ferY);
-         votespaceContext.arc(ferX, -ferY, 6, 0, Math.PI * 2, true);
+         votespaceContext.moveTo(ferOutcome[0], -ferOutcome[1]);
+         votespaceContext.arc(ferOutcome[0], -ferOutcome[1], 6, 0, Math.PI * 2, true);
          votespaceContext.fill();
       }
       if (displayAverageCheckbox.checked) {
          votespaceContext.beginPath();
          votespaceContext.fillStyle = '#ffaa00';
-         votespaceContext.moveTo(avgX, -avgY);
-         votespaceContext.arc(avgX, -avgY, 6, 0, Math.PI * 2, true);
+         votespaceContext.moveTo(avgOutcome[0], -avgOutcome[1]);
+         votespaceContext.arc(avgOutcome[0], -avgOutcome[1], 6, 0, Math.PI * 2, true);
          votespaceContext.fill();
       }
       if (displayAarDsvCheckbox.checked) {
          votespaceContext.beginPath();
          votespaceContext.fillStyle = '#ffff00';
-         votespaceContext.moveTo(dsvX, -dsvY);
-         votespaceContext.arc(dsvX, -dsvY, 6, 0, Math.PI * 2, true);
+         votespaceContext.moveTo(dsvOutcome[0], -dsvOutcome[1]);
+         votespaceContext.arc(dsvOutcome[0], -dsvOutcome[1], 6, 0, Math.PI * 2, true);
          votespaceContext.fill();
       }
    };
@@ -251,33 +285,36 @@ var runDemo = function () {
    displayPerDimMedianCheckbox.onchange = redrawSpace;
    displayPerDimMidrangeCheckbox.onchange = redrawSpace;
 
+   // allow the user to drag a vote point around
    votespaceCanvas.onmousedown = function (ev) {
-      // return the mouse location as a two-element array that gives the relative (x, y) values
+
+      // return the mouse location as an object that gives the relative (x, y) values
       var getMouse = function (ev) {
          var x = ev.clientX - getTrueOffsetLeft(votespaceCanvas) + window.pageXOffset;
          var y = ev.clientY - getTrueOffsetTop(votespaceCanvas) + window.pageYOffset;
          return {x: Math.min(Math.max(x, 0), width), y: Math.min(Math.max(y, 0), height)};
       };
 
-      var mouse, whichPoint;
-      mouse = getMouse(ev);
-      whichPoint = function () {
+      var mouse = getMouse(ev);
+
+      var whichPoint = (function () {
          var i, xDiff, yDiff;
          for (i = 0; i < numVoters; ++i) {
-            xDiff = mouse.x - width / 2 - x[i];
-            yDiff = height / 2 - mouse.y - y[i];
+            xDiff = mouse.x - width / 2 - votePoint[i][0];
+            yDiff = height / 2 - mouse.y - votePoint[i][1];
             // if the Euclidean distance between the mouse click and this point is less than 10 pixels
             if (xDiff * xDiff + yDiff * yDiff < 100) {
                return i; // found selected point
             }
          }
          return null; // no point was selected
-      }(); // call anonymous function to find which point was selected
-      if (typeof whichPoint === 'number') {
+      }()); // call anonymous function to find which point was selected
+
+      if (typeof whichPoint === 'number') { // if a point was selected
          document.onmousemove = function (ev) {
             var mouse = getMouse(ev);
-            x[whichPoint] = mouse.x - width / 2 + whichPoint / numVoters;
-            y[whichPoint] = height / 2 - mouse.y + whichPoint / numVoters;
+            votePoint[whichPoint][0] = mouse.x - width / 2 + whichPoint / numVoters;
+            votePoint[whichPoint][1] = height / 2 - mouse.y + whichPoint / numVoters;
             redrawSpace(whichPoint);
          };
          document.onmousemove(ev); // immediately show that point has been selected
