@@ -93,6 +93,10 @@ canvas#votespace {
    font-weight: bold;
 }
 
+.dimension-value {
+   text-align: right;
+}
+
 .fermat-weber-option {
    color: #aaff00;
    font-weight: bold;

@@ -3,73 +3,40 @@
 var runDemo = function () {
    'use strict';
 
-   var getTrueOffsetLeft = function (ele) {
-      var trueOffsetLeft = 0;
-      while (ele !== null) {
-         if (ele.offsetLeft !== null) {
-            trueOffsetLeft += ele.offsetLeft;
-         }
-         ele = ele.offsetParent;
-      }
-      return trueOffsetLeft;
-   };
-
-   var getTrueOffsetTop = function (ele) {
-      var trueOffsetTop = 0;
-      while (ele !== null) {
-         if (ele.offsetTop !== null) {
-            trueOffsetTop += ele.offsetTop;
-         }
-         ele = ele.offsetParent;
-      }
-      return trueOffsetTop;
-   };
-
-   // the voters' voted points
-   var votePoint; // each votePoint[whichPoint][whichDimension] must be between 0 and 1
-
    var votespaceCanvas = document.getElementById('votespace');
    if (!votespaceCanvas.getContext) {
       window.alert('Your browser does not support the canvas element correctly.\nPlease use a recent version of a browser such as Opera, Chrome or Firefox.');
       return;
    }
 
-   var width = votespaceCanvas.width;
-   var height = votespaceCanvas.height;
-   var randomizePoints;
-   var redrawSpace;
+   var votespaceContext = votespaceCanvas.getContext('2d');
+   votespaceContext.translate(votespaceCanvas.width / 2, votespaceCanvas.height / 2);
 
    var selectNElement = document.getElementById('select-n');
    var numVoters = parseInt(selectNElement.options[selectNElement.selectedIndex].value, 10);
-   selectNElement.onchange = function () {
-      numVoters = parseInt(selectNElement.options[selectNElement.selectedIndex].value, 10);
-      randomizePoints();
-      redrawSpace();
-   };
-
-   randomizePoints = function () {
-      var i;
-      votePoint = [];
-      for (i = 0; i < numVoters; ++i) {
-         votePoint[i] = [];
-         votePoint[i][0] = (Math.random() - 0.5) * width;
-         votePoint[i][1] = (Math.random() - 0.5) * height;
-      }
-   };
-   randomizePoints();
-
-   var votespaceContext = votespaceCanvas.getContext('2d');
-   votespaceContext.translate(width / 2, height / 2);
-
    var displayAarDsvCheckbox = document.getElementById('display-aar-dsv');
    var displayAverageCheckbox = document.getElementById('display-average');
    var displayFermatWeberCheckbox = document.getElementById('display-fermat-weber');
    var displayPerDimMedianCheckbox = document.getElementById('display-per-dim-median');
    var displayPerDimMidrangeCheckbox = document.getElementById('display-per-dim-midrange');
 
-   redrawSpace = function (pointBeingDragged) {
+   // the voters' voted points
+   var votePoint; // each votePoint[whichPoint][whichDimension] must be between 0 and 1
+
+   var randomizePoints = function () {
       var i;
-      votespaceContext.clearRect(-width / 2, -height / 2, width, height);
+      votePoint = [];
+      for (i = 0; i < numVoters; ++i) {
+         votePoint[i] = [];
+         votePoint[i][0] = (Math.random() - 0.5) * votespaceCanvas.width;
+         votePoint[i][1] = (Math.random() - 0.5) * votespaceCanvas.height;
+      }
+   };
+   randomizePoints();
+
+   var redrawSpace = function (pointBeingDragged) {
+      var i;
+      votespaceContext.clearRect(-votespaceCanvas.width / 2, -votespaceCanvas.height / 2, votespaceCanvas.width, votespaceCanvas.height);
 
       // draw vote points
       for (i = 0; i < numVoters; ++i) {
@@ -95,7 +62,7 @@ var runDemo = function () {
             for (whichPoint = 0; whichPoint < numPoints; ++whichPoint) {
                sortPoint.push(point[whichPoint][whichDim]);
             }
-            var limit = whichDim === 0 ? width : height;
+            var limit = whichDim === 0 ? votespaceCanvas.width : votespaceCanvas.height;
             for (whichPoint = 1; whichPoint < numPoints; ++whichPoint) {
                sortPoint.push(limit * whichPoint / numPoints - limit / 2);
             }
@@ -129,7 +96,7 @@ var runDemo = function () {
          var outcome = [];
          var sumSqDiff, whichDim, whichPoint;
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
-            var limit = whichDim === 0 ? width : height;
+            var limit = whichDim === 0 ? votespaceCanvas.width : votespaceCanvas.height;
             outcome.push((Math.random() - 0.5) * limit);
          }
          numer = [];
@@ -279,6 +246,12 @@ var runDemo = function () {
       }
    };
 
+   selectNElement.onchange = function () {
+      numVoters = parseInt(selectNElement.options[selectNElement.selectedIndex].value, 10);
+      randomizePoints();
+      redrawSpace();
+   };
+
    displayAarDsvCheckbox.onchange = redrawSpace;
    displayAverageCheckbox.onchange = redrawSpace;
    displayFermatWeberCheckbox.onchange = redrawSpace;
@@ -290,9 +263,32 @@ var runDemo = function () {
 
       // return the mouse location as an object that gives the relative (x, y) values
       var getMouse = function (ev) {
+
+         var getTrueOffsetLeft = function (ele) {
+            var trueOffsetLeft = 0;
+            while (ele !== null) {
+               if (ele.offsetLeft !== null) {
+                  trueOffsetLeft += ele.offsetLeft;
+               }
+               ele = ele.offsetParent;
+            }
+            return trueOffsetLeft;
+         };
          var x = ev.clientX - getTrueOffsetLeft(votespaceCanvas) + window.pageXOffset;
+
+         var getTrueOffsetTop = function (ele) {
+            var trueOffsetTop = 0;
+            while (ele !== null) {
+               if (ele.offsetTop !== null) {
+                  trueOffsetTop += ele.offsetTop;
+               }
+               ele = ele.offsetParent;
+            }
+            return trueOffsetTop;
+         };
          var y = ev.clientY - getTrueOffsetTop(votespaceCanvas) + window.pageYOffset;
-         return {x: Math.min(Math.max(x, 0), width), y: Math.min(Math.max(y, 0), height)};
+
+         return {x: Math.min(Math.max(x, 0), votespaceCanvas.width), y: Math.min(Math.max(y, 0), votespaceCanvas.height)};
       };
 
       var mouse = getMouse(ev);
@@ -300,8 +296,8 @@ var runDemo = function () {
       var whichPoint = (function () {
          var i, xDiff, yDiff;
          for (i = 0; i < numVoters; ++i) {
-            xDiff = mouse.x - width / 2 - votePoint[i][0];
-            yDiff = height / 2 - mouse.y - votePoint[i][1];
+            xDiff = mouse.x - votespaceCanvas.width / 2 - votePoint[i][0];
+            yDiff = votespaceCanvas.height / 2 - mouse.y - votePoint[i][1];
             // if the Euclidean distance between the mouse click and this point is less than 10 pixels
             if (xDiff * xDiff + yDiff * yDiff < 100) {
                return i; // found selected point
@@ -313,17 +309,27 @@ var runDemo = function () {
       if (typeof whichPoint === 'number') { // if a point was selected
          document.onmousemove = function (ev) {
             var mouse = getMouse(ev);
-            votePoint[whichPoint][0] = mouse.x - width / 2 + whichPoint / numVoters;
-            votePoint[whichPoint][1] = height / 2 - mouse.y + whichPoint / numVoters;
+            votePoint[whichPoint][0] = mouse.x - votespaceCanvas.width / 2;
+            votePoint[whichPoint][1] = votespaceCanvas.height / 2 - mouse.y;
             redrawSpace(whichPoint);
          };
-         document.onmousemove(ev); // immediately show that point has been selected
+         document.onmousemove(ev); // immediately show that the point has been selected
          document.onmouseup = function () {
             document.onmousemove = null; // stop moving point around
             redrawSpace();
          };
       }
       return true; // allow the default event handler to be called
+   };
+
+   document.getElementById('votepoint00-value').onchange = function () {
+      votePoint[0][0] = parseInt(document.getElementById('votepoint00-value').value, 10);
+      redrawSpace();
+   };
+
+   document.getElementById('votepoint01-value').onchange = function () {
+      votePoint[0][1] = parseInt(document.getElementById('votepoint01-value').value, 10);
+      redrawSpace();
    };
 
    redrawSpace(); // show initial points
