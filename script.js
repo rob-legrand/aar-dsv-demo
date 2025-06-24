@@ -12,6 +12,7 @@ var runDemo = function () {
    var votespaceContext = votespaceCanvas.getContext('2d');
    votespaceContext.translate(votespaceCanvas.width / 2, votespaceCanvas.height / 2);
 
+   var maxNumVoters = 9;
    var selectNElement = document.getElementById('select-n');
    var numVoters = parseInt(selectNElement.options[selectNElement.selectedIndex].value, 10);
    var displayAarDsvCheckbox = document.getElementById('display-aar-dsv');
@@ -20,31 +21,63 @@ var runDemo = function () {
    var displayPerDimMedianCheckbox = document.getElementById('display-per-dim-median');
    var displayPerDimMidrangeCheckbox = document.getElementById('display-per-dim-midrange');
 
-   // the voters' voted points
-   var votePoint; // each votePoint[whichPoint][whichDimension] must be between 0 and 1
+   var votePointRow = [
+      document.getElementById('votepoint0'),
+      document.getElementById('votepoint1'),
+      document.getElementById('votepoint2'),
+      document.getElementById('votepoint3'),
+      document.getElementById('votepoint4'),
+      document.getElementById('votepoint5'),
+      document.getElementById('votepoint6'),
+      document.getElementById('votepoint7'),
+      document.getElementById('votepoint8')
+   ];
 
-   var randomizePoints = function () {
-      var i;
-      votePoint = [];
-      for (i = 0; i < numVoters; ++i) {
-         votePoint[i] = [];
-         votePoint[i][0] = (Math.random() - 0.5) * votespaceCanvas.width;
-         votePoint[i][1] = (Math.random() - 0.5) * votespaceCanvas.height;
+   var votePointText = [
+      [document.getElementById('votepoint00-value'), document.getElementById('votepoint01-value')],
+      [document.getElementById('votepoint10-value'), document.getElementById('votepoint11-value')],
+      [document.getElementById('votepoint20-value'), document.getElementById('votepoint21-value')],
+      [document.getElementById('votepoint30-value'), document.getElementById('votepoint31-value')],
+      [document.getElementById('votepoint40-value'), document.getElementById('votepoint41-value')],
+      [document.getElementById('votepoint50-value'), document.getElementById('votepoint51-value')],
+      [document.getElementById('votepoint60-value'), document.getElementById('votepoint61-value')],
+      [document.getElementById('votepoint70-value'), document.getElementById('votepoint71-value')],
+      [document.getElementById('votepoint80-value'), document.getElementById('votepoint81-value')]
+   ];
+
+   // the voters' voted points
+   var votePoint = []; // each votePoint[whichPoint][whichDimension] must be between 0 and 1
+
+   var addOrRemoveVotePoints = function () {
+      var whichPoint;
+      for (whichPoint = votePoint.length; whichPoint < numVoters; ++whichPoint) {
+         votePoint[whichPoint] = [];
+         votePoint[whichPoint][0] = (Math.random() - 0.5) * votespaceCanvas.width;
+         votePoint[whichPoint][1] = (Math.random() - 0.5) * votespaceCanvas.height;
+      }
+      while (votePoint.length > numVoters) {
+         votePoint.pop();
       }
    };
-   randomizePoints();
+   addOrRemoveVotePoints();
 
    var redrawSpace = function (pointBeingDragged) {
-      var i;
+      var whichPoint;
       votespaceContext.clearRect(-votespaceCanvas.width / 2, -votespaceCanvas.height / 2, votespaceCanvas.width, votespaceCanvas.height);
 
       // draw vote points
-      for (i = 0; i < numVoters; ++i) {
+      for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
          votespaceContext.beginPath();
-         votespaceContext.fillStyle = pointBeingDragged === i ? '#9966cc' : '#6699cc';
-         votespaceContext.moveTo(votePoint[i][0], -votePoint[i][1]);
-         votespaceContext.arc(votePoint[i][0], -votePoint[i][1], 6, 0, Math.PI * 2, true);
+         votespaceContext.fillStyle = pointBeingDragged === whichPoint ? '#9966cc' : '#6699cc';
+         votespaceContext.moveTo(votePoint[whichPoint][0], -votePoint[whichPoint][1]);
+         votespaceContext.arc(votePoint[whichPoint][0], -votePoint[whichPoint][1], 6, 0, Math.PI * 2, true);
          votespaceContext.fill();
+         votePointRow[whichPoint].style.visibility = 'visible';
+         votePointText[whichPoint][0].value = votePoint[whichPoint][0].toFixed(5);
+         votePointText[whichPoint][1].value = votePoint[whichPoint][1].toFixed(5);
+      }
+      for (whichPoint = numVoters; whichPoint < maxNumVoters; ++whichPoint) {
+         votePointRow[whichPoint].style.visibility = 'collapse';
       }
 
       var smallestToLargest = function (a, b) {
@@ -208,6 +241,7 @@ var runDemo = function () {
          votespaceContext.moveTo(dsvOutcome[0], -dsvOutcome[1]);
          votespaceContext.arc(dsvOutcome[0], -dsvOutcome[1], 8, 0, Math.PI * 2, true);
          votespaceContext.fill();
+         document.getElementById('aar-dsv-output').innerHTML = 'x = ' + dsvOutcome[0].toFixed(5) + ', y = ' + dsvOutcome[1].toFixed(5);
       }
       if (displayPerDimMidrangeCheckbox.checked) {
          votespaceContext.beginPath();
@@ -248,7 +282,7 @@ var runDemo = function () {
 
    selectNElement.onchange = function () {
       numVoters = parseInt(selectNElement.options[selectNElement.selectedIndex].value, 10);
-      randomizePoints();
+      addOrRemoveVotePoints();
       redrawSpace();
    };
 
@@ -257,6 +291,24 @@ var runDemo = function () {
    displayFermatWeberCheckbox.onchange = redrawSpace;
    displayPerDimMedianCheckbox.onchange = redrawSpace;
    displayPerDimMidrangeCheckbox.onchange = redrawSpace;
+
+   var makePointTextChangeFunc = function (whichPoint, whichDim) {
+      return function () {
+         var num = parseFloat(votePointText[whichPoint][whichDim].value, 10);
+         if (typeof num === 'number') {
+            votePoint[whichPoint][whichDim] = num;
+            redrawSpace();
+         }
+      };
+   };
+
+   var whichDim, whichPoint;
+   for (whichPoint = 0; whichPoint < maxNumVoters; ++whichPoint) {
+      for (whichDim = 0; whichDim < 2; ++whichDim) {
+         votePointText[whichPoint][whichDim].onchange = makePointTextChangeFunc(whichPoint, whichDim);
+         votePointText[whichPoint][whichDim].onkeyup = makePointTextChangeFunc(whichPoint, whichDim);
+      }
+   }
 
    // allow the user to drag a vote point around
    votespaceCanvas.onmousedown = function (ev) {
@@ -294,13 +346,13 @@ var runDemo = function () {
       var mouse = getMouse(ev);
 
       var whichPoint = (function () {
-         var i, xDiff, yDiff;
-         for (i = 0; i < numVoters; ++i) {
-            xDiff = mouse.x - votespaceCanvas.width / 2 - votePoint[i][0];
-            yDiff = votespaceCanvas.height / 2 - mouse.y - votePoint[i][1];
+         var whichPoint, xDiff, yDiff;
+         for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
+            xDiff = mouse.x - votespaceCanvas.width / 2 - votePoint[whichPoint][0];
+            yDiff = votespaceCanvas.height / 2 - mouse.y - votePoint[whichPoint][1];
             // if the Euclidean distance between the mouse click and this point is less than 10 pixels
             if (xDiff * xDiff + yDiff * yDiff < 100) {
-               return i; // found selected point
+               return whichPoint; // found selected point
             }
          }
          return null; // no point was selected
@@ -310,7 +362,10 @@ var runDemo = function () {
          document.onmousemove = function (ev) {
             var mouse = getMouse(ev);
             votePoint[whichPoint][0] = mouse.x - votespaceCanvas.width / 2;
+            votePointText[whichPoint][0].value = votePoint[whichPoint][0].toFixed(5);
             votePoint[whichPoint][1] = votespaceCanvas.height / 2 - mouse.y;
+            votePointText[whichPoint][1].value = votePoint[whichPoint][1].toFixed(5);
+            document.getElementById('click-output').innerHTML = 'x = ' + votePoint[whichPoint][0].toFixed(5) + ', y = ' + votePoint[whichPoint][1].toFixed(5);
             redrawSpace(whichPoint);
          };
          document.onmousemove(ev); // immediately show that the point has been selected
@@ -322,57 +377,11 @@ var runDemo = function () {
       return true; // allow the default event handler to be called
    };
 
-   var votepoint00 = document.getElementById('votepoint00-value');
-
-   votepoint00.addEventListener('change', updateNumber, false);
-   votepoint00.addEventListener('keyup', updateNumber, false);
-
-   // add event listeners for all text inputs
-   var allInputs = document.getElementsByTagName('input');
-   for (var i = 0; i < allInputs.length; ++i) {
-      var textInput = allInputs[i];
-      if (textInput.type !== 'text') {
-         continue;
-      }
-      textInput.addEventListener('keypress', validateNumber, false);
-      textInput.addEventListener('textinput', validateNumber, false);
-   }
-
-   // prevents invalid input into fields; does no updating
-   var validateNumber = function (event) {
-      var e = event;
-      var target = e.target;
-      var text = null;
-      if (e.type == 'textinput' || e.type == 'textInput') {
-         text = e.data;
-      } else {
-         var code = e.charCode || e.keyCode;
-         if (code < 40 || e.charCode == 0 || e.ctrlKey || e.altKey) {
-            return;
-         }
-         var text = String.fromCharCode(code);
-      }
-      if (isNaN(parseFloat(text + '1'))) {
-         if (event.preventDefault) {
-            event.preventDefault();
-         }
-         if (event.returnValue) {
-            event.returnValue = false;
-         }
-         return false;
-      }
-   };
-
-   var updateNumber = function () {
-      if (parseInt(document.getElementById('votepoint00-value').value, 10) === parseInt(document.getElementById('votepoint00-value').value, 10)) {
-         votePoint[0][0] = parseInt(document.getElementById('votepoint00-value').value, 10);
-         redrawSpace();
-      }
-   };
-
-   document.getElementById('votepoint01-value').onchange = function () {
-      votePoint[0][1] = parseInt(document.getElementById('votepoint01-value').value, 10);
+   document.getElementById('randomize-points').onclick = function () {
+      votePoint = [];
+      addOrRemoveVotePoints();
       redrawSpace();
+      return false; // don't do anything else because of the click
    };
 
    redrawSpace(); // show initial points
