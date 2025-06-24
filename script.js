@@ -322,9 +322,52 @@ var runDemo = function () {
       return true; // allow the default event handler to be called
    };
 
-   document.getElementById('votepoint00-value').onchange = function () {
-      votePoint[0][0] = parseInt(document.getElementById('votepoint00-value').value, 10);
-      redrawSpace();
+   var votepoint00 = document.getElementById('votepoint00-value');
+
+   votepoint00.addEventListener('change', updateNumber, false);
+   votepoint00.addEventListener('keyup', updateNumber, false);
+
+   // add event listeners for all text inputs
+   var allInputs = document.getElementsByTagName('input');
+   for (var i = 0; i < allInputs.length; ++i) {
+      var textInput = allInputs[i];
+      if (textInput.type !== 'text') {
+         continue;
+      }
+      textInput.addEventListener('keypress', validateNumber, false);
+      textInput.addEventListener('textinput', validateNumber, false);
+   }
+
+   // prevents invalid input into fields; does no updating
+   var validateNumber = function (event) {
+      var e = event;
+      var target = e.target;
+      var text = null;
+      if (e.type == 'textinput' || e.type == 'textInput') {
+         text = e.data;
+      } else {
+         var code = e.charCode || e.keyCode;
+         if (code < 40 || e.charCode == 0 || e.ctrlKey || e.altKey) {
+            return;
+         }
+         var text = String.fromCharCode(code);
+      }
+      if (isNaN(parseFloat(text + '1'))) {
+         if (event.preventDefault) {
+            event.preventDefault();
+         }
+         if (event.returnValue) {
+            event.returnValue = false;
+         }
+         return false;
+      }
+   };
+
+   var updateNumber = function () {
+      if (parseInt(document.getElementById('votepoint00-value').value, 10) === parseInt(document.getElementById('votepoint00-value').value, 10)) {
+         votePoint[0][0] = parseInt(document.getElementById('votepoint00-value').value, 10);
+         redrawSpace();
+      }
    };
 
    document.getElementById('votepoint01-value').onchange = function () {
