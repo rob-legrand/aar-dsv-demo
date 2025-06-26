@@ -47,6 +47,8 @@ var runDemo = function () {
 
    // the voters' voted points
    var votePoint = []; // each votePoint[whichPoint][whichDimension] must be between 0 and 1
+   // points used to run demo
+   var demoPoints = [];
 
    var toScreenCoords = function (vote) {
       if (vote.length === 2) {
@@ -88,6 +90,22 @@ var runDemo = function () {
    };
    addOrRemoveVotePoints();
 
+   var calcAverage = function (point) {
+      // find Average outcome of input points
+      var numDims = point[0].length;
+      var numPoints = point.length;
+      var outcome = [];
+      var whichDim, whichPoint;
+      for (whichDim = 0; whichDim < numDims; ++whichDim) {
+         outcome[whichDim] = 0;
+         for (whichPoint = 0; whichPoint < numPoints; ++whichPoint) {
+            outcome[whichDim] += point[whichPoint][whichDim];
+         }
+         outcome[whichDim] /= numPoints;
+      }
+      return outcome;
+   };
+
    var redrawSpace = function (pointBeingDragged) {
       var whichPoint;
       votespaceContext.clearRect(-votespaceCanvas.width / 2, -votespaceCanvas.height / 2, votespaceCanvas.width, votespaceCanvas.height);
@@ -123,22 +141,6 @@ var runDemo = function () {
             }
             sortPoint.sort(smallestToLargest);
             outcome.push(sortPoint[numPoints - 1]);
-         }
-         return outcome;
-      };
-
-      var calcAverage = function (point) {
-         // find Average outcome of input points
-         var numDims = point[0].length;
-         var numPoints = point.length;
-         var outcome = [];
-         var whichDim, whichPoint;
-         for (whichDim = 0; whichDim < numDims; ++whichDim) {
-            outcome[whichDim] = 0;
-            for (whichPoint = 0; whichPoint < numPoints; ++whichPoint) {
-               outcome[whichDim] += point[whichPoint][whichDim];
-            }
-            outcome[whichDim] /= numPoints;
          }
          return outcome;
       };
@@ -258,6 +260,70 @@ var runDemo = function () {
       }
       if (displayAarDsvCheckbox.checked) {
          drawVotePoint(dsvOutcome, '#ffff00', 6);
+      }
+
+      dsvAverage();
+
+      for (var i = 0; i < demoPoints.length; ++i) {
+         drawVotePoint(demoPoints[i], '#000000', 4);
+      }
+      if (demoPoints.length > 0) {
+         drawVotePoint(calcAverage(demoPoints), '#ffaa00', 4);
+      }
+   };
+
+   // called in redrawSpace
+   var dsvAverage = function () {
+      // demoPoint is a global variable
+      demoPoints.splice(0);
+      for (var i = 0; i < votePoint.length; ++i) {
+         demoPoints.push([]);
+         for (var j = 0; j < votePoint[i].length; ++j) {
+            demoPoints[i].push(votePoint[i][j]);
+         }
+      }
+
+      var demoPointsLast = [], average, calculatedTotal, difference, count = 0, changed = true;
+
+      while (count < 10) {
+         for (var i = 0; i < votePoint.length; ++i) {
+            average = calcAverage(demoPoints);
+            if (votePoint[i][0] !== average[0]) {
+               calculatedTotal = 0;
+               for (var j = 0; j < demoPoints.length; ++j) {
+                  if (i === j) {
+                     continue;
+                  }
+                  calculatedTotal += demoPoints[j][0];
+               }
+               difference = ((votePoint[i][0] * votePoint.length) - calculatedTotal);
+               if (difference >= 0 && difference <= 1) {
+                  demoPoints[i][0] = difference;
+               } else if (difference < 0) {
+                  demoPoints[i][0] = 0;
+               } else {
+                  demoPoints[i][0] = 1;
+               }
+            }
+            if (votePoint[i][1] !== average[1]) {
+               calculatedTotal = 0;
+               for (var j = 0; j < demoPoints.length; ++j) {
+                  if (i === j) {
+                     continue;
+                  }
+                  calculatedTotal += demoPoints[j][1];
+               }
+               difference = ((votePoint[i][1] * votePoint.length) - calculatedTotal);
+               if (difference >= 0 && difference <= 1) {
+                  demoPoints[i][1] = difference;
+               } else if (difference < 0) {
+                  demoPoints[i][1] = 0;
+               } else {
+                  demoPoints[i][1] = 1;
+               }
+            }
+         }
+         ++count;
       }
    };
 
