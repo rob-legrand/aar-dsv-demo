@@ -1,4 +1,4 @@
-/*jslint white: true, browser: true, nomen: true, regexp: true, bitwise: true, newcap: true, indent: 3 */
+/*jslint white: true, browser: true, nomen: true, regexp: true, bitwise: true, newcap: true, maxerr: 999, indent: 3 */
 
 var runDemo = function () {
    'use strict';
@@ -48,12 +48,39 @@ var runDemo = function () {
    // the voters' voted points
    var votePoint = []; // each votePoint[whichPoint][whichDimension] must be between 0 and 1
 
+   var toScreenCoords = function (vote) {
+      if (vote.length === 2) {
+         return {x: votespaceCanvas.width * (vote[0] - 0.5), y: votespaceCanvas.height * (vote[1] - 0.5)};
+      } else {
+         alert('WHAT');
+         return null;
+      }
+   };
+
+   var toVoteDims = function (screen) {
+      if (typeof screen === 'object' && typeof screen.x === 'number' && typeof screen.y === 'number') {
+         return [screen.x / votespaceCanvas.width + 0.5, screen.y / votespaceCanvas.height + 0.5];
+      } else {
+         alert('WHOA');
+         return null;
+      }
+   };
+
+   var drawVotePoint = function (vote, color, size) {
+      var screen = toScreenCoords(vote);
+      votespaceContext.beginPath();
+      votespaceContext.fillStyle = color;
+      votespaceContext.moveTo(screen.x, -screen.y);
+      votespaceContext.arc(screen.x, -screen.y, size, 0, Math.PI * 2, true);
+      votespaceContext.fill();
+   };
+
    var addOrRemoveVotePoints = function () {
       var whichPoint;
       for (whichPoint = votePoint.length; whichPoint < numVoters; ++whichPoint) {
          votePoint[whichPoint] = [];
-         votePoint[whichPoint][0] = (Math.random() - 0.5) * votespaceCanvas.width;
-         votePoint[whichPoint][1] = (Math.random() - 0.5) * votespaceCanvas.height;
+         votePoint[whichPoint][0] = Math.random();
+         votePoint[whichPoint][1] = Math.random();
       }
       while (votePoint.length > numVoters) {
          votePoint.pop();
@@ -67,11 +94,7 @@ var runDemo = function () {
 
       // draw vote points
       for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-         votespaceContext.beginPath();
-         votespaceContext.fillStyle = pointBeingDragged === whichPoint ? '#9966cc' : '#6699cc';
-         votespaceContext.moveTo(votePoint[whichPoint][0], -votePoint[whichPoint][1]);
-         votespaceContext.arc(votePoint[whichPoint][0], -votePoint[whichPoint][1], 6, 0, Math.PI * 2, true);
-         votespaceContext.fill();
+         drawVotePoint(votePoint[whichPoint], pointBeingDragged === whichPoint ? '#9966cc' : '#6699cc', 6);
          votePointRow[whichPoint].style.visibility = 'visible';
          votePointText[whichPoint][0].value = votePoint[whichPoint][0].toFixed(5);
          votePointText[whichPoint][1].value = votePoint[whichPoint][1].toFixed(5);
@@ -95,9 +118,8 @@ var runDemo = function () {
             for (whichPoint = 0; whichPoint < numPoints; ++whichPoint) {
                sortPoint.push(point[whichPoint][whichDim]);
             }
-            var limit = whichDim === 0 ? votespaceCanvas.width : votespaceCanvas.height;
             for (whichPoint = 1; whichPoint < numPoints; ++whichPoint) {
-               sortPoint.push(limit * whichPoint / numPoints - limit / 2);
+               sortPoint.push(whichPoint / numPoints);
             }
             sortPoint.sort(smallestToLargest);
             outcome.push(sortPoint[numPoints - 1]);
@@ -129,8 +151,7 @@ var runDemo = function () {
          var outcome = [];
          var sumSqDiff, whichDim, whichPoint;
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
-            var limit = whichDim === 0 ? votespaceCanvas.width : votespaceCanvas.height;
-            outcome.push((Math.random() - 0.5) * limit);
+            outcome.push(Math.random());
          }
          numer = [];
          do {
@@ -175,7 +196,7 @@ var runDemo = function () {
                sortPoint.push(point[whichPoint][whichDim]);
             }
             if (numPoints % 2 === 0) {
-               sortPoint[numPoints] = 0;
+               sortPoint.push(0.5);
             }
             sortPoint.sort(smallestToLargest);
             outcome.push(sortPoint[Math.floor(numPoints / 2)]);
@@ -204,79 +225,39 @@ var runDemo = function () {
       var avgOutcome, dsvOutcome, ferOutcome, medOutcome, midOutcome;
       if (displayPerDimMidrangeCheckbox.checked) {
          midOutcome = calcPerDimMidrange(votePoint);
-         votespaceContext.beginPath();
-         votespaceContext.fillStyle = '#000000';
-         votespaceContext.moveTo(midOutcome[0], -midOutcome[1]);
-         votespaceContext.arc(midOutcome[0], -midOutcome[1], 8, 0, Math.PI * 2, true);
-         votespaceContext.fill();
+         drawVotePoint(midOutcome, '#000000', 8);
       }
       if (displayPerDimMedianCheckbox.checked) {
          medOutcome = calcPerDimMedian(votePoint);
-         votespaceContext.beginPath();
-         votespaceContext.fillStyle = '#000000';
-         votespaceContext.moveTo(medOutcome[0], -medOutcome[1]);
-         votespaceContext.arc(medOutcome[0], -medOutcome[1], 8, 0, Math.PI * 2, true);
-         votespaceContext.fill();
+         drawVotePoint(medOutcome, '#000000', 8);
       }
       if (displayFermatWeberCheckbox.checked) {
          ferOutcome = calcFermatWeber(votePoint);
-         votespaceContext.beginPath();
-         votespaceContext.fillStyle = '#000000';
-         votespaceContext.moveTo(ferOutcome[0], -ferOutcome[1]);
-         votespaceContext.arc(ferOutcome[0], -ferOutcome[1], 8, 0, Math.PI * 2, true);
-         votespaceContext.fill();
+         drawVotePoint(ferOutcome, '#000000', 8);
       }
       if (displayAverageCheckbox.checked) {
          avgOutcome = calcAverage(votePoint);
-         votespaceContext.beginPath();
-         votespaceContext.fillStyle = '#000000';
-         votespaceContext.moveTo(avgOutcome[0], -avgOutcome[1]);
-         votespaceContext.arc(avgOutcome[0], -avgOutcome[1], 8, 0, Math.PI * 2, true);
-         votespaceContext.fill();
+         drawVotePoint(avgOutcome, '#000000', 8);
       }
       if (displayAarDsvCheckbox.checked) {
          dsvOutcome = calcAarDsv(votePoint);
-         votespaceContext.beginPath();
-         votespaceContext.fillStyle = '#000000';
-         votespaceContext.moveTo(dsvOutcome[0], -dsvOutcome[1]);
-         votespaceContext.arc(dsvOutcome[0], -dsvOutcome[1], 8, 0, Math.PI * 2, true);
-         votespaceContext.fill();
+         drawVotePoint(dsvOutcome, '#000000', 8);
          document.getElementById('aar-dsv-output').innerHTML = 'x = ' + dsvOutcome[0].toFixed(5) + ', y = ' + dsvOutcome[1].toFixed(5);
       }
       if (displayPerDimMidrangeCheckbox.checked) {
-         votespaceContext.beginPath();
-         votespaceContext.fillStyle = '#ff5555';
-         votespaceContext.moveTo(midOutcome[0], -midOutcome[1]);
-         votespaceContext.arc(midOutcome[0], -midOutcome[1], 6, 0, Math.PI * 2, true);
-         votespaceContext.fill();
+         drawVotePoint(midOutcome, '#ff5555', 6);
       }
       if (displayPerDimMedianCheckbox.checked) {
-         votespaceContext.beginPath();
-         votespaceContext.fillStyle = '#55ff55';
-         votespaceContext.moveTo(medOutcome[0], -medOutcome[1]);
-         votespaceContext.arc(medOutcome[0], -medOutcome[1], 6, 0, Math.PI * 2, true);
-         votespaceContext.fill();
+         drawVotePoint(medOutcome, '#55ff55', 6);
       }
       if (displayFermatWeberCheckbox.checked) {
-         votespaceContext.beginPath();
-         votespaceContext.fillStyle = '#aaff00';
-         votespaceContext.moveTo(ferOutcome[0], -ferOutcome[1]);
-         votespaceContext.arc(ferOutcome[0], -ferOutcome[1], 6, 0, Math.PI * 2, true);
-         votespaceContext.fill();
+         drawVotePoint(ferOutcome, '#aaff00', 6);
       }
       if (displayAverageCheckbox.checked) {
-         votespaceContext.beginPath();
-         votespaceContext.fillStyle = '#ffaa00';
-         votespaceContext.moveTo(avgOutcome[0], -avgOutcome[1]);
-         votespaceContext.arc(avgOutcome[0], -avgOutcome[1], 6, 0, Math.PI * 2, true);
-         votespaceContext.fill();
+         drawVotePoint(avgOutcome, '#ffaa00', 6);
       }
       if (displayAarDsvCheckbox.checked) {
-         votespaceContext.beginPath();
-         votespaceContext.fillStyle = '#ffff00';
-         votespaceContext.moveTo(dsvOutcome[0], -dsvOutcome[1]);
-         votespaceContext.arc(dsvOutcome[0], -dsvOutcome[1], 6, 0, Math.PI * 2, true);
-         votespaceContext.fill();
+         drawVotePoint(dsvOutcome, '#ffff00', 6);
       }
    };
 
@@ -348,8 +329,9 @@ var runDemo = function () {
       var whichPoint = (function () {
          var whichPoint, xDiff, yDiff;
          for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-            xDiff = mouse.x - votespaceCanvas.width / 2 - votePoint[whichPoint][0];
-            yDiff = votespaceCanvas.height / 2 - mouse.y - votePoint[whichPoint][1];
+            var screen = toScreenCoords(votePoint[whichPoint]);
+            xDiff = mouse.x - votespaceCanvas.width / 2 - screen.x;
+            yDiff = votespaceCanvas.height / 2 - mouse.y - screen.y;
             // if the Euclidean distance between the mouse click and this point is less than 10 pixels
             if (xDiff * xDiff + yDiff * yDiff < 100) {
                return whichPoint; // found selected point
@@ -361,9 +343,8 @@ var runDemo = function () {
       if (typeof whichPoint === 'number') { // if a point was selected
          document.onmousemove = function (ev) {
             var mouse = getMouse(ev);
-            votePoint[whichPoint][0] = mouse.x - votespaceCanvas.width / 2;
+            votePoint[whichPoint] = toVoteDims({x: mouse.x - votespaceCanvas.width / 2, y: votespaceCanvas.height / 2 - mouse.y});
             votePointText[whichPoint][0].value = votePoint[whichPoint][0].toFixed(5);
-            votePoint[whichPoint][1] = votespaceCanvas.height / 2 - mouse.y;
             votePointText[whichPoint][1].value = votePoint[whichPoint][1].toFixed(5);
             document.getElementById('click-output').innerHTML = 'x = ' + votePoint[whichPoint][0].toFixed(5) + ', y = ' + votePoint[whichPoint][1].toFixed(5);
             redrawSpace(whichPoint);
