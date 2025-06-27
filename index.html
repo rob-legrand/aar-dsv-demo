@@ -13,25 +13,14 @@
 <div class="smalltop">Average-Approval-Ratings Declared-Strategy Voting</div>
 <div class="bigtop">AAR DSV demo</div>
 
-<p>Drag the vote points around inside the votespace and the outcomes will be updated automatically.</p>
+<p id="instructions">Drag the vote points around inside the votespace and the outcomes will be updated automatically.</p>
 
 <table><tr><td>
-   <table><tr>
-      <td>(0, 1)</td>
-      <td></td>
-      <td>(1, 1)</td>
-   </tr><tr>
-      <td></td>
-      <td><canvas height="500" id="votespace" width="500">
-         Your browser does not seem to support the <code>&lt;canvas&gt;</code> element correctly.&nbsp; Please use a recent version of a browser such as <a href="http://www.opera.com/">Opera</a>,
-         <a href="http://www.google.com/chrome/">Chrome</a> or <a href="http://www.getfirefox.com/">Firefox</a> and enable JavaScript.
-      </canvas></td>
-      <td></td>
-   </tr><tr>
-      <td>(0, 0)</td>
-      <td></td>
-      <td>(1, 0)</td>
-   </tr></table>
+   <canvas height="601" id="votespace" width="601">
+      Your browser does not seem to support the <code>&lt;canvas&gt;</code> element correctly.&nbsp; Please use a recent version of a browser such as
+      <a href="http://www.opera.com/">Opera</a>, <a href="http://www.google.com/chrome/">Chrome</a> or <a href="http://www.getfirefox.com/">Firefox</a> and enable
+      JavaScript.
+   </canvas>
 </td><td>
    &nbsp;
    &nbsp;
@@ -54,14 +43,31 @@
       <input id="randomize-points" type="button" value="Randomize vote points" />
    </div>
    <br />
-   <fieldset class="options-area">
+   <fieldset class="votespace-area">
+      <legend>Votespace</legend>
+      <div class="votespace-options">
+         <label><input id="use-line-segment" name="votespace-options" type="radio" />&nbsp;Line segment</label><br />
+         <label><input checked="checked" id="use-hypercube" name="votespace-options" type="radio" />&nbsp;Hypercube</label><br />
+         <label><input id="use-simplex" name="votespace-options" type="radio" />&nbsp;Simplex</label><br />
+      </div>
+   </fieldset>
+   <br />
+   <fieldset class="mode-area">
+      <legend>Mode</legend>
+      <div class="mode-options">
+         <label><input checked="checked" id="regular-mode" name="mode-options" type="radio" />&nbsp;No automatic voter strategy</label><br />
+         <label><input id="strategy-mode" name="mode-options" type="radio" />&nbsp;Automatic voter strategy</label><br />
+      </div>
+   </fieldset>
+   <br />
+   <fieldset class="outcome-options-area">
       <legend>Outcomes to display</legend>
       <div class="outcome-options">
-         <input id="display-per-dim-midrange" type="checkbox" /><label for="display-per-dim-midrange">&nbsp;<span class="per-dim-midrange-option">Per-dimension midrange</span></label><br />
-         <input id="display-average" type="checkbox" /><label for="display-average">&nbsp;<span class="average-option">Average</span></label><br />
-         <input checked="checked" id="display-aar-dsv" type="checkbox" /><label for="display-aar-dsv">&nbsp;<span class="aar-dsv-option">AAR DSV</span></label><br />
-         <input id="display-fermat-weber" type="checkbox" /><label for="display-fermat-weber">&nbsp;<span class="fermat-weber-option">Fermat-Weber point</span></label><br />
-         <input id="display-per-dim-median" type="checkbox" /><label for="display-per-dim-median">&nbsp;<span class="per-dim-median-option">Per-dimension median</span></label><br />
+         <label class="per-dim-midrange-option"><input id="display-per-dim-midrange" type="checkbox" />&nbsp;Per-dimension midrange</label><br />
+         <label class="average-option"><input id="display-average" type="checkbox" />&nbsp;Average</label><br />
+         <label class="aar-dsv-option"><input checked="checked" id="display-aar-dsv" type="checkbox" />&nbsp;AAR DSV</label><br />
+         <label class="fermat-weber-option"><input id="display-fermat-weber" type="checkbox" />&nbsp;Fermat-Weber point</label><br />
+         <label class="per-dim-median-option"><input id="display-per-dim-median" type="checkbox" />&nbsp;Per-dimension median</label><br />
       </div>
    </fieldset>
    <br />

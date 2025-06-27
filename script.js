@@ -6,10 +6,10 @@ var runDemo = function () {
    var votespaceCanvas = document.getElementById('votespace');
    var votespaceContext = votespaceCanvas.getContext && votespaceCanvas.getContext('2d');
    if (!votespaceContext) {
-      window.alert('Your browser does not support the canvas element correctly.\nPlease use a recent version of a browser such as Opera, Chrome or Firefox.');
+      document.getElementById('instructions').innerHTML = 'Your browser does not seem to support the <code>&lt;canvas&gt;</code> element correctly.&nbsp; Please use a recent version of a browser such as <a href="http://www.opera.com/">Opera</a>, <a href="http://www.google.com/chrome/">Chrome</a> or <a href="http://www.getfirefox.com/">Firefox</a>.';
+      window.alert('Your browser does not seem to support the <canvas> element correctly.\nPlease use a recent version of a browser such as Opera, Chrome or Firefox.');
       return;
    }
-   votespaceContext.translate(votespaceCanvas.width / 2, votespaceCanvas.height / 2);
 
    var maxNumVoters = 9;
    var selectNElement = document.getElementById('select-n');
@@ -20,7 +20,9 @@ var runDemo = function () {
    var displayPerDimMedianCheckbox = document.getElementById('display-per-dim-median');
    var displayPerDimMidrangeCheckbox = document.getElementById('display-per-dim-midrange');
 
-   var votePointRow = [
+   var automaticStrategyCheckbox = document.getElementById('strategy-mode');
+
+   var votePointRows = [
       document.getElementById('votepoint0'),
       document.getElementById('votepoint1'),
       document.getElementById('votepoint2'),
@@ -32,7 +34,7 @@ var runDemo = function () {
       document.getElementById('votepoint8')
    ];
 
-   var votePointText = [
+   var votePointTextboxes = [
       [document.getElementById('votepoint00-value'), document.getElementById('votepoint01-value')],
       [document.getElementById('votepoint10-value'), document.getElementById('votepoint11-value')],
       [document.getElementById('votepoint20-value'), document.getElementById('votepoint21-value')],
@@ -45,11 +47,14 @@ var runDemo = function () {
    ];
 
    // the voters' voted points
-   var votePoint = []; // each votePoint[whichPoint][whichDimension] must be between 0 and 1
+   var votePoints = []; // each votePoints[whichPoint][whichDimension] must be between 0 and 1
+
+   // points used to run demo
+   var demoPoints = [];
 
    var toScreenCoords = function (vote) {
       if (vote.length === 2) {
-         return {x: votespaceCanvas.width * (vote[0] - 0.5), y: votespaceCanvas.height * (vote[1] - 0.5)};
+         return {x: (votespaceCanvas.width - 1) * vote[0], y: (votespaceCanvas.height - 1) * (1 - vote[1])};
       } else {
          return null;
       }
@@ -57,7 +62,7 @@ var runDemo = function () {
 
    var toVoteDims = function (screen) {
       if (typeof screen === 'object' && typeof screen.x === 'number' && typeof screen.y === 'number') {
-         return [screen.x / votespaceCanvas.width + 0.5, screen.y / votespaceCanvas.height + 0.5];
+         return [screen.x / (votespaceCanvas.width - 1), 1 - screen.y / (votespaceCanvas.height - 1)];
       } else {
          return null;
       }
@@ -67,84 +72,137 @@ var runDemo = function () {
       var screen = toScreenCoords(vote);
       votespaceContext.beginPath();
       votespaceContext.fillStyle = color;
-      votespaceContext.moveTo(screen.x, -screen.y);
-      votespaceContext.arc(screen.x, -screen.y, size, 0, 2 * Math.PI, true);
+      votespaceContext.moveTo(screen.x + 0.5, screen.y + 0.5);
+      votespaceContext.arc(screen.x + 0.5, screen.y + 0.5, size, 0, 2 * Math.PI, true);
       votespaceContext.fill();
    };
 
    var addOrRemoveVotePoints = function () {
       var whichPoint;
-      for (whichPoint = votePoint.length; whichPoint < numVoters; ++whichPoint) {
-         votePoint[whichPoint] = [];
-         votePoint[whichPoint][0] = Math.random();
-         votePoint[whichPoint][1] = Math.random();
+      for (whichPoint = votePoints.length; whichPoint < numVoters; ++whichPoint) {
+         votePoints[whichPoint] = [];
+         votePoints[whichPoint][0] = Math.random();
+         votePoints[whichPoint][1] = Math.random();
       }
-      while (votePoint.length > numVoters) {
-         votePoint.pop();
+      while (votePoints.length > numVoters) {
+         votePoints.pop();
       }
    };
    addOrRemoveVotePoints();
 
+   var calcAverage = function (points) {
+      // find Average outcome of input points
+      var numDims = points[0].length;
+      var numPoints = points.length;
+      var outcome = [];
+      var whichDim, whichPoint;
+      for (whichDim = 0; whichDim < numDims; ++whichDim) {
+         outcome[whichDim] = 0;
+         for (whichPoint = 0; whichPoint < numPoints; ++whichPoint) {
+            outcome[whichDim] += points[whichPoint][whichDim];
+         }
+         outcome[whichDim] /= numPoints;
+      }
+      return outcome;
+   };
+
+   // called in redrawSpace
+   var dsvAverage = function () {
+      var i, j;
+      // demoPoints is a global variable
+      demoPoints.splice(0);
+      for (i = 0; i < votePoints.length; i++) {
+         demoPoints.push([]);
+         for (j = 0; j < votePoints[i].length; j++) {
+            demoPoints[i].push(votePoints[i][j]);
+         }
+      }
+
+      var average, calculatedTotal, difference, count;
+
+      for (count = 0; count < 10; ++count) {
+         for (i = 0; i < votePoints.length; i++) {
+            average = calcAverage(demoPoints);
+            if (votePoints[i][0] !== average[0]) {
+               calculatedTotal = 0;
+               for (j = 0; j < demoPoints.length; j++) {
+                  if (i !== j) {
+                     calculatedTotal += demoPoints[j][0];
+                  }
+               }
+               difference = ((votePoints[i][0] * votePoints.length) - calculatedTotal);
+               if (difference >= 0 && difference <= 1) {
+                  demoPoints[i][0] = difference;
+               } else if (difference < 0) {
+                  demoPoints[i][0] = 0;
+               } else {
+                  demoPoints[i][0] = 1;
+               }
+            }
+            if (votePoints[i][1] !== average[1]) {
+               calculatedTotal = 0;
+               for (j = 0; j < demoPoints.length; j++) {
+                  if (i !== j) {
+                     calculatedTotal += demoPoints[j][1];
+                  }
+               }
+               difference = ((votePoints[i][1] * votePoints.length) - calculatedTotal);
+               if (difference >= 0 && difference <= 1) {
+                  demoPoints[i][1] = difference;
+               } else if (difference < 0) {
+                  demoPoints[i][1] = 0;
+               } else {
+                  demoPoints[i][1] = 1;
+               }
+            }
+         }
+      }
+   };
+
    var redrawSpace = function (pointBeingDragged) {
       var whichPoint;
-      votespaceContext.clearRect(-votespaceCanvas.width / 2, -votespaceCanvas.height / 2, votespaceCanvas.width, votespaceCanvas.height);
+      votespaceContext.clearRect(0, 0, votespaceCanvas.width, votespaceCanvas.height);
 
       // draw vote points
       for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-         drawVotePoint(votePoint[whichPoint], pointBeingDragged === whichPoint ? '#9966cc' : '#6699cc', 6);
-         votePointRow[whichPoint].style.visibility = 'visible';
-         votePointText[whichPoint][0].value = votePoint[whichPoint][0].toFixed(5);
-         votePointText[whichPoint][1].value = votePoint[whichPoint][1].toFixed(5);
+         drawVotePoint(votePoints[whichPoint], pointBeingDragged === whichPoint ? '#9966cc' : '#6699cc', 6);
+         votePointRows[whichPoint].style.visibility = 'visible';
+         votePointTextboxes[whichPoint][0].value = votePoints[whichPoint][0].toFixed(5);
+         votePointTextboxes[whichPoint][1].value = votePoints[whichPoint][1].toFixed(5);
       }
       for (whichPoint = numVoters; whichPoint < maxNumVoters; ++whichPoint) {
-         votePointRow[whichPoint].style.visibility = 'collapse';
+         votePointRows[whichPoint].style.visibility = 'collapse';
       }
 
       var smallestToLargest = function (a, b) {
          return a - b;
       };
 
-      var calcAarDsv = function (point) {
+      var calcAarDsv = function (points) {
          // find AAR DSV outcome of input points
-         var numDims = point[0].length;
-         var numPoints = point.length;
+         var numDims = points[0].length;
+         var numPoints = points.length;
          var outcome = [];
-         var sortPoint, whichDim, whichPoint;
+         var sortedPoints, whichDim, whichPoint;
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
-            sortPoint = [];
+            sortedPoints = [];
             for (whichPoint = 0; whichPoint < numPoints; ++whichPoint) {
-               sortPoint.push(point[whichPoint][whichDim]);
+               sortedPoints.push(points[whichPoint][whichDim]);
             }
             for (whichPoint = 1; whichPoint < numPoints; ++whichPoint) {
-               sortPoint.push(whichPoint / numPoints);
+               sortedPoints.push(whichPoint / numPoints);
             }
-            sortPoint.sort(smallestToLargest);
-            outcome.push(sortPoint[numPoints - 1]);
+            sortedPoints.sort(smallestToLargest);
+            outcome.push(sortedPoints[numPoints - 1]);
          }
          return outcome;
       };
 
-      var calcAverage = function (point) {
-         // find Average outcome of input points
-         var numDims = point[0].length;
-         var numPoints = point.length;
-         var outcome = [];
-         var whichDim, whichPoint;
-         for (whichDim = 0; whichDim < numDims; ++whichDim) {
-            outcome[whichDim] = 0;
-            for (whichPoint = 0; whichPoint < numPoints; ++whichPoint) {
-               outcome[whichDim] += point[whichPoint][whichDim];
-            }
-            outcome[whichDim] /= numPoints;
-         }
-         return outcome;
-      };
-
-      var calcFermatWeber = function (point) {
+      var calcFermatWeber = function (points) {
          // find Fermat-Weber outcome of input points with Weiszfeld's algorithm
          var numer, denom, dist, lastFWPoint, notCloseEnough;
-         var numDims = point[0].length;
-         var numPoints = point.length;
+         var numDims = points[0].length;
+         var numPoints = points.length;
          var outcome = [];
          var sumSqDiff, whichDim, whichPoint;
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
@@ -159,12 +217,12 @@ var runDemo = function () {
             for (whichPoint = 0; whichPoint < numPoints; ++whichPoint) {
                sumSqDiff = 0;
                for (whichDim = 0; whichDim < numDims; ++whichDim) {
-                  sumSqDiff += (point[whichPoint][whichDim] - outcome[whichDim]) * (point[whichPoint][whichDim] - outcome[whichDim]);
+                  sumSqDiff += (points[whichPoint][whichDim] - outcome[whichDim]) * (points[whichPoint][whichDim] - outcome[whichDim]);
                }
                if (sumSqDiff) {
                   dist = Math.sqrt(sumSqDiff);
                   for (whichDim = 0; whichDim < numDims; ++whichDim) {
-                     numer[whichDim] += point[whichPoint][whichDim] / dist;
+                     numer[whichDim] += points[whichPoint][whichDim] / dist;
                   }
                   denom += 1 / dist;
                }
@@ -181,39 +239,39 @@ var runDemo = function () {
          return outcome;
       };
 
-      var calcPerDimMedian = function (point) {
+      var calcPerDimMedian = function (points) {
          // find Median outcome of input points
-         var numDims = point[0].length;
-         var numPoints = point.length;
+         var numDims = points[0].length;
+         var numPoints = points.length;
          var outcome = [];
-         var sortPoint, whichDim, whichPoint;
+         var sortedPoints, whichDim, whichPoint;
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
-            sortPoint = [];
+            sortedPoints = [];
             for (whichPoint = 0; whichPoint < numPoints; ++whichPoint) {
-               sortPoint.push(point[whichPoint][whichDim]);
+               sortedPoints.push(points[whichPoint][whichDim]);
             }
             if (numPoints % 2 === 0) {
-               sortPoint.push(0.5);
+               sortedPoints.push(0.5);
             }
-            sortPoint.sort(smallestToLargest);
-            outcome.push(sortPoint[Math.floor(numPoints / 2)]);
+            sortedPoints.sort(smallestToLargest);
+            outcome.push(sortedPoints[Math.floor(numPoints / 2)]);
          }
          return outcome;
       };
 
-      var calcPerDimMidrange = function (point) {
+      var calcPerDimMidrange = function (points) {
          // find Midrange outcome of input points
-         var numDims = point[0].length;
-         var numPoints = point.length;
+         var numDims = points[0].length;
+         var numPoints = points.length;
          var outcome = [];
-         var sortPoint, whichDim, whichPoint;
+         var sortedPoints, whichDim, whichPoint;
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
-            sortPoint = [];
+            sortedPoints = [];
             for (whichPoint = 0; whichPoint < numPoints; ++whichPoint) {
-               sortPoint.push(point[whichPoint][whichDim]);
+               sortedPoints.push(points[whichPoint][whichDim]);
             }
-            sortPoint.sort(smallestToLargest);
-            outcome.push((sortPoint[0] + sortPoint[numPoints - 1]) / 2);
+            sortedPoints.sort(smallestToLargest);
+            outcome.push((sortedPoints[0] + sortedPoints[numPoints - 1]) / 2);
          }
          return outcome;
       };
@@ -221,23 +279,23 @@ var runDemo = function () {
       // draw outcome points
       var avgOutcome, dsvOutcome, ferOutcome, medOutcome, midOutcome;
       if (displayPerDimMidrangeCheckbox.checked) {
-         midOutcome = calcPerDimMidrange(votePoint);
+         midOutcome = calcPerDimMidrange(votePoints);
          drawVotePoint(midOutcome, '#000000', 8);
       }
       if (displayPerDimMedianCheckbox.checked) {
-         medOutcome = calcPerDimMedian(votePoint);
+         medOutcome = calcPerDimMedian(votePoints);
          drawVotePoint(medOutcome, '#000000', 8);
       }
       if (displayFermatWeberCheckbox.checked) {
-         ferOutcome = calcFermatWeber(votePoint);
+         ferOutcome = calcFermatWeber(votePoints);
          drawVotePoint(ferOutcome, '#000000', 8);
       }
       if (displayAverageCheckbox.checked) {
-         avgOutcome = calcAverage(votePoint);
+         avgOutcome = calcAverage(votePoints);
          drawVotePoint(avgOutcome, '#000000', 8);
       }
       if (displayAarDsvCheckbox.checked) {
-         dsvOutcome = calcAarDsv(votePoint);
+         dsvOutcome = calcAarDsv(votePoints);
          drawVotePoint(dsvOutcome, '#000000', 8);
          document.getElementById('aar-dsv-output').innerHTML = 'x = ' + dsvOutcome[0].toFixed(5) + ', y = ' + dsvOutcome[1].toFixed(5);
       }
@@ -256,6 +314,16 @@ var runDemo = function () {
       if (displayAarDsvCheckbox.checked) {
          drawVotePoint(dsvOutcome, '#ffff00', 6);
       }
+
+      if (automaticStrategyCheckbox.checked) {
+         dsvAverage();
+         for (whichPoint = 0; whichPoint < demoPoints.length; ++whichPoint) {
+            drawVotePoint(demoPoints[whichPoint], '#000000', 4);
+         }
+         if (demoPoints.length > 0) {
+            drawVotePoint(calcAverage(demoPoints), '#ffaa00', 4);
+         }
+      }
    };
 
    selectNElement.onchange = function () {
@@ -270,11 +338,13 @@ var runDemo = function () {
    displayPerDimMedianCheckbox.onchange = redrawSpace;
    displayPerDimMidrangeCheckbox.onchange = redrawSpace;
 
+   automaticStrategyCheckbox.onchange = redrawSpace;
+
    var makePointTextChangeFunc = function (whichPoint, whichDim) {
       return function () {
-         var num = parseFloat(votePointText[whichPoint][whichDim].value, 10);
+         var num = parseFloat(votePointTextboxes[whichPoint][whichDim].value, 10);
          if (!isNaN(num)) {
-            votePoint[whichPoint][whichDim] = num;
+            votePoints[whichPoint][whichDim] = num;
             redrawSpace();
          }
       };
@@ -283,15 +353,17 @@ var runDemo = function () {
    var whichDim, whichPoint;
    for (whichPoint = 0; whichPoint < maxNumVoters; ++whichPoint) {
       for (whichDim = 0; whichDim < 2; ++whichDim) {
-         votePointText[whichPoint][whichDim].onchange = makePointTextChangeFunc(whichPoint, whichDim);
-         votePointText[whichPoint][whichDim].onkeyup = makePointTextChangeFunc(whichPoint, whichDim);
+         votePointTextboxes[whichPoint][whichDim].onchange = makePointTextChangeFunc(whichPoint, whichDim);
+         votePointTextboxes[whichPoint][whichDim].onkeyup = makePointTextChangeFunc(whichPoint, whichDim);
       }
    }
 
    // allow the user to drag a vote point around
    votespaceCanvas.onmousedown = function (ev) {
 
-      // return the mouse location as an object that gives the relative (x, y) values
+      // return the mouse location as an object that gives the (x, y) values inside the canvas
+      // each dimension should range between 0 and (for example) 500, inclusive
+      // (0, 0) is the pixel in the upper left corner
       var getMouse = function (ev) {
 
          var getTrueOffsetLeft = function (ele) {
@@ -304,7 +376,7 @@ var runDemo = function () {
             }
             return trueOffsetLeft;
          };
-         var x = ev.clientX - getTrueOffsetLeft(votespaceCanvas) + window.pageXOffset;
+         var x = ev.clientX - getTrueOffsetLeft(votespaceCanvas) + window.pageXOffset - (votespaceCanvas.offsetWidth - votespaceCanvas.width) / 2;
 
          var getTrueOffsetTop = function (ele) {
             var trueOffsetTop = 0;
@@ -316,19 +388,18 @@ var runDemo = function () {
             }
             return trueOffsetTop;
          };
-         var y = ev.clientY - getTrueOffsetTop(votespaceCanvas) + window.pageYOffset;
+         var y = ev.clientY - getTrueOffsetTop(votespaceCanvas) + window.pageYOffset - (votespaceCanvas.offsetHeight - votespaceCanvas.height) / 2;
 
-         return {x: Math.min(Math.max(x, 0), votespaceCanvas.width), y: Math.min(Math.max(y, 0), votespaceCanvas.height)};
+         return {x: Math.min(Math.max(x, 0), votespaceCanvas.width - 1), y: Math.min(Math.max(y, 0), votespaceCanvas.height - 1)};
       };
 
-      var mouse = getMouse(ev);
-
       var whichPoint = (function () {
-         var whichPoint, xDiff, yDiff;
+         var mouse = getMouse(ev);
+         var screen, whichPoint, xDiff, yDiff;
          for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-            var screen = toScreenCoords(votePoint[whichPoint]);
-            xDiff = mouse.x - votespaceCanvas.width / 2 - screen.x;
-            yDiff = votespaceCanvas.height / 2 - mouse.y - screen.y;
+            screen = toScreenCoords(votePoints[whichPoint]);
+            xDiff = mouse.x - screen.x;
+            yDiff = mouse.y - screen.y;
             // if the Euclidean distance between the mouse click and this point is less than 10 pixels
             if (xDiff * xDiff + yDiff * yDiff < 100) {
                return whichPoint; // found selected point
@@ -339,11 +410,10 @@ var runDemo = function () {
 
       if (typeof whichPoint === 'number') { // if a point was selected
          document.onmousemove = function (ev) {
-            var mouse = getMouse(ev);
-            votePoint[whichPoint] = toVoteDims({x: mouse.x - votespaceCanvas.width / 2, y: votespaceCanvas.height / 2 - mouse.y});
-            votePointText[whichPoint][0].value = votePoint[whichPoint][0].toFixed(5);
-            votePointText[whichPoint][1].value = votePoint[whichPoint][1].toFixed(5);
-            document.getElementById('click-output').innerHTML = 'x = ' + votePoint[whichPoint][0].toFixed(5) + ', y = ' + votePoint[whichPoint][1].toFixed(5);
+            votePoints[whichPoint] = toVoteDims(getMouse(ev));
+            votePointTextboxes[whichPoint][0].value = votePoints[whichPoint][0].toFixed(5);
+            votePointTextboxes[whichPoint][1].value = votePoints[whichPoint][1].toFixed(5);
+            document.getElementById('click-output').innerHTML = 'x = ' + votePoints[whichPoint][0].toFixed(5) + ', y = ' + votePoints[whichPoint][1].toFixed(5);
             redrawSpace(whichPoint);
          };
          document.onmousemove(ev); // immediately show that the point has been selected
@@ -356,7 +426,7 @@ var runDemo = function () {
    };
 
    document.getElementById('randomize-points').onclick = function () {
-      votePoint = [];
+      votePoints = [];
       addOrRemoveVotePoints();
       redrawSpace();
       return false; // don't do anything else because of the click
