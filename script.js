@@ -2,7 +2,8 @@
 
 var runDemo = function () {
    'use strict';
-
+   var animatedVote, animate;
+   var targetPoint = [0, 0];
    var votespaceCanvas = document.getElementById('votespace');
    var votespaceContext = votespaceCanvas.getContext && votespaceCanvas.getContext('2d');
    if (!votespaceContext) {
@@ -51,6 +52,8 @@ var runDemo = function () {
 
    // points used to run demo
    var demoPoints = [];
+   // used for animation
+   var animatePoints = [];
 
    var toScreenCoords = function (vote) {
       if (vote.length === 2) {
@@ -59,6 +62,8 @@ var runDemo = function () {
          return null;
       }
    };
+
+   // votespaceCanvas.width and votespaceCanvas.height should be something like 501
 
    var toVoteDims = function (screen) {
       if (typeof screen === 'object' && typeof screen.x === 'number' && typeof screen.y === 'number') {
@@ -111,21 +116,29 @@ var runDemo = function () {
       var i, j;
       // demoPoints is a global variable
       demoPoints.splice(0);
-      for (i = 0; i < votePoints.length; i++) {
+      for (i = 0; i < votePoints.length; ++i) {
          demoPoints.push([]);
-         for (j = 0; j < votePoints[i].length; j++) {
+         for (j = 0; j < votePoints[i].length; ++j) {
             demoPoints[i].push(votePoints[i][j]);
          }
       }
 
-      var average, calculatedTotal, difference, count;
+      var average, calculatedTotal, difference, count = 0;
+      var demoPointsLast = [], changed = true;
 
-      for (count = 0; count < 10; ++count) {
-         for (i = 0; i < votePoints.length; i++) {
+      while (changed) {
+         demoPointsLast.splice(0);
+         for (i = 0; i < demoPoints.length; ++i) {
+            demoPointsLast.push([]);
+            for (j = 0; j < demoPoints[i].length; ++j) {
+               demoPointsLast[i].push(demoPoints[i][j]);
+            }
+         }
+         for (i = 0; i < votePoints.length; ++i) {
             average = calcAverage(demoPoints);
             if (votePoints[i][0] !== average[0]) {
                calculatedTotal = 0;
-               for (j = 0; j < demoPoints.length; j++) {
+               for (j = 0; j < demoPoints.length; ++j) {
                   if (i !== j) {
                      calculatedTotal += demoPoints[j][0];
                   }
@@ -141,7 +154,7 @@ var runDemo = function () {
             }
             if (votePoints[i][1] !== average[1]) {
                calculatedTotal = 0;
-               for (j = 0; j < demoPoints.length; j++) {
+               for (j = 0; j < demoPoints.length; ++j) {
                   if (i !== j) {
                      calculatedTotal += demoPoints[j][1];
                   }
@@ -153,6 +166,14 @@ var runDemo = function () {
                   demoPoints[i][1] = 0;
                } else {
                   demoPoints[i][1] = 1;
+               }
+            }
+         }
+         changed = false;
+         for (i = 0; i < demoPointsLast.length; ++i) {
+            for (j = 0; j < demoPointsLast[i].length; ++j) {
+               if (Math.abs(demoPointsLast[i][j] - demoPoints[i][j]) > 0) {
+                  changed = true;
                }
             }
          }
@@ -324,6 +345,10 @@ var runDemo = function () {
             drawVotePoint(calcAverage(demoPoints), '#ffaa00', 4);
          }
       }
+
+      if (animatedVote) {
+         drawVotePoint(animatedVote, '#000000', 10);
+      }
    };
 
    selectNElement.onchange = function () {
@@ -395,15 +420,20 @@ var runDemo = function () {
 
       var whichPoint = (function () {
          var mouse = getMouse(ev);
-         var screen, whichPoint, xDiff, yDiff;
+         var screen, whichPoint, closestPoint, xDiff, yDiff, dist, closest = 1000;
          for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
             screen = toScreenCoords(votePoints[whichPoint]);
             xDiff = mouse.x - screen.x;
             yDiff = mouse.y - screen.y;
+            dist = xDiff * xDiff + yDiff * yDiff;
             // if the Euclidean distance between the mouse click and this point is less than 10 pixels
-            if (xDiff * xDiff + yDiff * yDiff < 100) {
-               return whichPoint; // found selected point
+            if (dist < 100 && dist < closest) {
+               closest = dist;
+               closestPoint = whichPoint; // found selected point
             }
+         }
+         if (closestPoint !== undefined) {
+            return closestPoint;
          }
          return null; // no point was selected
       }()); // call anonymous function to find which point was selected
@@ -433,4 +463,63 @@ var runDemo = function () {
    };
 
    redrawSpace(); // show initial points
+
+   var animatePoint = function (target) {
+      // make sure target is valid type
+      if (!target || !target.length || target.length != 2) {
+         return;
+      }
+      if (animatedVote === undefined) {
+         animatedVote = [votePoints[0][0], votePoints[0][1]];
+      }
+
+      if (animatedVote[0] < target[0]) {
+         animatedVote[0] += increment;
+
+         // if switched, point has been passed; go back to it
+         if (animatedVote[0] > target[0]) {
+            animatedVote[0] = target[0];
+         }
+      } else if(animatedVote[0] > target[0]) {
+         animatedVote[0] -= increment;
+
+         if (animatedVote[0] < target[0]) {
+            animatedVote[0] = target[0];
+         }
+      }
+
+      if (animatedVote[1] < target[1]) {
+         animatedVote[1] += increment;
+
+         if (animatedVote[1] > target[1]) {
+            animatedVote[1] = target[1];
+         }
+      } else if(animatedVote[1] > target[1]) {
+         animatedVote[1] -= increment;
+
+         if (animatedVote[1] < target[1]) {
+            animatedVote[1] = target[1];
+         }
+      }
+
+      // make sure point is in range
+      animatedVote[0] = Math.max(animatedVote[0], 0);
+      animatedVote[0] = Math.min(animatedVote[0], 1);
+      animatedVote[1] = Math.max(animatedVote[1], 0);
+      animatedVote[1] = Math.min(animatedVote[1], 1);
+
+      redrawSpace();
+      increment += 0.001;
+      // once at target, clear interval, set animate to undefined and reset increment
+      if (animatedVote[0] == target[0] && animatedVote[1] == target[1]) {
+         clearInterval(animate);
+         animate = undefined;
+         increment = 0.01;
+      }
+   };
+
+   var increment = 0.01;
+   animate = setInterval(function () {
+      animatePoint(votePoints[1]);
+   }, 50);
 };
