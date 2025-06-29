@@ -32,6 +32,7 @@ var runDemo = function () {
    var displayFermatWeberCheckbox = document.getElementById('display-fermat-weber');
    var displayPerDimMedianCheckbox = document.getElementById('display-per-dim-median');
    var displayPerDimMidrangeCheckbox = document.getElementById('display-per-dim-midrange');
+   var animateStrategyButton = document.getElementById('animate');
 
    var votePointRows = [
       document.getElementById('votepoint0'),
@@ -62,6 +63,8 @@ var runDemo = function () {
 
    // points used to run demo
    var strategicPoints = [];
+   var animatedVote, animate, animationComplete = [], animationInProgress = false, increment = 0.01;
+   var targetPoint = [0, 0], originPoint = [0, 0];
 
    var toScreenCoords = function (vote) {
       if (vote.length === 2) {
@@ -245,10 +248,8 @@ var runDemo = function () {
             }
          }
       }
-      if (strategicPoints.length > votePoints.length) {
-         for (whichPoint = votePoints.length; whichPoint < strategicPoints.length; ++whichPoint) {
-            strategicPoints.pop();
-         }
+      while (strategicPoints.length > votePoints.length) {
+         strategicPoints.pop();
       }
 
       do {
@@ -337,7 +338,10 @@ var runDemo = function () {
       // draw lines from sincere points to strategic votes
       if (automaticStrategyRadio.checked) {
          dsvAverage();
-         for (whichPoint = 0; whichPoint < strategicPoints.length; ++whichPoint) {
+         for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
+            if (animationInProgress && !animationComplete[whichPoint]) {
+               break;
+            }
             var voteScreen = toScreenCoords(votePoints[whichPoint]);
             var demoScreen = toScreenCoords(strategicPoints[whichPoint]);
             votespaceContext.beginPath();
@@ -400,6 +404,9 @@ var runDemo = function () {
 
       if (automaticStrategyRadio.checked) {
          for (whichPoint = 0; whichPoint < strategicPoints.length; ++whichPoint) {
+            if (animationInProgress && !animationComplete[whichPoint]) {
+               break;
+            }
             drawVotePoint(strategicPoints[whichPoint], '#000000', 4);
          }
          if (strategicPoints.length > 0) {
@@ -424,7 +431,6 @@ var runDemo = function () {
    displayFermatWeberCheckbox.onchange = redrawSpace;
    displayPerDimMedianCheckbox.onchange = redrawSpace;
    displayPerDimMidrangeCheckbox.onchange = redrawSpace;
-
    var makePointTextChangeFunc = function (whichPoint, whichDim) {
       return function () {
          var num = parseFloat(votePointTextboxes[whichPoint][whichDim].value, 10);
@@ -434,6 +440,24 @@ var runDemo = function () {
             redrawSpace();
          }
       };
+   };
+
+   var animateWhich = 0;
+
+   animateStrategyButton.onclick = function () {
+      var whichVoter;
+      animationComplete = [];
+      for (whichVoter = 0; whichVoter < numVoters; ++whichVoter) {
+         animationComplete.push(false);
+      }
+      animateWhich = 0;
+
+      if (automaticStrategyRadio.checked && strategicPoints) {
+         animationInProgress = true;
+         animate = setInterval(function () {
+            animatePoint(strategicPoints[animateWhich], votePoints[animateWhich], true);
+         }, 50);
+      }
    };
 
    var whichDim, whichPoint;
@@ -446,6 +470,7 @@ var runDemo = function () {
 
    // allow the user to drag a vote point around
    votespaceCanvas.onmousedown = function (ev) {
+      resetAnimation();
 
       // return the mouse location as an object that gives the (x, y) values inside the canvas
       // each dimension should range between 0 and (for example) 500, inclusive
@@ -522,4 +547,89 @@ var runDemo = function () {
    };
 
    redrawSpace(); // show initial points
+
+   var resetAnimation = function () {
+      clearInterval(animate);
+      increment = 0.01;
+      animationInProgress = false;
+   };
+
+   var animatePoint = function (target, origin, loop) {
+      if (!animationInProgress) {
+         resetAnimation();
+         return;
+      }
+      var changed = false;
+
+      if (!origin) {
+         origin = originPoint;
+      } else if ((originPoint[1] !== origin[1]) || (originPoint[0] !== origin[0])) {
+         originPoint[1] = origin[1];
+         originPoint[0] = origin[0];
+         changed = true;
+      }
+      if (!target || !target.length || target.length !== 2) {
+         resetAnimation();
+         return;
+      }
+
+      if (!animatedVote || changed) {
+         animatedVote = [originPoint[0], originPoint[1]];
+      }
+
+      if (animatedVote[0] < target[0]) {
+         animatedVote[0] += increment;
+         // if switched, point has been passed; go back to it
+         if (animatedVote[0] > target[0]) {
+            animatedVote[0] = target[0];
+         }
+      } else if (animatedVote[0] > target[0]) {
+         animatedVote[0] -= increment;
+         if (animatedVote[0] < target[0]) {
+            animatedVote[0] = target[0];
+         }
+      }
+
+      if (animatedVote[1] < target[1]) {
+         animatedVote[1] += increment;
+         if (animatedVote[1] > target[1]) {
+            animatedVote[1] = target[1];
+         }
+      } else if (animatedVote[1] > target[1]) {
+         animatedVote[1] -= increment;
+         if (animatedVote[1] < target[1]) {
+            animatedVote[1] = target[1];
+         }
+      }
+
+      // make sure point is in range
+      animatedVote[0] = Math.max(animatedVote[0], 0);
+      animatedVote[0] = Math.min(animatedVote[0], 1);
+      animatedVote[1] = Math.max(animatedVote[1], 0);
+      animatedVote[1] = Math.min(animatedVote[1], 1);
+
+      redrawSpace();
+      drawVotePoint(animatedVote, '#000000', 4);
+      var voteScreen = toScreenCoords(origin);
+      var demoScreen = toScreenCoords(animatedVote);
+      votespaceContext.beginPath();
+      votespaceContext.moveTo(demoScreen.x + 0.5, demoScreen.y + 0.5);
+      votespaceContext.lineTo(voteScreen.x + 0.5, voteScreen.y + 0.5);
+      votespaceContext.strokeStyle = '#aaaaaa';
+      votespaceContext.stroke();
+
+      increment += 0.001;
+      // once at target, clear interval and reset increment
+      if (animatedVote[0] === target[0] && animatedVote[1] === target[1]) {
+         resetAnimation();
+         if (loop && animateWhich < numVoters) {
+            animationInProgress = true;
+            animationComplete[animateWhich] = true;
+            ++animateWhich;
+            animate = setInterval(function () {
+               animatePoint(strategicPoints[animateWhich], votePoints[animateWhich], true);
+            }, 50);
+         }
+      }
+   };
 };
