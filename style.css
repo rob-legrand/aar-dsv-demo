@@ -69,7 +69,7 @@ body {
 canvas#votespace {
    border-color: #000000;
    border-style: solid;
-   border-width: 1px;
+   border-width: 0px;
    background-color: #ffffff;
    display: block;
    margin-left: auto;
@@ -121,4 +121,8 @@ label.per-dim-midrange-option {
    font-family: Garamond, Georgia, Baskerville, Palatino, "Palatino Linotype", Didot, Bodoni, serif;
    font-size: 100%;
    font-weight: normal;
+}
+
+.variable {
+   font-style: italic;
 }
