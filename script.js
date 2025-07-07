@@ -410,7 +410,25 @@ var runDemo = function () {
             drawVotePoint(strategicPoints[whichPoint], '#000000', 4);
          }
          if (strategicPoints.length > 0) {
-            drawVotePoint(calcAverage(strategicPoints), '#ffaa00', 4);
+            if (!animationInProgress) {
+               drawVotePoint(calcAverage(strategicPoints), '#ffaa00', 4);
+            } else {
+               var temp = [];
+               for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
+                  temp.push([]);
+                  if (whichPoint === animateWhich) {
+                     temp[whichPoint].push(animatedVote[0]);
+                     temp[whichPoint].push(animatedVote[1]);
+                  } else if (animationComplete[whichPoint]) {
+                     temp[whichPoint].push(strategicPoints[whichPoint][0]);
+                     temp[whichPoint].push(strategicPoints[whichPoint][1]);
+                  } else if (!animationComplete[whichPoint]) {
+                     temp[whichPoint].push(votePoints[whichPoint][0]);
+                     temp[whichPoint].push(votePoints[whichPoint][0]);
+                  }
+               }
+               drawVotePoint(calcAverage(temp), '#ffaa00', 4);
+            }
          }
       }
    };
