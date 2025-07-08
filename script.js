@@ -12,13 +12,17 @@ var runDemo = function () {
    }
 
    var maxNumVoters = 9;
-   var hypercubeBottomY = 550;
-   var hypercubeLeftX = 50;
-   var hypercubeRightX = 550;
-   var hypercubeTopY = 50;
-   var simplexBottomY = 550;
+   var hypercubeBottomY = 600;
+   var hypercubeLeftX = 100;
+   var hypercubeRightX = 600;
+   var hypercubeTopY = 100;
+   var lineSegmentLeftX = hypercubeLeftX;
+   var lineSegmentRightX = hypercubeRightX;
+   var lineSegmentY = (hypercubeBottomY + hypercubeTopY) / 2;
+   var simplexBottomY = 570;
    var simplexLeftX = 50;
-   var simplexRightX = 550;
+   var simplexRightX = 650;
+   var simplexMiddleX = (simplexLeftX + simplexRightX) / 2;
    var simplexTopY = 50;
    var selectNElement = document.getElementById('select-n');
    var numVoters = parseInt(selectNElement.options[selectNElement.selectedIndex].value, 10);
@@ -66,11 +70,16 @@ var runDemo = function () {
    var animatedVote, animate, animationComplete = [], animationInProgress = false, increment = 0.01;
    var originPoint = [0, 0];
    var animateWhich = 0;
-   var multiVote = [], multiVoteLast = [], iterationAnimation = true;
 
    var toScreenCoords = function (vote) {
-      if (vote.length === 2) {
-         return {x: hypercubeLeftX + (hypercubeRightX - hypercubeLeftX) * vote[0], y: hypercubeBottomY - (hypercubeBottomY - hypercubeTopY) * vote[1]};
+      if (vote.length === 1) {
+         return {x: lineSegmentLeftX + (lineSegmentRightX - lineSegmentLeftX) * vote[0], y: lineSegmentY};
+      } else if (vote.length === 2) {
+         return {x: hypercubeLeftX + (hypercubeRightX - hypercubeLeftX) * vote[0],
+                 y: hypercubeBottomY - (hypercubeBottomY - hypercubeTopY) * vote[1]};
+      } else if (vote.length === 3) {
+         return {x: simplexLeftX * vote[0] + simplexRightX * vote[1] + simplexMiddleX * vote[2],
+                 y: simplexBottomY * (vote[0] + vote[1]) + simplexTopY * vote[2]};
       } else {
          return null;
       }
@@ -78,19 +87,49 @@ var runDemo = function () {
 
    var toVoteDims = function (screen) {
       if (typeof screen === 'object' && typeof screen.x === 'number' && typeof screen.y === 'number') {
-         return [(screen.x - hypercubeLeftX) / (hypercubeRightX - hypercubeLeftX), (hypercubeBottomY - screen.y) / (hypercubeBottomY - hypercubeTopY)];
+         if (lineSegmentRadio.checked) {
+            return [(screen.x - lineSegmentLeftX) / (lineSegmentRightX - lineSegmentLeftX)];
+         } else if (hypercubeRadio.checked) {
+            return [(screen.x - hypercubeLeftX) / (hypercubeRightX - hypercubeLeftX),
+                    (hypercubeBottomY - screen.y) / (hypercubeBottomY - hypercubeTopY)];
+         } else if (simplexRadio.checked) {
+            return [((simplexMiddleX - screen.x) / (simplexMiddleX - simplexLeftX) + (screen.y - simplexTopY) / (simplexBottomY - simplexTopY)) / 2,
+                    ((screen.x - simplexMiddleX) / (simplexRightX - simplexMiddleX) + (screen.y - simplexTopY) / (simplexBottomY - simplexTopY)) / 2,
+                    (simplexBottomY - screen.y) / (simplexBottomY - simplexTopY)];
+         } else {
+            return null;
+         }
       } else {
          return null;
       }
    };
 
    var projectVotePointToSpace = function (point) {
+      var surplus;
       if (point.length === 1) {
          return [Math.min(Math.max(point[0], 0), 1)];
       } else if (point.length === 2) {
          return [Math.min(Math.max(point[0], 0), 1), Math.min(Math.max(point[1], 0), 1)];
       } else if (point.length === 3) {
-         return null;
+         surplus = (point[0] + point[1] + point[2] - 1) / 3;
+         point[0] -= surplus;
+         point[1] -= surplus;
+         point[2] -= surplus;
+         if (point[0] >= point[1] + 1 && point[0] >= point[2] + 1) {
+            return [1, 0, 0];
+         } else if (point[1] >= point[0] + 1 && point[1] >= point[2] + 1) {
+            return [0, 1, 0];
+         } else if (point[2] >= point[0] + 1 && point[2] >= point[1] + 1) {
+            return [0, 0, 1];
+         } else if (point[2] <= 0) {
+            return [point[0] + point[2] / 2, point[1] + point[2] / 2, 0];
+         } else if (point[1] <= 0) {
+            return [point[0] + point[1] / 2, 0, point[2] + point[1] / 2];
+         } else if (point[0] <= 0) {
+            return [0, point[1] + point[0] / 2, point[2] + point[0] / 2];
+         } else {
+            return [point[0], point[1], point[2]];
+         }
       } else {
          return null;
       }
@@ -106,11 +145,21 @@ var runDemo = function () {
    };
 
    var addOrRemoveVotePoints = function () {
-      var whichPoint;
+      var whichDim, whichPoint;
+      var numDims;
+      if (lineSegmentRadio.checked) {
+         numDims = 1;
+      } else if (hypercubeRadio.checked) {
+         numDims = 2;
+      } else if (simplexRadio.checked) {
+         numDims = 3;
+      }
       for (whichPoint = votePoints.length; whichPoint < numVoters; ++whichPoint) {
          votePoints[whichPoint] = [];
-         votePoints[whichPoint][0] = Math.random();
-         votePoints[whichPoint][1] = Math.random();
+         for (whichDim = 0; whichDim < numDims; ++whichDim) {
+            votePoints[whichPoint].push(Math.random());
+         }
+         votePoints[whichPoint] = projectVotePointToSpace(votePoints[whichPoint]);
       }
       while (votePoints.length > numVoters) {
          votePoints.pop();
@@ -139,7 +188,7 @@ var runDemo = function () {
          sortedPoints.sort(smallestToLargest);
          outcome.push(sortedPoints[numPoints - 1]);
       }
-      return outcome;
+      return projectVotePointToSpace(outcome);
    };
 
    // find Average outcome of input points
@@ -155,7 +204,7 @@ var runDemo = function () {
          }
          outcome[whichDim] /= numPoints;
       }
-      return outcome;
+      return projectVotePointToSpace(outcome);
    };
 
    // find Fermat-Weber outcome of input points with Weiszfeld's algorithm
@@ -196,7 +245,7 @@ var runDemo = function () {
             }
          }
       } while (notCloseEnough);
-      return outcome;
+      return projectVotePointToSpace(outcome);
    };
 
    // find Median outcome of input points
@@ -216,7 +265,7 @@ var runDemo = function () {
          sortedPoints.sort(smallestToLargest);
          outcome.push(sortedPoints[Math.floor(numPoints / 2)]);
       }
-      return outcome;
+      return projectVotePointToSpace(outcome);
    };
 
    // find Midrange outcome of input points
@@ -233,7 +282,7 @@ var runDemo = function () {
          sortedPoints.sort(smallestToLargest);
          outcome.push((sortedPoints[0] + sortedPoints[numPoints - 1]) / 2);
       }
-      return outcome;
+      return projectVotePointToSpace(outcome);
    };
 
    // calculate strategicPoints at Average equilibrium
@@ -308,12 +357,16 @@ var runDemo = function () {
 
    var redrawSpace = function (pointBeingDragged) {
       var whichPoint;
-
-      votespaceContext.clearRect(0, 0, votespaceCanvas.width, votespaceCanvas.height);
+      votespaceContext.fillStyle = '#ddeeff';
+      votespaceContext.fillRect(0, 0, votespaceCanvas.width, votespaceCanvas.height);
 
       // draw votespace boundary
       if (lineSegmentRadio.checked) {
-         return;
+         votespaceContext.beginPath();
+         votespaceContext.moveTo(lineSegmentLeftX + 0.5, lineSegmentY + 0.5);
+         votespaceContext.lineTo(lineSegmentRightX + 0.5, lineSegmentY / 2 + 0.5);
+         votespaceContext.strokeStyle = '#000000';
+         votespaceContext.stroke();
       } else if (hypercubeRadio.checked) {
          votespaceContext.beginPath();
          votespaceContext.moveTo(hypercubeLeftX + 0.5, hypercubeTopY + 0.5);
@@ -321,15 +374,18 @@ var runDemo = function () {
          votespaceContext.lineTo(hypercubeRightX + 0.5, hypercubeBottomY + 0.5);
          votespaceContext.lineTo(hypercubeLeftX + 0.5, hypercubeBottomY + 0.5);
          votespaceContext.lineTo(hypercubeLeftX + 0.5, hypercubeTopY + 0.5);
+         votespaceContext.fillStyle = '#ffffff';
+         votespaceContext.fill();
          votespaceContext.strokeStyle = '#000000';
          votespaceContext.stroke();
       } else if (simplexRadio.checked) {
-         // draw simplex border given 601x601 canvas
          votespaceContext.beginPath();
-         votespaceContext.moveTo(0.5, 520.5);
-         votespaceContext.lineTo(600.5, 520.5);
-         votespaceContext.lineTo(300.5, 0.5);
-         votespaceContext.lineTo(0.5, 520.5);
+         votespaceContext.moveTo(simplexLeftX + 0.5, simplexBottomY + 0.5);
+         votespaceContext.lineTo(simplexRightX + 0.5, simplexBottomY + 0.5);
+         votespaceContext.lineTo((simplexLeftX + simplexRightX) / 2 + 0.5, simplexTopY + 0.5);
+         votespaceContext.lineTo(simplexLeftX + 0.5, simplexBottomY + 0.5);
+         votespaceContext.fillStyle = '#ffffff';
+         votespaceContext.fill();
          votespaceContext.strokeStyle = '#000000';
          votespaceContext.stroke();
       } else {
@@ -413,7 +469,7 @@ var runDemo = function () {
          }
          if (!animationInProgress) {
             drawVotePoint(calcAverage(strategicPoints), '#ffaa00', 4);
-         } else if (!iterationAnimation) {
+         } else {
             var temp = [];
             for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
                temp.push([]);
@@ -426,19 +482,6 @@ var runDemo = function () {
                } else if (!animationComplete[whichPoint]) {
                   temp[whichPoint].push(votePoints[whichPoint][0]);
                   temp[whichPoint].push(votePoints[whichPoint][1]);
-               }
-            }
-            drawVotePoint(calcAverage(temp), '#ffaa00', 4);
-         } else {
-            var temp = [];
-            for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-               temp.push([]);
-               if (whichPoint === onWhich) {
-                  temp[whichPoint].push(animatedVote[0]);
-                  temp[whichPoint].push(animatedVote[1]);
-               } else {
-                  temp[whichPoint].push(multiVote[whichPoint][0]);
-                  temp[whichPoint].push(multiVote[whichPoint][1]);
                }
             }
             drawVotePoint(calcAverage(temp), '#ffaa00', 4);
@@ -576,9 +619,7 @@ var runDemo = function () {
       var changed = false;
 
       if (!origin) {
-         origin = [];
-         origin.push(originPoint[0]);
-         origin.push(originPoint[1]);
+         origin = originPoint;
       } else if ((originPoint[1] !== origin[1]) || (originPoint[0] !== origin[0])) {
          originPoint[1] = origin[1];
          originPoint[0] = origin[0];
@@ -588,6 +629,7 @@ var runDemo = function () {
          resetAnimation();
          return;
       }
+
 
       if (!animatedVote || changed) {
          animatedVote = [originPoint[0], originPoint[1]];
@@ -626,20 +668,18 @@ var runDemo = function () {
       }
 
       // make sure point is in range
-      animatedVote[0] = Math.max(animatedVote[0], 0);
-      animatedVote[0] = Math.min(animatedVote[0], 1);
-      animatedVote[1] = Math.max(animatedVote[1], 0);
-      animatedVote[1] = Math.min(animatedVote[1], 1);
+      animatedVote = projectVotePointToSpace(animatedVote);
 
       redrawSpace();
-      drawVotePoint(animatedVote, '#000000', 4);
       var voteScreen = toScreenCoords(origin);
-      var demoScreen = toScreenCoords(animatedVote);
+      var animatedScreen = toScreenCoords(animatedVote);
       votespaceContext.beginPath();
-      votespaceContext.moveTo(demoScreen.x + 0.5, demoScreen.y + 0.5);
+      votespaceContext.moveTo(animatedScreen.x + 0.5, animatedScreen.y + 0.5);
       votespaceContext.lineTo(voteScreen.x + 0.5, voteScreen.y + 0.5);
       votespaceContext.strokeStyle = '#aaaaaa';
       votespaceContext.stroke();
+      drawVotePoint(animatedVote, '#000000', 4);
+      drawVotePoint(origin, '#6699cc', 6);
 
       increment += 0.001;
       // once at target, clear interval and reset increment
@@ -658,196 +698,17 @@ var runDemo = function () {
 
    animateStrategyButton.onclick = function () {
       var whichVoter;
-      resetAnimation();
-      if (!iterationAnimation) {
-         animationComplete = [];
-         for (whichVoter = 0; whichVoter < numVoters; ++whichVoter) {
-            animationComplete.push(false);
-         }
-         animateWhich = 0;
+      animationComplete = [];
+      for (whichVoter = 0; whichVoter < numVoters; whichVoter++) {
+         animationComplete.push(false);
+      }
+      animateWhich = 0;
 
-         if (automaticStrategyRadio.checked && strategicPoints.length > 0) {
-            animationInProgress = true;
-            animate = setInterval(function () {
-               animatePoint(strategicPoints[animateWhich], votePoints[animateWhich], true);
-            }, 50);
-         }
-      } else {
-         multiVote = [];
-         multiVoteLast = [];
-         for (whichVoter = 0; whichVoter < numVoters; ++whichVoter) {
-            multiVote.push([]);
-            multiVote[whichVoter].push(votePoints[whichVoter][0]);
-            multiVote[whichVoter].push(votePoints[whichVoter][1]);
-            multiVoteLast.push([]);
-            multiVoteLast[whichVoter].push(votePoints[whichVoter][0]);
-            multiVoteLast[whichVoter].push(votePoints[whichVoter][1]);
-         }
-         onWhich = 0;
-         switchedPoint = true;
+      if (automaticStrategyRadio.checked && strategicPoints.length > 0) {
          animationInProgress = true;
-         animate = setInterval(animateElection, 50);
-      }
-   };
-
-   var strategizeIndividual = function (onWhich) {
-
-      if (onWhich > numVoters || multiVote.length !== numVoters) {
-         return;
-      }
-
-      var average = calcAverage(multiVote);
-      var whichPoint, calculatedTotal, difference;
-
-      if (votePoints[onWhich][0] !== average[0]) {
-         calculatedTotal = 0;
-         for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-            if (whichPoint !== onWhich) {
-               calculatedTotal += multiVote[whichPoint][0];
-            }
-         }
-         difference = ((votePoints[onWhich][0] * numVoters) - calculatedTotal);
-         if (difference >= 0 && difference <= 1) {
-            multiVote[onWhich][0] = difference;
-         } else if (difference < 0) {
-            multiVote[onWhich][0] = 0;
-         } else {
-            multiVote[onWhich][0] = 1;
-         }
-      }
-      if (votePoints[onWhich][1] !== average[1]) {
-         calculatedTotal = 0;
-         for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-            if (whichPoint !== onWhich) {
-               calculatedTotal += multiVote[whichPoint][1];
-            }
-         }
-         difference = ((votePoints[onWhich][1] * numVoters) - calculatedTotal);
-         if (difference >= 0 && difference <= 1) {
-            multiVote[onWhich][1] = difference;
-         } else if (difference < 0) {
-            multiVote[onWhich][1] = 0;
-         } else {
-            multiVote[onWhich][1] = 1;
-         }
-      }
-   };
-
-   var switchedPoint = false, onWhich;
-
-   var animateElection = function () {
-
-      if (!animationInProgress) {
-         resetAnimation();
-         return;
-      }
-      if (multiVote.length !== numVoters) {
-         resetAnimation();
-         return;
-      }
-      if (!animatedVote) {
-         animatedVote = [0, 0];
-      }
-      if (switchedPoint) {
-         animatedVote[0] = multiVote[onWhich][0];
-         animatedVote[1] = multiVote[onWhich][1];
-         strategizeIndividual(onWhich);
-         switchedPoint = false;
-      }
-
-      if (animatedVote[0] < multiVote[onWhich][0]) {
-         animatedVote[0] += increment;
-
-         // if switched, point has been passed; go back to it
-         if (animatedVote[0] > multiVote[onWhich][0]) {
-            animatedVote[0] = multiVote[onWhich][0];
-         }
-
-      } else if (animatedVote[0] > multiVote[onWhich][0]) {
-         animatedVote[0] -= increment;
-
-         if (animatedVote[0] < multiVote[onWhich][0]) {
-            animatedVote[0] = multiVote[onWhich][0];
-         }
-      }
-
-      if (animatedVote[1] < multiVote[onWhich][1]) {
-         animatedVote[1] += increment;
-
-         // if switched, point has been passed; go back to it
-         if (animatedVote[1] > multiVote[onWhich][1]) {
-            animatedVote[1] = multiVote[onWhich][1];
-         }
-
-      } else if (animatedVote[1] > multiVote[onWhich][1]) {
-         animatedVote[1] -= increment;
-
-         if (animatedVote[1] < multiVote[onWhich][1]) {
-            animatedVote[1] = multiVote[onWhich][1];
-         }
-      }
-
-      // make sure point is in range
-      projectVotePointToSpace(animatedVote);
-
-      redrawSpace(onWhich);
-      var whichPoint, whichCoord, voteScreen, demoScreen;
-
-      for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-         if (whichPoint === onWhich) {
-            voteScreen = toScreenCoords(votePoints[onWhich]);
-            demoScreen = toScreenCoords(animatedVote);
-            votespaceContext.beginPath();
-            votespaceContext.moveTo(demoScreen.x + 0.5, demoScreen.y + 0.5);
-            votespaceContext.lineTo(voteScreen.x + 0.5, voteScreen.y + 0.5);
-            votespaceContext.strokeStyle = '#aaaaaa';
-            votespaceContext.stroke();
-            drawVotePoint(animatedVote, '#000000', 4);
-         } else {
-            voteScreen = toScreenCoords(votePoints[whichPoint]);
-            demoScreen = toScreenCoords(multiVote[whichPoint]);
-            votespaceContext.beginPath();
-            votespaceContext.moveTo(demoScreen.x + 0.5, demoScreen.y + 0.5);
-            votespaceContext.lineTo(voteScreen.x + 0.5, voteScreen.y + 0.5);
-            votespaceContext.strokeStyle = '#aaaaaa';
-            votespaceContext.stroke();
-            drawVotePoint(multiVote[whichPoint], '#000000', 4);
-         }
-         drawVotePoint(votePoints[whichPoint], whichPoint === onWhich ? '#9966cc' : '#6699cc', 6);
-      }
-
-      increment += 0.001;
-      // once at target, clear interval and reset increment
-      if (animatedVote[0] === multiVote[onWhich][0] && animatedVote[1] === multiVote[onWhich][1]) {
-         resetAnimation();
-         var aarDSV = calcAarDsv(multiVote);
-         ++onWhich;
-         if (onWhich >= numVoters) {
-            var updated = false;
-            for (whichPoint = 0; whichPoint < numVoters && !updated; ++whichPoint) {
-               for (whichCoord = 0; whichCoord < multiVote[whichPoint].length; ++whichCoord) {
-                  if (multiVote[whichPoint][whichCoord] !== multiVoteLast[whichPoint][whichCoord]) {
-                     updated = true;
-                  }
-               }
-            }
-
-            if (!updated) {
-               return;
-            } else {
-               multiVoteLast = [];
-               for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-                  multiVoteLast.push([]);
-                  for(whichCoord = 0; whichCoord < multiVote[whichPoint].length; ++whichCoord) {
-                     multiVoteLast[whichPoint].push(multiVote[whichPoint][whichCoord]);
-                  }
-               }
-            }
-            onWhich = 0;
-         }
-         animationInProgress = true;
-         switchedPoint = true;
-         animate = setInterval(animateElection, 50);
+         animate = setInterval(function () {
+            animatePoint(strategicPoints[animateWhich], votePoints[animateWhich], true);
+         }, 50);
       }
    };
 
