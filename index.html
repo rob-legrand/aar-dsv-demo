@@ -60,11 +60,6 @@
       </div>
       <div>
          <input id="animate" type="button" value="Animate" />
-         <label><input id="iterative" type="checkbox" />Iterative</label>
-         <label><input id="allAtOnce" type="checkbox" />All At Once</label>
-      </div>
-      <div>
-         <label><input id="withLimits" type="checkbox" />With Limits</label>
       </div>
    </fieldset>
    <br />
@@ -81,46 +76,56 @@
    <br />
    <fieldset class="votepoints-area">
       <legend>Vote points</legend>
-      <table><tr>
-         <td></td>
-         <th><span class="variable">x</span></th>
-         <th><span class="variable">y</span></th>
+      <table id="votepoints"><tr>
+         <th></th>
+         <th class="x-dim"><span class="variable">x</span></th>
+         <th class="y-dim"><span class="variable">y</span></th>
+         <th class="z-dim"><span class="variable">z</span></th>
       </tr><tr id="votepoint0">
          <th><span class="variable">v</span><sub>1</sub></th>
-         <td><input class="dimension-value" id="votepoint00-value" size="8" type="text" /></td>
-         <td><input class="dimension-value" id="votepoint01-value" size="8" type="text" /></td>
+         <td class="x-dim"><input class="x-value" id="votepoint00-value" size="8" type="text" /></td>
+         <td class="y-dim"><input class="y-value" id="votepoint01-value" size="8" type="text" /></td>
+         <td class="z-dim"><input class="z-value" id="votepoint02-value" size="8" type="text" /></td>
       </tr><tr id="votepoint1">
          <th><span class="variable">v</span><sub>2</sub></th>
-         <td><input class="dimension-value" id="votepoint10-value" size="8" type="text" /></td>
-         <td><input class="dimension-value" id="votepoint11-value" size="8" type="text" /></td>
+         <td class="x-dim"><input class="x-value" id="votepoint10-value" size="8" type="text" /></td>
+         <td class="y-dim"><input class="y-value" id="votepoint11-value" size="8" type="text" /></td>
+         <td class="z-dim"><input class="z-value" id="votepoint12-value" size="8" type="text" /></td>
       </tr><tr id="votepoint2">
          <th><span class="variable">v</span><sub>3</sub></th>
-         <td><input class="dimension-value" id="votepoint20-value" size="8" type="text" /></td>
-         <td><input class="dimension-value" id="votepoint21-value" size="8" type="text" /></td>
+         <td class="x-dim"><input class="x-value" id="votepoint20-value" size="8" type="text" /></td>
+         <td class="y-dim"><input class="y-value" id="votepoint21-value" size="8" type="text" /></td>
+         <td class="z-dim"><input class="z-value" id="votepoint22-value" size="8" type="text" /></td>
       </tr><tr id="votepoint3">
          <th><span class="variable">v</span><sub>4</sub></th>
-         <td><input class="dimension-value" id="votepoint30-value" size="8" type="text" /></td>
-         <td><input class="dimension-value" id="votepoint31-value" size="8" type="text" /></td>
+         <td class="x-dim"><input class="x-value" id="votepoint30-value" size="8" type="text" /></td>
+         <td class="y-dim"><input class="y-value" id="votepoint31-value" size="8" type="text" /></td>
+         <td class="z-dim"><input class="z-value" id="votepoint32-value" size="8" type="text" /></td>
       </tr><tr id="votepoint4">
          <th><span class="variable">v</span><sub>5</sub></th>
-         <td><input class="dimension-value" id="votepoint40-value" size="8" type="text" /></td>
-         <td><input class="dimension-value" id="votepoint41-value" size="8" type="text" /></td>
+         <td class="x-dim"><input class="x-value" id="votepoint40-value" size="8" type="text" /></td>
+         <td class="y-dim"><input class="y-value" id="votepoint41-value" size="8" type="text" /></td>
+         <td class="z-dim"><input class="z-value" id="votepoint42-value" size="8" type="text" /></td>
       </tr><tr id="votepoint5">
          <th><span class="variable">v</span><sub>6</sub></th>
-         <td><input class="dimension-value" id="votepoint50-value" size="8" type="text" /></td>
-         <td><input class="dimension-value" id="votepoint51-value" size="8" type="text" /></td>
+         <td class="x-dim"><input class="x-value" id="votepoint50-value" size="8" type="text" /></td>
+         <td class="y-dim"><input class="y-value" id="votepoint51-value" size="8" type="text" /></td>
+         <td class="z-dim"><input class="z-value" id="votepoint52-value" size="8" type="text" /></td>
       </tr><tr id="votepoint6">
          <th><span class="variable">v</span><sub>7</sub></th>
-         <td><input class="dimension-value" id="votepoint60-value" size="8" type="text" /></td>
-         <td><input class="dimension-value" id="votepoint61-value" size="8" type="text" /></td>
+         <td class="x-dim"><input class="x-value" id="votepoint60-value" size="8" type="text" /></td>
+         <td class="y-dim"><input class="y-value" id="votepoint61-value" size="8" type="text" /></td>
+         <td class="z-dim"><input class="z-value" id="votepoint62-value" size="8" type="text" /></td>
       </tr><tr id="votepoint7">
          <th><span class="variable">v</span><sub>8</sub></th>
-         <td><input class="dimension-value" id="votepoint70-value" size="8" type="text" /></td>
-         <td><input class="dimension-value" id="votepoint71-value" size="8" type="text" /></td>
+         <td class="x-dim"><input class="x-value" id="votepoint70-value" size="8" type="text" /></td>
+         <td class="y-dim"><input class="y-value" id="votepoint71-value" size="8" type="text" /></td>
+         <td class="z-dim"><input class="z-value" id="votepoint72-value" size="8" type="text" /></td>
       </tr><tr id="votepoint8">
          <th><span class="variable">v</span><sub>9</sub></th>
-         <td><input class="dimension-value" id="votepoint80-value" size="8" type="text" /></td>
-         <td><input class="dimension-value" id="votepoint81-value" size="8" type="text" /></td>
+         <td class="x-dim"><input class="x-value" id="votepoint80-value" size="8" type="text" /></td>
+         <td class="y-dim"><input class="y-value" id="votepoint81-value" size="8" type="text" /></td>
+         <td class="z-dim"><input class="z-value" id="votepoint82-value" size="8" type="text" /></td>
       </tr></table>
    </fieldset>
 </td></tr></table>
