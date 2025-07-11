@@ -38,9 +38,22 @@ var runDemo = function () {
    var displayFermatWeberCheckbox = document.getElementById('display-fermat-weber');
    var displayPerDimMedianCheckbox = document.getElementById('display-per-dim-median');
    var displayPerDimMidrangeCheckbox = document.getElementById('display-per-dim-midrange');
+   var animationOptions = document.getElementById('animationOptions');
    var iterativeCheckbox = document.getElementById('iterative');
    var allAtOnceCheckbox = document.getElementById('allAtOnce');
    var withLimitsCheckbox = document.getElementById('withLimits');
+   var withLimitsText = document.getElementById('withLimitsText');
+
+   animationOptions.style.visibility = automaticStrategyRadio.checked ? 'visible' : 'collapse';
+   withLimitsText.style.visibility = (iterativeCheckbox.checked && automaticStrategyRadio.checked) ? 'visible' : 'collapse';
+   iterativeCheckbox.addEventListener('change', function () {
+      if (this.checked) {
+         withLimitsText.style.visibility = 'visible';
+      } else {
+         withLimitsText.style.visibility = 'collapse';
+         withLimitsCheckbox.checked = false;
+      }
+   }, false);
 
    var votePointTable = document.getElementById('votepoints');
    var votePointRowCollection = votePointTable.getElementsByTagName('tr');
@@ -200,7 +213,7 @@ var runDemo = function () {
    // -1 means too small, 0 means just right, +1 means too big
    var testInequalities = function (point) {
       var isGreaterThan, numGreaterThan;
-      var whichDim, whichOtherDim;
+      var whichDim, whichOtherDim, whichPoint;
       var returnValue = {
          obeysAll: true,
          dimSize: []
@@ -210,21 +223,21 @@ var runDemo = function () {
             returnValue.dimSize[whichDim] = 0;
             numGreaterThan = 0;
             for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-               if (votePoints[whichPoint][whichDim] > point[whichDim] + 0.00000001) {
+               if (votePoints[whichPoint][whichDim] > point[whichDim] + 0.0000001) {
                   ++numGreaterThan;
                }
             }
-            if (numGreaterThan > point[whichDim] * numVoters + 0.00000001) {
+            if (numGreaterThan > point[whichDim] * numVoters + 0.0000001) {
                returnValue.obeysAll = false;
                returnValue.dimSize[whichDim] = -1;
             }
             numGreaterThan = 0;
             for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-               if (votePoints[whichPoint][whichDim] + 0.00000001 >= point[whichDim]) {
+               if (votePoints[whichPoint][whichDim] + 0.0000001 >= point[whichDim]) {
                   ++numGreaterThan;
                }
             }
-            if (numGreaterThan + 0.00000001 < point[whichDim] * numVoters) {
+            if (numGreaterThan + 0.0000001 < point[whichDim] * numVoters) {
                returnValue.obeysAll = false;
                returnValue.dimSize[whichDim] = 1;
             }
@@ -237,7 +250,7 @@ var runDemo = function () {
             for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
                isGreaterThan = true;
                for (whichOtherDim = 0; whichOtherDim < numDims; ++whichOtherDim) {
-                  if (whichOtherDim !== whichDim && votePoints[whichPoint][whichDim] - votePoints[whichPoint][whichOtherDim] <= point[whichDim] - point[whichOtherDim] + 0.00000001) {
+                  if (whichOtherDim !== whichDim && votePoints[whichPoint][whichDim] - votePoints[whichPoint][whichOtherDim] <= point[whichDim] - point[whichOtherDim] + 0.0000001) {
                      isGreaterThan = false;
                   }
                }
@@ -245,7 +258,7 @@ var runDemo = function () {
                   ++numGreaterThan;
                }
             }
-            if (numGreaterThan > point[whichDim] * numVoters + 0.00000001) {
+            if (numGreaterThan > point[whichDim] * numVoters + 0.0000001) {
                returnValue.obeysAll = false;
                returnValue.dimSize[whichDim] = -1;
             }
@@ -253,7 +266,7 @@ var runDemo = function () {
             for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
                isGreaterThan = true;
                for (whichOtherDim = 0; whichOtherDim < numDims; ++whichOtherDim) {
-                  if (whichOtherDim !== whichDim && votePoints[whichPoint][whichDim] - votePoints[whichPoint][whichOtherDim] + 0.00000001 < point[whichDim] - point[whichOtherDim]) {
+                  if (whichOtherDim !== whichDim && votePoints[whichPoint][whichDim] - votePoints[whichPoint][whichOtherDim] + 0.0000001 < point[whichDim] - point[whichOtherDim]) {
                      isGreaterThan = false;
                   }
                }
@@ -261,7 +274,7 @@ var runDemo = function () {
                   ++numGreaterThan;
                }
             }
-            if (numGreaterThan + 0.00000001 < point[whichDim] * numVoters) {
+            if (numGreaterThan + 0.0000001 < point[whichDim] * numVoters) {
                returnValue.obeysAll = false;
                returnValue.dimSize[whichDim] = 1;
             }
@@ -331,7 +344,7 @@ var runDemo = function () {
                }
                newStrategicPoint = projectVotePointToSpace(newStrategicPoint);
                for (whichDim = 0; whichDim < numDims; ++whichDim) {
-                  if (Math.abs(newStrategicPoint[whichDim] - strategicPoints[whichPoint][whichDim]) > 0.0000001) {
+                  if (Math.abs(newStrategicPoint[whichDim] - strategicPoints[whichPoint][whichDim]) > 0.00000001) {
                      somethingChanged = true;
                   }
                   strategicPoints[whichPoint][whichDim] = newStrategicPoint[whichDim];
@@ -472,7 +485,7 @@ var runDemo = function () {
    };
 
    var findLimits = function (outcomeFunction) {
-      var whichPoint, whichDim, snapshot = [], points = [];
+      var whichPoint, whichDim, snapshot = [], points = [], simplexIncrement = 0.02, hypercubeIncrement = 0.05;
       for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
          snapshot.push([]);
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
@@ -485,29 +498,29 @@ var runDemo = function () {
       }
 
       if (simplexRadio.checked) {
-         for (snapshot[0][0] = 1; snapshot[0][0] > 0; snapshot[0][0] -= 0.05, snapshot[0][2] += 0.05) {
+         for (snapshot[0][0] = 1; snapshot[0][0] > 0; snapshot[0][0] -= simplexIncrement, snapshot[0][2] += simplexIncrement) {
             points.push(outcomeFunction(snapshot));
          }
          snapshot[0][0] = 0;
          snapshot[0][2] = 0;
-         for (snapshot[0][2] = 1; snapshot[0][2] > 0; snapshot[0][2] -= 0.05, snapshot[0][1] += 0.05) {
+         for (snapshot[0][2] = 1; snapshot[0][2] > 0; snapshot[0][2] -= simplexIncrement, snapshot[0][1] += simplexIncrement) {
             points.push(outcomeFunction(snapshot));
          }
          snapshot[0][1] = 0;
          snapshot[0][2] = 0;
-         for (snapshot[0][1] = 1; snapshot[0][1] > 0; snapshot[0][1] -= 0.05, snapshot[0][0] += 0.05) {
+         for (snapshot[0][1] = 1; snapshot[0][1] > 0; snapshot[0][1] -= simplexIncrement, snapshot[0][0] += simplexIncrement) {
             points.push(outcomeFunction(snapshot));
          }
       } else {
          points.push(outcomeFunction(snapshot));
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
-            for (snapshot[0][whichDim] = 0; snapshot[0][whichDim] < 1; snapshot[0][whichDim] += 0.1) {
+            for (snapshot[0][whichDim] = 0; snapshot[0][whichDim] < 1; snapshot[0][whichDim] += hypercubeIncrement) {
                points.push(outcomeFunction(snapshot));
             }
             snapshot[0] = projectVotePointToSpace(snapshot[0]);
          }
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
-            for (snapshot[0][whichDim] = 1; snapshot[0][whichDim] > 0; snapshot[0][whichDim] -= 0.1) {
+            for (snapshot[0][whichDim] = 1; snapshot[0][whichDim] > 0; snapshot[0][whichDim] -= hypercubeIncrement) {
                points.push(outcomeFunction(snapshot));
             }
             snapshot[0] = projectVotePointToSpace(snapshot[0]);
@@ -519,12 +532,10 @@ var runDemo = function () {
    var drawLimits = function (points, color) {
       var whichPoint, voteScreen;
       votespaceContext.beginPath();
+      voteScreen = toScreenCoords(points[points.length - 1]);
+      votespaceContext.moveTo(voteScreen.x, voteScreen.y);
       for (whichPoint = 0; whichPoint < points.length; ++whichPoint) {
          voteScreen = toScreenCoords(points[whichPoint]);
-         votespaceContext.lineTo(voteScreen.x, voteScreen.y);
-      }
-      if (simplexRadio.checked) {
-         voteScreen = toScreenCoords(points[0]);
          votespaceContext.lineTo(voteScreen.x, voteScreen.y);
       }
       votespaceContext.strokeStyle = color;
@@ -540,7 +551,7 @@ var runDemo = function () {
       if (lineSegmentRadio.checked) {
          votespaceContext.beginPath();
          votespaceContext.moveTo(lineSegmentLeftX + 0.5, lineSegmentY + 0.5);
-         votespaceContext.lineTo(lineSegmentRightX + 0.5, lineSegmentY / 2 + 0.5);
+         votespaceContext.lineTo(lineSegmentRightX + 0.5, lineSegmentY + 0.5);
          votespaceContext.strokeStyle = '#000000';
          votespaceContext.stroke();
       } else if (hypercubeRadio.checked) {
@@ -726,8 +737,18 @@ var runDemo = function () {
       redrawSpace();
    };
 
-   automaticStrategyRadio.onchange = redrawSpace;
-   noAutomaticStrategyRadio.onchange = redrawSpace;
+   automaticStrategyRadio.onchange = function () {
+      withLimitsText.style.visibility = iterativeCheckbox.checked ? 'visible' : 'collapse';
+      animationOptions.style.visibility = 'visible';
+      redrawSpace();
+   };
+
+   noAutomaticStrategyRadio.onchange = function () {
+      withLimitsText.style.visibility = 'collapse';
+      animationOptions.style.visibility = 'collapse';
+      redrawSpace();
+   };
+
    displayAarDsvCheckbox.onchange = redrawSpace;
    displayAverageCheckbox.onchange = redrawSpace;
    displayFermatWeberCheckbox.onchange = redrawSpace;
@@ -843,12 +864,12 @@ var runDemo = function () {
       return false; // don't do anything else because of the click
    };
 
-   var strategizeIndividual = function (onWhich, max) {
+   var strategizeIndividual = function (onWhich) {
       if (onWhich > numVoters || targetVote.length !== numVoters) {
          return;
       }
       var average = calcAverage(targetVote);
-      var whichPoint, whichDim, calculatedTotal, ideal, difference;
+      var whichPoint, whichDim, calculatedTotal;
       for (whichDim = 0; whichDim < numDims; ++whichDim) {
          if (votePoints[onWhich][whichDim] !== average[whichDim]) {
             calculatedTotal = 0;
@@ -857,21 +878,15 @@ var runDemo = function () {
                   calculatedTotal += targetVote[whichPoint][whichDim];
                }
             }
-            ideal = votePoints[onWhich][whichDim] * numVoters - calculatedTotal;
-            difference = targetVote[onWhich][whichDim] - ideal;
-            if (Math.abs(difference) > max) {
-               targetVote[onWhich][whichDim] = (difference < 0 ? targetVote[onWhich][whichDim] + max : targetVote[onWhich][whichDim] - max);
-            } else {
-               targetVote[onWhich][whichDim] = ideal;
-            }
+            targetVote[onWhich][whichDim] = votePoints[onWhich][whichDim] * numVoters - calculatedTotal;
          }
       }
       targetVote[onWhich] = projectVotePointToSpace(targetVote[onWhich]);
    };
 
-   var strategizeAll = function (onWhich, max) {
+   var strategizeAll = function (onWhich) {
       var average = calcAverage(targetVote);
-      var whichPoint, whichDim, calculatedTotal, ideal, difference;
+      var whichPoint, whichDim, calculatedTotal;
 
       if (targetVote.length !== numVoters) {
          return;
@@ -886,20 +901,14 @@ var runDemo = function () {
                      calculatedTotal += targetVote[whichPoint][whichDim];
                   }
                }
-               ideal = votePoints[onWhich][whichDim] * numVoters - calculatedTotal;
-               difference = targetVote[onWhich][whichDim] - ideal;
-               if (Math.abs(difference) > max) {
-                  targetVote[onWhich][whichDim] = (difference < 0 ? targetVote[onWhich][whichDim] + max : targetVote[onWhich][whichDim] - max);
-               } else {
-                  targetVote[onWhich][whichDim] = ideal;
-               }
+               targetVote[onWhich][whichDim] = votePoints[onWhich][whichDim] * numVoters - calculatedTotal;
             }
          }
          targetVote[onWhich] = projectVotePointToSpace(targetVote[onWhich]);
       }
    };
 
-   var animateElection = function (iterative, allAtOnce, updateFunction, onWhich, maximum) {
+   var animateElection = function (iterative, allAtOnce, withLimits, updateFunction, onWhich) {
       var whichPoint, whichDim, voteScreen, demoScreen, moved = false, active = [];
 
       if (!animationInProgress) {
@@ -919,7 +928,7 @@ var runDemo = function () {
             }
          }
          if (updateFunction) {
-            updateFunction(onWhich, maximum);
+            updateFunction(onWhich);
          } else if (allAtOnce) {
             for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
                for (whichDim = 0; whichDim < numDims; ++whichDim) {
@@ -938,7 +947,7 @@ var runDemo = function () {
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
             if (animatedVote[whichPoint][whichDim] < (targetVote[whichPoint][whichDim] - 0.000001)) {
                moved = true;
-               if (!allAtOnce && !isFinite(maximum)) {
+               if (!allAtOnce && !withLimits) {
                   active[whichPoint] = true;
                }
                animatedVote[whichPoint][whichDim] += increment;
@@ -947,7 +956,7 @@ var runDemo = function () {
                }
             } else if (animatedVote[whichPoint][whichDim] > (targetVote[whichPoint][whichDim] + 0.000001)) {
                moved = true;
-               if (!allAtOnce && !isFinite(maximum)) {
+               if (!allAtOnce && !withLimits) {
                   active[whichPoint] = true;
                }
                animatedVote[whichPoint][whichDim] -= increment;
@@ -959,6 +968,7 @@ var runDemo = function () {
          animatedVote[whichPoint] = projectVotePointToSpace(animatedVote[whichPoint]);
       }
 
+      // draw points and lines
       clearSpace();
       for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
          voteScreen = toScreenCoords(votePoints[whichPoint]);
@@ -973,6 +983,7 @@ var runDemo = function () {
          drawVotePoint(animatedVote[whichPoint], '#000000', 4);
       }
 
+      // draw overall outcomes
       var avgOutcome, dsvOutcome, ferOutcome, medOutcome, midOutcome;
       if (displayPerDimMidrangeCheckbox.checked) {
          midOutcome = calcPerDimMidrange(votePoints);
@@ -1010,10 +1021,11 @@ var runDemo = function () {
          drawVotePoint(dsvOutcome, '#ffff00', 6);
       }
 
+      // draw current average outcome
       drawVotePoint(calcAverage(animatedVote), '#ffaa00', 4);
 
       increment += 0.001;
-      if (withLimitsCheckbox.checked) {
+      if (withLimits) {
          moved = false;
          for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
             for (whichDim = 0; whichDim < numDims; ++whichDim) {
@@ -1057,17 +1069,20 @@ var runDemo = function () {
             }
          }
          if (updateFunction) {
-            updateFunction(onWhich, maximum);
+            updateFunction(onWhich);
          }
          animationInProgress = true;
          animate = window.setInterval(function () {
-            animateElection(iterative, allAtOnce, updateFunction, onWhich, maximum);
+            animateElection(iterative, allAtOnce, withLimits, updateFunction, onWhich);
          }, 50);
       }
    };
 
    animateStrategyButton.onclick = function () {
-      var whichVoter, whichDim, updateFunction, max = Number.POSITIVE_INFINITY;
+      if (noAutomaticStrategyRadio.checked) {
+         return;
+      }
+      var whichVoter, whichDim, updateFunction;
       resetAnimation();
 
       animatedVote = null;
@@ -1089,7 +1104,7 @@ var runDemo = function () {
       }
 
       animate = window.setInterval(function () {
-         animateElection(iterativeCheckbox.checked, allAtOnceCheckbox.checked, updateFunction, 0, max);
+         animateElection(iterativeCheckbox.checked, allAtOnceCheckbox.checked, withLimitsCheckbox.checked, updateFunction, 0);
       }, 50);
    };
 
