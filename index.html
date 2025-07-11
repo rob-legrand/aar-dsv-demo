@@ -58,14 +58,17 @@
          <label><input checked="checked" id="regular-mode" name="mode-options" type="radio" />&nbsp;No automatic voter strategy</label><br />
          <label><input id="strategy-mode" name="mode-options" type="radio" />&nbsp;Automatic voter strategy</label><br />
       </div>
-      <div>
-         <label><input id="iterative" type="checkbox" />Iterative</label>
-         <label><input id="allAtOnce" type="checkbox" />All at once</label>
-      </div>
-      <div>
-         <input id="animate" type="button" value="Animate" />
-         <label><input id="withLimits" type="checkbox" />With limits</label>
-      </div>
+      <fieldset id="animationOptions">
+         <legend>Animation Options</legend>
+         <div>
+            <label><input id="allAtOnce" type="checkbox" />All at once</label>
+            <label><input id="iterative" type="checkbox" />Iterative</label>
+         </div>
+         <div>
+            <input id="animate" type="button" value="Animate" />
+            &nbsp;&nbsp;&nbsp;&nbsp;<label id="withLimitsText"><input id="withLimits" type="checkbox" />Real time strategy</label>
+         </div>
+      </fieldset>
    </fieldset>
    <br />
    <fieldset class="outcome-options-area">
