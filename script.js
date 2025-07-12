@@ -32,28 +32,19 @@ var runDemo = function () {
    var numDims;
    var automaticStrategyRadio = document.getElementById('strategy-mode');
    var noAutomaticStrategyRadio = document.getElementById('regular-mode');
-   var animateStrategyButton = document.getElementById('animate');
+   var startAnimationButton = document.getElementById('start-animation');
+   var stopAnimationButton = document.getElementById('stop-animation');
    var displayAarDsvCheckbox = document.getElementById('display-aar-dsv');
    var displayAverageCheckbox = document.getElementById('display-average');
    var displayFermatWeberCheckbox = document.getElementById('display-fermat-weber');
    var displayPerDimMedianCheckbox = document.getElementById('display-per-dim-median');
    var displayPerDimMidrangeCheckbox = document.getElementById('display-per-dim-midrange');
-   var animationOptions = document.getElementById('animationOptions');
-   var iterativeCheckbox = document.getElementById('iterative');
-   var allAtOnceCheckbox = document.getElementById('allAtOnce');
-   var withLimitsCheckbox = document.getElementById('withLimits');
-   var withLimitsText = document.getElementById('withLimitsText');
 
-   animationOptions.style.visibility = automaticStrategyRadio.checked ? 'visible' : 'collapse';
-   withLimitsText.style.visibility = (iterativeCheckbox.checked && automaticStrategyRadio.checked) ? 'visible' : 'collapse';
-   iterativeCheckbox.addEventListener('change', function () {
-      if (this.checked) {
-         withLimitsText.style.visibility = 'visible';
-      } else {
-         withLimitsText.style.visibility = 'collapse';
-         withLimitsCheckbox.checked = false;
-      }
-   }, false);
+   var animationModeDefaultRadio = document.getElementById('ordered-mode-default');
+   var animationModeOrderedVLRadio = document.getElementById('ordered-mode-with-vl');
+   var animationModeBatchVLRadio = document.getElementById('batch-mode-with-vl');
+   var timeIntervalTextbox = document.getElementById('time-interval');
+   var velocityLimitTextbox = document.getElementById('velocity-limit');
 
    var votePointTable = document.getElementById('votepoints');
    var votePointRowCollection = votePointTable.getElementsByTagName('tr');
@@ -104,15 +95,15 @@ var runDemo = function () {
 
    // the voters' voted points
    var votePoints = []; // each votePoints[whichPoint][whichDimension] must be between 0 and 1
-   var num, num2;
+
    // points used to run demo
    var strategicPoints = [];
-   var animatedVote, animate, animationInProgress = false, increment = 0.01, incrementBase = 0.01, activePoint;
+   var animatedVote, animate, animationInProgress = false, animatedMovementLimit, animatedMovementLimitBase = 0.05, timeIncrementBase = 50, activePoint;
    var targetVote = [], targetVoteLast = [];
 
    var resetAnimation = function () {
       window.clearInterval(animate);
-      increment = incrementBase;
+      animatedMovementLimit = animatedMovementLimitBase;
       animationInProgress = false;
    };
 
@@ -698,14 +689,17 @@ var runDemo = function () {
    };
 
    // add focus handlers for textboxes
-   for (num = 0; num < votePointTextboxes.length; ++num) {
-      for (num2 = 0; num2 < votePointTextboxes[num].length; ++num2) {
-         votePointTextboxes[num][num2].addEventListener('focus', function () {
-            focusOn(Number(this.id[9]));
-         }, true);
-         votePointTextboxes[num][num2].addEventListener('blur', focusOff, true);
+   (function () {
+      var num, num2;
+      for (num = 0; num < votePointTextboxes.length; ++num) {
+         for (num2 = 0; num2 < votePointTextboxes[num].length; ++num2) {
+            votePointTextboxes[num][num2].addEventListener('focus', function () {
+               focusOn(Number(this.id[9]));
+            }, true);
+            votePointTextboxes[num][num2].addEventListener('blur', focusOff, true);
+         }
       }
-   }
+   }());
 
    selectNElement.onchange = function () {
       numVoters = parseInt(selectNElement.options[selectNElement.selectedIndex].value, 10);
@@ -738,14 +732,10 @@ var runDemo = function () {
    };
 
    automaticStrategyRadio.onchange = function () {
-      withLimitsText.style.visibility = iterativeCheckbox.checked ? 'visible' : 'collapse';
-      animationOptions.style.visibility = 'visible';
       redrawSpace();
    };
 
    noAutomaticStrategyRadio.onchange = function () {
-      withLimitsText.style.visibility = 'collapse';
-      animationOptions.style.visibility = 'collapse';
       redrawSpace();
    };
 
@@ -864,10 +854,12 @@ var runDemo = function () {
       return false; // don't do anything else because of the click
    };
 
+   // makes changes to global targetVote array
    var strategizeIndividual = function (onWhich) {
       if (onWhich > numVoters || targetVote.length !== numVoters) {
          return;
       }
+      onWhich = randomInt();
       var average = calcAverage(targetVote);
       var whichPoint, whichDim, calculatedTotal;
       for (whichDim = 0; whichDim < numDims; ++whichDim) {
@@ -884,21 +876,27 @@ var runDemo = function () {
       targetVote[onWhich] = projectVotePointToSpace(targetVote[onWhich]);
    };
 
+   // makes changes to global targetVote array
    var strategizeAll = function (onWhich) {
       var average = calcAverage(targetVote);
-      var whichPoint, whichDim, calculatedTotal;
+      var whichPoint, whichDim, calculatedTotal, copy = [];
 
       if (targetVote.length !== numVoters) {
          return;
       }
-
+      for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
+         copy.push([]);
+         for (whichDim = 0; whichDim < numDims; ++whichDim) {
+            copy[whichPoint].push(targetVote[whichPoint][whichDim]);
+         }
+      }
       for (onWhich = 0; onWhich < numVoters; ++onWhich) {
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
             if (Math.abs(votePoints[onWhich][whichDim] - average[whichDim]) > 0.000001) {
                calculatedTotal = 0;
                for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
                   if (whichPoint !== onWhich) {
-                     calculatedTotal += targetVote[whichPoint][whichDim];
+                     calculatedTotal += copy[whichPoint][whichDim];
                   }
                }
                targetVote[onWhich][whichDim] = votePoints[onWhich][whichDim] * numVoters - calculatedTotal;
@@ -908,7 +906,7 @@ var runDemo = function () {
       }
    };
 
-   var animateElection = function (iterative, allAtOnce, withLimits, updateFunction, onWhich) {
+   var animateElection = function (iterative, allAtOnce, withLimits, updateFunction, onWhich, timeIncrement, order) {
       var whichPoint, whichDim, voteScreen, demoScreen, moved = false, active = [];
 
       if (!animationInProgress) {
@@ -919,7 +917,7 @@ var runDemo = function () {
          resetAnimation();
          return;
       }
-      if (!animatedVote) {
+      if (!order && !animatedVote) {
          animatedVote = [];
          for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
             animatedVote.push([]);
@@ -945,12 +943,12 @@ var runDemo = function () {
       for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
          active.push(false);
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
-            if (animatedVote[whichPoint][whichDim] < (targetVote[whichPoint][whichDim] - 0.000001)) {
+            if (animatedVote[whichPoint][whichDim] < (targetVote[whichPoint][whichDim] - 0.0000001)) {
                moved = true;
                if (!allAtOnce && !withLimits) {
                   active[whichPoint] = true;
                }
-               animatedVote[whichPoint][whichDim] += increment;
+               animatedVote[whichPoint][whichDim] += animatedMovementLimit;
                if (animatedVote[whichPoint][whichDim] > targetVote[whichPoint][whichDim]) {
                   animatedVote[whichPoint][whichDim] = targetVote[whichPoint][whichDim];
                }
@@ -959,7 +957,7 @@ var runDemo = function () {
                if (!allAtOnce && !withLimits) {
                   active[whichPoint] = true;
                }
-               animatedVote[whichPoint][whichDim] -= increment;
+               animatedVote[whichPoint][whichDim] -= animatedMovementLimit;
                if (animatedVote[whichPoint][whichDim] < targetVote[whichPoint][whichDim]) {
                   animatedVote[whichPoint][whichDim] = targetVote[whichPoint][whichDim];
                }
@@ -967,7 +965,14 @@ var runDemo = function () {
          }
          animatedVote[whichPoint] = projectVotePointToSpace(animatedVote[whichPoint]);
       }
-
+      if (withLimits) {
+          moved = false;
+          for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
+             for (whichDim = 0; whichDim < numDims; ++whichDim) {
+                targetVote[whichPoint][whichDim] = animatedVote[whichPoint][whichDim];
+             }
+          }
+      }
       // draw points and lines
       clearSpace();
       for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
@@ -979,60 +984,41 @@ var runDemo = function () {
          votespaceContext.strokeStyle = '#aaaaaa';
          votespaceContext.stroke();
          votespaceContext.closePath();
+         drawVotePoint(animatedVote[whichPoint], '#C0C0C0', 4);
+         drawVotePoint(targetVote[whichPoint], '#000000', 4);
          drawVotePoint(votePoints[whichPoint], active[whichPoint] ? '#9966cc' : '#6699cc', 6);
-         drawVotePoint(animatedVote[whichPoint], '#000000', 4);
       }
-
       // draw overall outcomes
       var avgOutcome, dsvOutcome, ferOutcome, medOutcome, midOutcome;
       if (displayPerDimMidrangeCheckbox.checked) {
          midOutcome = calcPerDimMidrange(votePoints);
          drawVotePoint(midOutcome, '#000000', 7.5);
+         drawVotePoint(midOutcome, '#ff5555', 6);
       }
       if (displayPerDimMedianCheckbox.checked) {
          medOutcome = calcPerDimMedian(votePoints);
          drawVotePoint(medOutcome, '#000000', 7.5);
+         drawVotePoint(medOutcome, '#55ff55', 6);
       }
       if (displayFermatWeberCheckbox.checked) {
          ferOutcome = calcFermatWeber(votePoints);
          drawVotePoint(ferOutcome, '#000000', 7.5);
+         drawVotePoint(ferOutcome, '#aaff00', 6);
       }
       if (displayAverageCheckbox.checked) {
          avgOutcome = calcAverage(votePoints);
          drawVotePoint(avgOutcome, '#000000', 7.5);
+         drawVotePoint(avgOutcome, '#ffaa00', 6);
       }
       if (displayAarDsvCheckbox.checked) {
          dsvOutcome = calcAarDsv(votePoints);
          drawVotePoint(dsvOutcome, '#000000', 7.5);
-      }
-      if (displayPerDimMidrangeCheckbox.checked) {
-         drawVotePoint(midOutcome, '#ff5555', 6);
-      }
-      if (displayPerDimMedianCheckbox.checked) {
-         drawVotePoint(medOutcome, '#55ff55', 6);
-      }
-      if (displayFermatWeberCheckbox.checked) {
-         drawVotePoint(ferOutcome, '#aaff00', 6);
-      }
-      if (displayAverageCheckbox.checked) {
-         drawVotePoint(avgOutcome, '#ffaa00', 6);
-      }
-      if (displayAarDsvCheckbox.checked) {
          drawVotePoint(dsvOutcome, '#ffff00', 6);
       }
-
       // draw current average outcome
       drawVotePoint(calcAverage(animatedVote), '#ffaa00', 4);
 
-      increment += 0.001;
-      if (withLimits) {
-         moved = false;
-         for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-            for (whichDim = 0; whichDim < numDims; ++whichDim) {
-               targetVote[whichPoint][whichDim] = animatedVote[whichPoint][whichDim];
-            }
-         }
-      }
+      animatedMovementLimit += 0.001;
 
       if (!moved) {
          resetAnimation();
@@ -1073,18 +1059,30 @@ var runDemo = function () {
          }
          animationInProgress = true;
          animate = window.setInterval(function () {
-            animateElection(iterative, allAtOnce, withLimits, updateFunction, onWhich);
-         }, 50);
+            animateElection(iterative, allAtOnce, withLimits, updateFunction, onWhich, timeIncrement);
+         }, timeIncrement);
       }
    };
 
-   animateStrategyButton.onclick = function () {
-      if (noAutomaticStrategyRadio.checked) {
-         return;
-      }
-      var whichVoter, whichDim, updateFunction;
+   stopAnimationButton.onclick = function () {
+      redrawSpace();
+   };
+
+   startAnimationButton.onclick = function () {
+      var whichVoter, whichDim, updateFunction, timeIncrement, batchMode = false, iterativeStrategy = true, velocityLimits = false;
       resetAnimation();
 
+      var temp;
+      temp = Number(velocityLimitTextbox.value);
+      if (temp) {
+         animatedMovementLimitBase = temp;
+      }
+      temp = Number(timeIntervalTextbox.value);
+      if (temp) {
+         timeIncrementBase = temp;
+      }
+
+      timeIncrement = timeIncrementBase;
       animatedVote = null;
       targetVote = [];
       targetVoteLast = [];
@@ -1097,15 +1095,30 @@ var runDemo = function () {
          }
       }
       animationInProgress = true;
-      if (iterativeCheckbox.checked && allAtOnceCheckbox.checked) {
+
+      if (animationModeOrderedVLRadio.checked) {
+         velocityLimits = true;
+      } else if (animationModeBatchVLRadio.checked) {
+         velocityLimits = true;
+         batchMode = true;
+      }
+
+      if (batchMode) {
          updateFunction = strategizeAll;
-      } else if (iterativeCheckbox.checked) {
+      } else {
          updateFunction = strategizeIndividual;
       }
 
       animate = window.setInterval(function () {
-         animateElection(iterativeCheckbox.checked, allAtOnceCheckbox.checked, withLimitsCheckbox.checked, updateFunction, 0);
-      }, 50);
+         animateElection(iterativeStrategy, batchMode, velocityLimits, updateFunction, 0, timeIncrement);
+      }, timeIncrement);
+   };
+
+   var randomInt = function () {
+      var num = Math.random();
+      num *= numVoters;
+      num = Math.floor(num);
+      return num;
    };
 
    redrawSpace(); // show initial points

@@ -58,17 +58,21 @@
          <label><input checked="checked" id="regular-mode" name="mode-options" type="radio" />&nbsp;No automatic voter strategy</label><br />
          <label><input id="strategy-mode" name="mode-options" type="radio" />&nbsp;Automatic voter strategy</label><br />
       </div>
-      <fieldset id="animationOptions">
-         <legend>Animation options</legend>
-         <div>
-            <label><input id="allAtOnce" type="checkbox" />All at once</label>
-            <label><input id="iterative" type="checkbox" />Iterative</label>
-         </div>
-         <div>
-            <input id="animate" type="button" value="Animate" />
-            &nbsp;&nbsp;&nbsp;&nbsp;<label id="withLimitsText"><input id="withLimits" type="checkbox" />Real-time strategy</label>
-         </div>
-      </fieldset>
+   </fieldset>
+   <fieldset id="animation-area">
+      <legend>Animation</legend>
+      <div class="animation-options">
+         <label><input id="ordered-mode-default" checked="checked" name ="animation-options" type="radio" />Voter-by-voter</label> <br />
+         <label><input id="ordered-mode-with-vl" name="animation-options" type="radio" />Voter-by-voter with velocity limits</label> <br />
+         <label><input id="batch-mode-with-vl" name="animation-options" type="radio" />Batch Mode with velocity limits</label>
+      </div>
+      <div>
+         <label><input id="time-interval" type="text" size="6">&nbsp;Time Increment</label><br />
+         <label><input id="velocity-limit" type="text" size="6">&nbsp;Velocity Limit</label><br />
+      </div>
+      <div>
+         <input id="start-animation" type="button" value="Animate" />&nbsp;<input id="stop-animation" type="button" value="Reset" />
+      </div>
    </fieldset>
    <br />
    <fieldset class="outcome-options-area">
