@@ -12,18 +12,18 @@ var runDemo = function () {
    }
 
    var maxNumVoters = 9;
-   var hypercubeBottomY = 600;
-   var hypercubeLeftX = 100;
-   var hypercubeRightX = 600;
-   var hypercubeTopY = 100;
+   var hypercubeBottomY = 570;
+   var hypercubeLeftX = 70;
+   var hypercubeRightX = 570;
+   var hypercubeTopY = 70;
    var lineSegmentLeftX = hypercubeLeftX;
    var lineSegmentRightX = hypercubeRightX;
    var lineSegmentY = (hypercubeBottomY + hypercubeTopY) / 2;
-   var simplexBottomY = 570;
-   var simplexLeftX = 50;
-   var simplexRightX = 650;
+   var simplexBottomY = 540;
+   var simplexLeftX = 20;
+   var simplexRightX = 620;
    var simplexMiddleX = (simplexLeftX + simplexRightX) / 2;
-   var simplexTopY = 50;
+   var simplexTopY = 20;
    var selectNElement = document.getElementById('select-n');
    var numVoters = parseInt(selectNElement.options[selectNElement.selectedIndex].value, 10);
    var lineSegmentRadio = document.getElementById('use-line-segment');
@@ -39,6 +39,7 @@ var runDemo = function () {
    var displayFermatWeberCheckbox = document.getElementById('display-fermat-weber');
    var displayPerDimMedianCheckbox = document.getElementById('display-per-dim-median');
    var displayPerDimMidrangeCheckbox = document.getElementById('display-per-dim-midrange');
+
    var animationModeDefaultRadio = document.getElementById('ordered-mode-default');
    var animationModeOrderedVLRadio = document.getElementById('ordered-mode-with-vl');
    var animationModeBatchVLRadio = document.getElementById('batch-mode-with-vl');
@@ -49,7 +50,9 @@ var runDemo = function () {
    var moveStrategicCheckbox = document.getElementById('move-strategic');
    moveStrategicCheckbox.checked = false;
    var showStrategicOutcomesCheckbox = document.getElementById('show-strategic-outcomes');
+
    var showOutcomeBorderCheckbox = document.getElementById('show-outcome-border');
+
    var votePointTable = document.getElementById('votepoints');
    var votePointRowCollection = votePointTable.getElementsByTagName('tr');
    var votePointRows = [];
@@ -876,7 +879,7 @@ var runDemo = function () {
             if (votesLocked && whichPoint > 0) {
                break;
             }
-            screen = moveStrategicCheckbox.checked ? toScreenCoords(strategicPoints[whichPoint]) : toScreenCoords(votePoints[whichPoint]);
+            screen = toScreenCoords(moveStrategicCheckbox.checked ? strategicPoints[whichPoint] : votePoints[whichPoint]);
             xDiff = mouse.x - screen.x;
             yDiff = mouse.y - screen.y;
             sumSqDiff = xDiff * xDiff + yDiff * yDiff;
@@ -987,6 +990,14 @@ var runDemo = function () {
       return a[0] - b[0];
    };
 
+   /* strategize, batchMode, and withLimits are all assumed to be boolean variables. Strategize determines whether an update function is
+    * called (when it's true) or whether to animate directly to the values in strategicPoints. It's true for all user selected modes.
+    * batchMode should be exactly what is sounds like. withLimits is the velocity limits toggle.
+    * updateFunction specifies a function to be used for updating targetVote. onWhich keeps track of which voter is currently being
+    * strategized for in voter-by-voter mode. (i.e. when batchMode is false.)  timeIncrement is used to set the setInterval time delay.
+    * order is assumed to be an array of objects, and is used to randomize the ordering of voters in voter-by-voter modes. The array is
+    * created within the function, so it's best not to pass anything to order.
+    */
    var animateElection = function (strategize, batchMode, withLimits, updateFunction, onWhich, timeIncrement, order) {
       var whichPoint, whichDim, voteScreen, demoScreen, moved = false, active = [];
 
@@ -1146,6 +1157,7 @@ var runDemo = function () {
             if (!updated) {
                animatedVote = null;
                return;
+               // otherwise, store old targets for comparison next round
             } else {
                targetVoteLast = [];
                for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {

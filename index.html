@@ -16,7 +16,7 @@
 <p id="instructions">Drag the vote points around inside the votespace and the outcomes will be updated automatically.</p>
 
 <table><tr><td>
-   <canvas height="701" id="votespace" width="701">
+   <canvas height="591" id="votespace" width="641">
       Your browser does not seem to support the <code>&lt;canvas&gt;</code> element correctly.&nbsp; Please use a recent version of a browser such as
       <a href="http://www.opera.com/">Opera</a>, <a href="http://www.google.com/chrome/">Chrome</a> or <a href="http://www.getfirefox.com/">Firefox</a> and enable
       JavaScript.
@@ -26,8 +26,16 @@
    &nbsp;
    &nbsp;
 </td><td>
+   <fieldset class="votespace-area">
+      <legend>Votespace</legend>
+      <div class="votespace-options">
+         <label><input id="use-line-segment" name="votespace-options" type="radio" />&nbsp;Line segment</label>
+         <label><input checked="checked" id="use-hypercube" name="votespace-options" type="radio" />&nbsp;Hypercube</label>
+         <label><input id="use-simplex" name="votespace-options" type="radio" />&nbsp;Simplex</label>
+      </div>
+   </fieldset>
    <div>
-      <label for="select-n">Number of voters:&nbsp;</label>
+      <label for="select-n">Number of voters:&nbsp;
       <select id="select-n">
          <option>2</option>
          <option>3</option>
@@ -38,62 +46,51 @@
          <option>8</option>
          <option>9</option>
       </select>
+      </label>
    </div>
    <div>
       <input id="randomize-points" type="button" value="Randomize vote points" />
    </div>
-   <br />
-   <fieldset class="votespace-area">
-      <legend>Votespace</legend>
-      <div class="votespace-options">
-         <label><input id="use-line-segment" name="votespace-options" type="radio" />&nbsp;Line segment</label><br />
-         <label><input checked="checked" id="use-hypercube" name="votespace-options" type="radio" />&nbsp;Hypercube</label><br />
-         <label><input id="use-simplex" name="votespace-options" type="radio" />&nbsp;Simplex</label><br />
-      </div>
-   </fieldset>
-   <br />
    <fieldset class="mode-area">
       <legend>Mode</legend>
       <div class="mode-options">
-         <label><input checked="checked" id="regular-mode" name="mode-options" type="radio" />&nbsp;No automatic voter strategy</label><br />
-         <label><input id="strategy-mode" name="mode-options" type="radio" />&nbsp;Automatic voter strategy</label><br />
+         <label><input checked="checked" id="regular-mode" name="mode-options" type="radio" />&nbsp;No automatic voter strategy</label>
+         <label><input id="strategy-mode" name="mode-options" type="radio" />&nbsp;Automatic voter strategy</label>
       </div>
    </fieldset>
    <fieldset id="animation-area">
       <legend>Animation</legend>
       <div class="animation-options">
-         <label><input id="ordered-mode-default" checked="checked" name ="animation-options" type="radio" />Voter-by-voter</label> <br />
-         <label><input id="ordered-mode-with-vl" name="animation-options" type="radio" />Voter-by-voter with velocity limits</label> <br />
-         <label><input id="batch-mode-with-vl" name="animation-options" type="radio" />Batch Mode with velocity limits</label>
+         <label><input id="ordered-mode-default" checked="checked" name ="animation-options" type="radio" />&nbsp;Voter-by-voter mode</label>
+         <label><input id="ordered-mode-with-vl" name="animation-options" type="radio" />&nbsp;Voter-by-voter mode with velocity limit</label>
+         <label><input id="batch-mode-with-vl" name="animation-options" type="radio" />&nbsp;All-at-once mode with velocity limit</label>
       </div>
       <div>
-         <label><input id="time-interval" type="text" size="6">&nbsp;Time Increment</label><br />
-         <label><input id="velocity-limit" type="text" size="6">&nbsp;Velocity Limit</label><br />
+         <label><input id="time-interval" type="text" size="5">&nbsp;milliseconds per voter</label>
+         <label>Velocity limit:&nbsp;<input id="velocity-limit" type="text" size="6"></label>
       </div>
       <div>
          <input id="start-animation" type="button" value="Animate" />&nbsp;<input id="stop-animation" type="button" value="Reset" />
       </div>
    </fieldset>
-   <br />
    <fieldset class="outcome-options-area">
       <legend>Outcomes to display</legend>
       <div class="outcome-options">
-         <label class="per-dim-midrange-option"><input id="display-per-dim-midrange" type="checkbox" />&nbsp;Per-dimension midrange</label><br />
-         <label class="average-option"><input id="display-average" type="checkbox" />&nbsp;Average</label><br />
-         <label class="aar-dsv-option"><input checked="checked" id="display-aar-dsv" type="checkbox" />&nbsp;AAR DSV</label><br />
-         <label class="fermat-weber-option"><input id="display-fermat-weber" type="checkbox" />&nbsp;Fermat-Weber point</label><br />
-         <label class="per-dim-median-option"><input id="display-per-dim-median" type="checkbox" />&nbsp;Per-dimension median</label><br />
+         <label class="per-dim-midrange-option"><input id="display-per-dim-midrange" type="checkbox" />&nbsp;Per-dimension midrange</label>
+         <label class="average-option"><input id="display-average" type="checkbox" />&nbsp;Average</label>
+         <label class="aar-dsv-option"><input checked="checked" id="display-aar-dsv" type="checkbox" />&nbsp;AAR DSV</label>
+         <label class="fermat-weber-option"><input id="display-fermat-weber" type="checkbox" />&nbsp;Fermat-Weber point</label>
+         <label class="per-dim-median-option"><input id="display-per-dim-median" type="checkbox" />&nbsp;Per-dimension median</label>
       </div>
       <div>
-         <label><input id="show-outcome-border" type=checkbox>Show limits of outcome</label><br />
-         <label><input id="show-strategic-outcomes" type=checkbox>Show strategic outcomes</label>
+         <label><input id="show-outcome-border" type=checkbox>&nbsp;Show limits of outcome</label>
+         <label><input id="show-strategic-outcomes" type=checkbox>&nbsp;Show strategic outcomes</label>
       </div>
    </fieldset>
-   <br />
    <fieldset class="votepoints-area">
       <legend>Vote points</legend>
-      <div><label><input id="lock-votes" type="checkbox" />Lock all but focal vote</label></div>
-      <div><label><input id="move-strategic" type="checkbox">Move strategic votes</label></div>
+      <div><label><input id="lock-votes" type="checkbox" />&nbsp;Lock all but focal vote</label></div>
+      <div><label><input id="move-strategic" type="checkbox">&nbsp;Move strategic votes</label></div>
       <table id="votepoints"><tr>
          <th></th>
          <th class="x-dim"><span class="variable">x</span></th>
@@ -101,49 +98,49 @@
          <th class="z-dim"><span class="variable">z</span></th>
       </tr><tr id="votepoint0">
          <th><span class="variable">v</span><sub>1</sub></th>
-         <td class="x-dim"><input class="x-value" id="votepoint00-value" size="8" type="text" /></td>
-         <td class="y-dim"><input class="y-value" id="votepoint01-value" size="8" type="text" /></td>
-         <td class="z-dim"><input class="z-value" id="votepoint02-value" size="8" type="text" /></td>
+         <td class="x-dim"><input class="x-value" id="votepoint00-value" size="7" type="text" /></td>
+         <td class="y-dim"><input class="y-value" id="votepoint01-value" size="7" type="text" /></td>
+         <td class="z-dim"><input class="z-value" id="votepoint02-value" size="7" type="text" /></td>
       </tr><tr id="votepoint1">
          <th><span class="variable">v</span><sub>2</sub></th>
-         <td class="x-dim"><input class="x-value" id="votepoint10-value" size="8" type="text" /></td>
-         <td class="y-dim"><input class="y-value" id="votepoint11-value" size="8" type="text" /></td>
-         <td class="z-dim"><input class="z-value" id="votepoint12-value" size="8" type="text" /></td>
+         <td class="x-dim"><input class="x-value" id="votepoint10-value" size="7" type="text" /></td>
+         <td class="y-dim"><input class="y-value" id="votepoint11-value" size="7" type="text" /></td>
+         <td class="z-dim"><input class="z-value" id="votepoint12-value" size="7" type="text" /></td>
       </tr><tr id="votepoint2">
          <th><span class="variable">v</span><sub>3</sub></th>
-         <td class="x-dim"><input class="x-value" id="votepoint20-value" size="8" type="text" /></td>
-         <td class="y-dim"><input class="y-value" id="votepoint21-value" size="8" type="text" /></td>
-         <td class="z-dim"><input class="z-value" id="votepoint22-value" size="8" type="text" /></td>
+         <td class="x-dim"><input class="x-value" id="votepoint20-value" size="7" type="text" /></td>
+         <td class="y-dim"><input class="y-value" id="votepoint21-value" size="7" type="text" /></td>
+         <td class="z-dim"><input class="z-value" id="votepoint22-value" size="7" type="text" /></td>
       </tr><tr id="votepoint3">
          <th><span class="variable">v</span><sub>4</sub></th>
-         <td class="x-dim"><input class="x-value" id="votepoint30-value" size="8" type="text" /></td>
-         <td class="y-dim"><input class="y-value" id="votepoint31-value" size="8" type="text" /></td>
-         <td class="z-dim"><input class="z-value" id="votepoint32-value" size="8" type="text" /></td>
+         <td class="x-dim"><input class="x-value" id="votepoint30-value" size="7" type="text" /></td>
+         <td class="y-dim"><input class="y-value" id="votepoint31-value" size="7" type="text" /></td>
+         <td class="z-dim"><input class="z-value" id="votepoint32-value" size="7" type="text" /></td>
       </tr><tr id="votepoint4">
          <th><span class="variable">v</span><sub>5</sub></th>
-         <td class="x-dim"><input class="x-value" id="votepoint40-value" size="8" type="text" /></td>
-         <td class="y-dim"><input class="y-value" id="votepoint41-value" size="8" type="text" /></td>
-         <td class="z-dim"><input class="z-value" id="votepoint42-value" size="8" type="text" /></td>
+         <td class="x-dim"><input class="x-value" id="votepoint40-value" size="7" type="text" /></td>
+         <td class="y-dim"><input class="y-value" id="votepoint41-value" size="7" type="text" /></td>
+         <td class="z-dim"><input class="z-value" id="votepoint42-value" size="7" type="text" /></td>
       </tr><tr id="votepoint5">
          <th><span class="variable">v</span><sub>6</sub></th>
-         <td class="x-dim"><input class="x-value" id="votepoint50-value" size="8" type="text" /></td>
-         <td class="y-dim"><input class="y-value" id="votepoint51-value" size="8" type="text" /></td>
-         <td class="z-dim"><input class="z-value" id="votepoint52-value" size="8" type="text" /></td>
+         <td class="x-dim"><input class="x-value" id="votepoint50-value" size="7" type="text" /></td>
+         <td class="y-dim"><input class="y-value" id="votepoint51-value" size="7" type="text" /></td>
+         <td class="z-dim"><input class="z-value" id="votepoint52-value" size="7" type="text" /></td>
       </tr><tr id="votepoint6">
          <th><span class="variable">v</span><sub>7</sub></th>
-         <td class="x-dim"><input class="x-value" id="votepoint60-value" size="8" type="text" /></td>
-         <td class="y-dim"><input class="y-value" id="votepoint61-value" size="8" type="text" /></td>
-         <td class="z-dim"><input class="z-value" id="votepoint62-value" size="8" type="text" /></td>
+         <td class="x-dim"><input class="x-value" id="votepoint60-value" size="7" type="text" /></td>
+         <td class="y-dim"><input class="y-value" id="votepoint61-value" size="7" type="text" /></td>
+         <td class="z-dim"><input class="z-value" id="votepoint62-value" size="7" type="text" /></td>
       </tr><tr id="votepoint7">
          <th><span class="variable">v</span><sub>8</sub></th>
-         <td class="x-dim"><input class="x-value" id="votepoint70-value" size="8" type="text" /></td>
-         <td class="y-dim"><input class="y-value" id="votepoint71-value" size="8" type="text" /></td>
-         <td class="z-dim"><input class="z-value" id="votepoint72-value" size="8" type="text" /></td>
+         <td class="x-dim"><input class="x-value" id="votepoint70-value" size="7" type="text" /></td>
+         <td class="y-dim"><input class="y-value" id="votepoint71-value" size="7" type="text" /></td>
+         <td class="z-dim"><input class="z-value" id="votepoint72-value" size="7" type="text" /></td>
       </tr><tr id="votepoint8">
          <th><span class="variable">v</span><sub>9</sub></th>
-         <td class="x-dim"><input class="x-value" id="votepoint80-value" size="8" type="text" /></td>
-         <td class="y-dim"><input class="y-value" id="votepoint81-value" size="8" type="text" /></td>
-         <td class="z-dim"><input class="z-value" id="votepoint82-value" size="8" type="text" /></td>
+         <td class="x-dim"><input class="x-value" id="votepoint80-value" size="7" type="text" /></td>
+         <td class="y-dim"><input class="y-value" id="votepoint81-value" size="7" type="text" /></td>
+         <td class="z-dim"><input class="z-value" id="votepoint82-value" size="7" type="text" /></td>
       </tr></table>
    </fieldset>
 </td></tr></table>
