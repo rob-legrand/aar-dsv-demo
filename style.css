@@ -76,6 +76,14 @@ canvas#votespace {
    margin-right: auto;
 }
 
+input {
+   text-align: right;
+}
+
+label {
+   display: block;
+}
+
 label.aar-dsv-option {
    color: #ffff00;
    font-weight: bold;
