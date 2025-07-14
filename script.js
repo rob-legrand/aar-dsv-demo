@@ -432,7 +432,7 @@ var runDemo = function () {
    };
 
    // calculate strategicPoints at Average equilibrium
-   var dsvAverage = function () {
+   var dsvAverage = function (onWhich) {
       var average, calculatedTotal, changed, whichDim, whichPoint, whichPoint2;
       var strategicPointsLast = [];
 
@@ -460,6 +460,9 @@ var runDemo = function () {
          }
 
          for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
+            if (whichPoint === onWhich) {
+               continue;
+            }
             average = calcAverage(strategicPoints);
             for (whichDim = 0; whichDim < numDims; ++whichDim) {
                if (votePoints[whichPoint][whichDim] !== average[whichDim]) {
@@ -544,6 +547,48 @@ var runDemo = function () {
       votespaceContext.closePath();
    };
 
+   var isOutcomeCloser = function (idealPoint, newOutcome, oldOutcome, byDim, metric) {
+      var whichDim, differenceNew, differenceOld, closer = [];
+      // absolute distance in each dimension; returns an array of booleans
+      if (byDim) {
+         for (whichDim = 0; whichDim < numDims; ++whichDim) {
+            differenceNew = (Math.abs(idealPoint[whichDim] - newOutcome[whichDim]));
+            differenceOld = (Math.abs(idealPoint[whichDim] - oldOutcome[whichDim]));
+            closer.push(differenceNew < differenceOld);
+         }
+         return closer;
+      } else if (isFinite(metric)) {
+         if (metric < 1) {
+            return null;
+         }
+         differenceNew = 0;
+         differenceOld = 0;
+         for (whichDim = 0; whichDim < numDims; ++whichDim) {
+            differenceNew += Math.pow(Math.abs(newOutcome[whichDim] - idealPoint[whichDim]), metric);
+            differenceOld += Math.pow(Math.abs(oldOutcome[whichDim] - idealPoint[whichDim]), metric);
+         }
+         differenceNew = Math.pow(differenceNew, 1 / metric);
+         differenceOld = Math.pow(differenceOld, 1 / metric);
+         if (differenceNew < differenceOld) {
+            return true;
+         } else {
+            return false;
+         }
+      } else {
+         differenceNew = 0;
+         differenceOld = 0;
+         for(whichDim = 0; whichDim < numDims; ++whichDim) {
+            differenceNew = Math.max(Math.abs(newOutcome[whichDim] - idealPoint[whichDim]), differenceNew);
+            differenceOld = Math.max(Math.abs(oldOutcome[whichDim] - idealPoint[whichDim]), differenceOld);
+         }
+         if (differenceNew < differenceOld) {
+            return true;
+         } else {
+            return false;
+         }
+      }
+   };
+
    var clearSpace = function () {
       votespaceContext.fillStyle = '#ddeeff';
       votespaceContext.fillRect(0, 0, votespaceCanvas.width, votespaceCanvas.height);
@@ -583,11 +628,20 @@ var runDemo = function () {
    };
 
    var redrawSpace = function (pointBeingDragged) {
-      var whichDim, whichPoint, limitPoints;
+      var whichDim, whichPoint, limitPoints, nonFocusColor = '#6699cc', focusColor = '#9966cc', nonFocusStrategicVoteColor = '#000000', focusStrategicVoteColor = '#000000';
       resetAnimation();
       if (!clearSpace()) {
          return;
       }
+      if (lockVotesCheckbox.checked) {
+         nonFocusStrategicVoteColor = '#aaaaaa';
+         nonFocusColor = '#aaaaaa';
+         if (moveStrategicCheckbox.checked) {
+            focusStrategicVoteColor = focusColor;
+            focusColor = '#6699cc';
+         }
+      }
+
       // for textbox focus
       if (activePoint || activePoint === 0) {
          pointBeingDragged = activePoint;
@@ -611,12 +665,13 @@ var runDemo = function () {
             limitPoints = findLimits(votePoints, calcAarDsv);
             drawLimits(limitPoints, '#ffff00');
          }
-
       }
 
       // draw lines from sincere points to strategic votes
       if (automaticStrategyRadio.checked || moveStrategicCheckbox.checked) {
-         if (!moveStrategicCheckbox.checked) {
+         if (moveStrategicCheckbox.checked && lockVotesCheckbox.checked && automaticStrategyRadio.checked) {
+            dsvAverage(0);
+         } else if (!moveStrategicCheckbox.checked && automaticStrategyRadio.checked) {
             dsvAverage();
          }
 
@@ -633,7 +688,7 @@ var runDemo = function () {
 
       // draw vote points
       for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-         drawVotePoint(votePoints[whichPoint], pointBeingDragged === whichPoint ? '#9966cc' : '#6699cc', 6);
+         drawVotePoint(votePoints[whichPoint], pointBeingDragged === whichPoint ? focusColor : nonFocusColor, 6);
          votePointRows[whichPoint].style.visibility = 'visible';
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
             votePointTextboxes[whichPoint][whichDim].value = votePoints[whichPoint][whichDim].toFixed(5);
@@ -688,23 +743,43 @@ var runDemo = function () {
       // draw strategic votes and equilibrium Average outcome
       if (automaticStrategyRadio.checked || moveStrategicCheckbox.checked) {
          for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-            drawVotePoint(strategicPoints[whichPoint], '#000000', 4);
+            drawVotePoint(strategicPoints[whichPoint], whichPoint === 0 ? focusStrategicVoteColor : nonFocusStrategicVoteColor , 4);
          }
          if (showStrategicOutcomesCheckbox.checked) {
             if (displayPerDimMidrangeCheckbox.checked) {
-               drawVotePoint(calcPerDimMidrange(strategicPoints), '#ff5555', 4);
+               midOutcome = calcPerDimMidrange(strategicPoints);
+               drawVotePoint(midOutcome, '#000000', 4);
             }
             if (displayPerDimMedianCheckbox.checked) {
-               drawVotePoint(calcPerDimMedian(strategicPoints), '#55ff55', 4);
+               medOutcome = calcPerDimMedian(strategicPoints);
+               drawVotePoint(medOutcome, '#000000', 4);
             }
             if (displayFermatWeberCheckbox.checked) {
-               drawVotePoint(calcFermatWeber(strategicPoints), '#aaff00', 4);
+               ferOutcome = calcFermatWeber(strategicPoints);
+               drawVotePoint(ferOutcome, '#000000', 4);
             }
             if (displayAverageCheckbox.checked) {
-               drawVotePoint(calcAverage(strategicPoints), '#ffaa00', 4);
+               avgOutcome = calcAverage(strategicPoints);
+               drawVotePoint(avgOutcome, '#000000', 4);
             }
             if (displayAarDsvCheckbox.checked) {
-               drawVotePoint(calcAarDsv(strategicPoints), '#ffff00', 4);
+               dsvOutcome = calcAarDsv(strategicPoints);
+               drawVotePoint(dsvOutcome, '#000000', 4);
+            }
+            if (displayPerDimMidrangeCheckbox.checked) {
+               drawVotePoint(midOutcome, '#ff5555', 3.5);
+            }
+            if (displayPerDimMedianCheckbox.checked) {
+               drawVotePoint(medOutcome, '#55ff55', 3.5);
+            }
+            if (displayFermatWeberCheckbox.checked) {
+               drawVotePoint(ferOutcome, '#aaff00', 3.5);
+            }
+            if (displayAverageCheckbox.checked) {
+               drawVotePoint(avgOutcome, '#ffaa00', 3.5);
+            }
+            if (displayAarDsvCheckbox.checked) {
+               drawVotePoint(dsvOutcome, '#ffff00', 3.5);
             }
          }
       }
@@ -727,8 +802,9 @@ var runDemo = function () {
          for (num2 = 0; num2 < votePointTextboxes[num].length; ++num2) {
             votePointTextboxes[num][num2].addEventListener('focus', function () {
                focusOn(Number(this.id[9]));
-            }, true);
-            votePointTextboxes[num][num2].addEventListener('blur', focusOff, true);
+            }, false);
+            votePointTextboxes[num][num2].addEventListener('blur', focusOff, false);
+
             votePointTextboxes[num][num2].disabled = false;
          }
       }
@@ -1000,7 +1076,6 @@ var runDemo = function () {
     */
    var animateElection = function (strategize, batchMode, withLimits, updateFunction, onWhich, timeIncrement, order) {
       var whichPoint, whichDim, voteScreen, demoScreen, moved = false, active = [];
-
       if (!animationInProgress) {
          resetAnimation();
          return;
@@ -1086,37 +1161,49 @@ var runDemo = function () {
          votespaceContext.strokeStyle = '#aaaaaa';
          votespaceContext.stroke();
          votespaceContext.closePath();
+         drawVotePoint(votePoints[whichPoint], active[whichPoint] ? '#9966cc' : '#6699cc', 6);         
          drawVotePoint(animatedVote[whichPoint], '#C0C0C0', 4);
          drawVotePoint(targetVote[whichPoint], '#000000', 4);
-         drawVotePoint(votePoints[whichPoint], active[whichPoint] ? '#9966cc' : '#6699cc', 6);
       }
       // draw overall outcomes
       var avgOutcome, dsvOutcome, ferOutcome, medOutcome, midOutcome;
       if (displayPerDimMidrangeCheckbox.checked) {
          midOutcome = calcPerDimMidrange(votePoints);
          drawVotePoint(midOutcome, '#000000', 7.5);
-         drawVotePoint(midOutcome, '#ff5555', 6);
       }
       if (displayPerDimMedianCheckbox.checked) {
          medOutcome = calcPerDimMedian(votePoints);
          drawVotePoint(medOutcome, '#000000', 7.5);
-         drawVotePoint(medOutcome, '#55ff55', 6);
       }
       if (displayFermatWeberCheckbox.checked) {
          ferOutcome = calcFermatWeber(votePoints);
          drawVotePoint(ferOutcome, '#000000', 7.5);
-         drawVotePoint(ferOutcome, '#aaff00', 6);
       }
       if (displayAverageCheckbox.checked) {
          avgOutcome = calcAverage(votePoints);
          drawVotePoint(avgOutcome, '#000000', 7.5);
-         drawVotePoint(avgOutcome, '#ffaa00', 6);
       }
       if (displayAarDsvCheckbox.checked) {
          dsvOutcome = calcAarDsv(votePoints);
          drawVotePoint(dsvOutcome, '#000000', 7.5);
+      }
+
+      if (displayPerDimMidrangeCheckbox.checked) {
+         drawVotePoint(midOutcome, '#ff5555', 6);
+      }
+      if (displayPerDimMedianCheckbox.checked) {
+         drawVotePoint(medOutcome, '#55ff55', 6);
+      }
+      if (displayFermatWeberCheckbox.checked) {
+         drawVotePoint(ferOutcome, '#aaff00', 6);
+      }
+      if (displayAverageCheckbox.checked) {
+         drawVotePoint(avgOutcome, '#ffaa00', 6);
+      }
+      if (displayAarDsvCheckbox.checked) {
          drawVotePoint(dsvOutcome, '#ffff00', 6);
       }
+
       // draw current average outcome
       drawVotePoint(calcAverage(animatedVote), '#ffaa00', 4);
 
@@ -1139,7 +1226,7 @@ var runDemo = function () {
       }
 
       // speeds up animation over time; only has an effect on default voter-by-voter mode
-      animatedMovementLimit += 0.001;
+      animatedMovementLimit *= 1.1;
 
       if (!moved) {
          resetAnimation();
@@ -1202,14 +1289,16 @@ var runDemo = function () {
       redrawSpace();
 
       userInput = Number(velocityLimitTextbox.value);
-      if (userInput) {
-         animatedMovementLimitBase = userInput;
+      if (!isNaN(userInput)) {
+         animatedMovementLimitBase = userInput > 0 ? userInput : animatedMovementLimitBase;
       }
       userInput = Number(timeIntervalTextbox.value);
-      if (userInput) {
-         timeIncrementBase = userInput;
+      if (!isNaN(userInput)) {
+         timeIncrementBase = userInput > 1 ? userInput : 1;
       }
-
+      timeIntervalTextbox.value = timeIncrementBase;
+      velocityLimitTextbox.value = animatedMovementLimitBase;
+      animatedMovementLimit = animatedMovementLimitBase;
       timeIncrement = timeIncrementBase;
       animatedVote = null;
       targetVote = [];
