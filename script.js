@@ -1173,12 +1173,12 @@ var runDemo = function () {
          animatedVote[whichPoint] = projectVotePointToSpace(animatedVote[whichPoint]);
       }
       if (withLimits) {
-          moved = false;
-          for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-             for (whichDim = 0; whichDim < numDims; ++whichDim) {
-                targetVote[whichPoint][whichDim] = animatedVote[whichPoint][whichDim];
-             }
-          }
+         moved = false;
+         for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
+            for (whichDim = 0; whichDim < numDims; ++whichDim) {
+               targetVote[whichPoint][whichDim] = animatedVote[whichPoint][whichDim];
+            }
+         }
       }
       // draw points and lines
       clearSpace();
@@ -1341,6 +1341,7 @@ var runDemo = function () {
             targetVoteLast[whichVoter].push(votePoints[whichVoter][whichDim]);
          }
       }
+
       animationInProgress = true;
 
       if (animationModeOrderedVLRadio.checked) {
