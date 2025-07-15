@@ -577,7 +577,7 @@ var runDemo = function () {
       } else {
          differenceNew = 0;
          differenceOld = 0;
-         for(whichDim = 0; whichDim < numDims; ++whichDim) {
+         for (whichDim = 0; whichDim < numDims; ++whichDim) {
             differenceNew = Math.max(Math.abs(newOutcome[whichDim] - idealPoint[whichDim]), differenceNew);
             differenceOld = Math.max(Math.abs(oldOutcome[whichDim] - idealPoint[whichDim]), differenceOld);
          }
@@ -1161,10 +1161,11 @@ var runDemo = function () {
          votespaceContext.strokeStyle = '#aaaaaa';
          votespaceContext.stroke();
          votespaceContext.closePath();
-         drawVotePoint(votePoints[whichPoint], active[whichPoint] ? '#9966cc' : '#6699cc', 6);         
+         drawVotePoint(votePoints[whichPoint], active[whichPoint] ? '#9966cc' : '#6699cc', 6);
          drawVotePoint(animatedVote[whichPoint], '#C0C0C0', 4);
          drawVotePoint(targetVote[whichPoint], '#000000', 4);
       }
+
       // draw overall outcomes
       var avgOutcome, dsvOutcome, ferOutcome, medOutcome, midOutcome;
       if (displayPerDimMidrangeCheckbox.checked) {
@@ -1187,7 +1188,6 @@ var runDemo = function () {
          dsvOutcome = calcAarDsv(votePoints);
          drawVotePoint(dsvOutcome, '#000000', 7.5);
       }
-
       if (displayPerDimMidrangeCheckbox.checked) {
          drawVotePoint(midOutcome, '#ff5555', 6);
       }
@@ -1315,7 +1315,7 @@ var runDemo = function () {
 
       if (animationModeOrderedVLRadio.checked) {
          velocityLimits = true;
-         timeIncrement = timeIncrementBase/numVoters;
+         timeIncrement = timeIncrementBase / numVoters;
       } else if (animationModeBatchVLRadio.checked) {
          velocityLimits = true;
          batchMode = true;
