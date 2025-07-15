@@ -19,11 +19,11 @@ var runDemo = function () {
    var lineSegmentLeftX = hypercubeLeftX;
    var lineSegmentRightX = hypercubeRightX;
    var lineSegmentY = (hypercubeBottomY + hypercubeTopY) / 2;
-   var simplexBottomY = 540;
+   var simplexBottomY = 620;
    var simplexLeftX = 20;
-   var simplexRightX = 620;
-   var simplexMiddleX = (simplexLeftX + simplexRightX) / 2;
+   var simplexRightX = 540;
    var simplexTopY = 20;
+   var simplexMiddleY = (simplexBottomY + simplexTopY) / 2;
    var selectNElement = document.getElementById('select-n');
    var numVoters = parseInt(selectNElement.options[selectNElement.selectedIndex].value, 10);
    var lineSegmentRadio = document.getElementById('use-line-segment');
@@ -126,8 +126,8 @@ var runDemo = function () {
          return {x: hypercubeLeftX + (hypercubeRightX - hypercubeLeftX) * vote[0],
                  y: hypercubeBottomY - (hypercubeBottomY - hypercubeTopY) * vote[1]};
       } else if (vote.length === 3) {
-         return {x: simplexLeftX * vote[0] + simplexRightX * vote[1] + simplexMiddleX * vote[2],
-                 y: simplexBottomY * (vote[0] + vote[1]) + simplexTopY * vote[2]};
+         return {x: simplexRightX * (vote[0] + vote[1]) + simplexLeftX * vote[2],
+                 y: simplexBottomY * vote[0] + simplexTopY * vote[1] + simplexMiddleY * vote[2]};
       } else {
          return null;
       }
@@ -142,9 +142,9 @@ var runDemo = function () {
          return [(screen.x - hypercubeLeftX) / (hypercubeRightX - hypercubeLeftX),
                  (hypercubeBottomY - screen.y) / (hypercubeBottomY - hypercubeTopY)];
       } else if (simplexRadio.checked) {
-         return [((simplexMiddleX - screen.x) / (simplexMiddleX - simplexLeftX) + (screen.y - simplexTopY) / (simplexBottomY - simplexTopY)) / 2,
-                 ((screen.x - simplexMiddleX) / (simplexRightX - simplexMiddleX) + (screen.y - simplexTopY) / (simplexBottomY - simplexTopY)) / 2,
-                 (simplexBottomY - screen.y) / (simplexBottomY - simplexTopY)];
+         return [((screen.x - simplexLeftX) / (simplexRightX - simplexLeftX) + (screen.y - simplexMiddleY) / (simplexBottomY - simplexMiddleY)) / 2,
+                 ((screen.x - simplexLeftX) / (simplexRightX - simplexLeftX) + (simplexMiddleY - screen.y) / (simplexMiddleY - simplexTopY)) / 2,
+                 (simplexRightX - screen.x) / (simplexRightX - simplexLeftX)];
       } else {
          return null;
       }
@@ -198,10 +198,20 @@ var runDemo = function () {
       var whichDim, whichPoint;
       for (whichPoint = votePoints.length; whichPoint < numVoters; ++whichPoint) {
          votePoints[whichPoint] = [];
-         for (whichDim = 0; whichDim < numDims; ++whichDim) {
-            votePoints[whichPoint].push(Math.random());
+         if (numDims <= 2) {
+            for (whichDim = 0; whichDim < numDims; ++whichDim) {
+               votePoints[whichPoint].push(Math.floor(Math.random() * 100001) / 100000);
+            }
+            votePoints[whichPoint] = projectVotePointToSpace(votePoints[whichPoint]);
+         } else if (numDims === 3) {
+            do {
+               votePoints[whichPoint][0] = 1;
+               for (whichDim = 1; whichDim < numDims; ++whichDim) {
+                  votePoints[whichPoint][whichDim] = Math.floor(Math.random() * 100001) / 100000;
+                  votePoints[whichPoint][0] -= votePoints[whichPoint][whichDim];
+               }
+            } while (votePoints[whichPoint][0] < 0);
          }
-         votePoints[whichPoint] = projectVotePointToSpace(votePoints[whichPoint]);
       }
       while (votePoints.length > numVoters) {
          votePoints.pop();
@@ -313,7 +323,7 @@ var runDemo = function () {
       var numPoints = points.length;
       var outcome = [];
       var newStrategicPoint, somethingChanged, sortedPoints, strategicPoints, whichDim, whichPoint, whichOtherPoint;
-      if (numDims <= 2) {
+      if (numDims !== 3) {
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
             sortedPoints = [];
             for (whichPoint = 0; whichPoint < numPoints; ++whichPoint) {
@@ -460,22 +470,21 @@ var runDemo = function () {
          }
 
          for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-            if (whichPoint === onWhich) {
-               continue;
-            }
-            average = calcAverage(strategicPoints);
-            for (whichDim = 0; whichDim < numDims; ++whichDim) {
-               if (votePoints[whichPoint][whichDim] !== average[whichDim]) {
-                  calculatedTotal = 0;
-                  for (whichPoint2 = 0; whichPoint2 < numVoters; ++whichPoint2) {
-                     if (whichPoint !== whichPoint2) {
-                        calculatedTotal += strategicPoints[whichPoint2][whichDim];
+            if (whichPoint !== onWhich) {
+               average = calcAverage(strategicPoints);
+               for (whichDim = 0; whichDim < numDims; ++whichDim) {
+                  if (votePoints[whichPoint][whichDim] !== average[whichDim]) {
+                     calculatedTotal = 0;
+                     for (whichPoint2 = 0; whichPoint2 < numVoters; ++whichPoint2) {
+                        if (whichPoint !== whichPoint2) {
+                           calculatedTotal += strategicPoints[whichPoint2][whichDim];
+                        }
                      }
+                     strategicPoints[whichPoint][whichDim] = ((votePoints[whichPoint][whichDim] * numVoters) - calculatedTotal);
                   }
-                  strategicPoints[whichPoint][whichDim] = ((votePoints[whichPoint][whichDim] * numVoters) - calculatedTotal);
                }
+               strategicPoints[whichPoint] = projectVotePointToSpace(strategicPoints[whichPoint]);
             }
-            strategicPoints[whichPoint] = projectVotePointToSpace(strategicPoints[whichPoint]);
          }
          changed = false;
          for (whichPoint = 0; whichPoint < strategicPointsLast.length; ++whichPoint) {
@@ -613,10 +622,10 @@ var runDemo = function () {
          votespaceContext.stroke();
       } else if (simplexRadio.checked) {
          votespaceContext.beginPath();
-         votespaceContext.moveTo(simplexLeftX + 0.5, simplexBottomY + 0.5);
+         votespaceContext.moveTo(simplexLeftX + 0.5, simplexMiddleY + 0.5);
+         votespaceContext.lineTo(simplexRightX + 0.5, simplexTopY + 0.5);
          votespaceContext.lineTo(simplexRightX + 0.5, simplexBottomY + 0.5);
-         votespaceContext.lineTo((simplexLeftX + simplexRightX) / 2 + 0.5, simplexTopY + 0.5);
-         votespaceContext.lineTo(simplexLeftX + 0.5, simplexBottomY + 0.5);
+         votespaceContext.lineTo(simplexLeftX + 0.5, simplexMiddleY + 0.5);
          votespaceContext.fillStyle = '#ffffff';
          votespaceContext.fill();
          votespaceContext.strokeStyle = '#000000';
@@ -719,7 +728,13 @@ var runDemo = function () {
       if (displayAarDsvCheckbox.checked) {
          dsvOutcome = calcAarDsv(votePoints);
          drawVotePoint(dsvOutcome, '#000000', 7.5);
-         document.getElementById('aar-dsv-output').innerHTML = 'x = ' + dsvOutcome[0].toFixed(5) + ', y = ' + dsvOutcome[1].toFixed(5);
+         document.getElementById('aar-dsv-output').innerHTML = 'x = ' + dsvOutcome[0].toFixed(5);
+         if (dsvOutcome[1]) {
+            document.getElementById('aar-dsv-output').innerHTML += ', y = ' + dsvOutcome[1].toFixed(5);
+            if (dsvOutcome[2]) {
+               document.getElementById('aar-dsv-output').innerHTML += ', z = ' + dsvOutcome[2].toFixed(5);
+            }
+         }
          if (!testInequalities(dsvOutcome).obeysAll) {
             window.alert('OH NO: ' + testInequalities(dsvOutcome).dimSize[0] + ':' + testInequalities(dsvOutcome).dimSize[1] + ':' + testInequalities(dsvOutcome).dimSize[2]);
          }
@@ -738,6 +753,21 @@ var runDemo = function () {
       }
       if (displayAarDsvCheckbox.checked) {
          drawVotePoint(dsvOutcome, '#ffff00', 6);
+      }
+      if (displayPerDimMidrangeCheckbox.checked) {
+         drawVotePoint(midOutcome, '#000000', 1);
+      }
+      if (displayPerDimMedianCheckbox.checked) {
+         drawVotePoint(medOutcome, '#000000', 1);
+      }
+      if (displayFermatWeberCheckbox.checked) {
+         drawVotePoint(ferOutcome, '#000000', 1);
+      }
+      if (displayAverageCheckbox.checked) {
+         drawVotePoint(avgOutcome, '#000000', 1);
+      }
+      if (displayAarDsvCheckbox.checked) {
+         drawVotePoint(dsvOutcome, '#000000', 1);
       }
 
       // draw strategic votes and equilibrium Average outcome

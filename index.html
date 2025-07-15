@@ -16,15 +16,11 @@
 <p id="instructions">Drag the vote points around inside the votespace and the outcomes will be updated automatically.</p>
 
 <table><tr><td>
-   <canvas height="591" id="votespace" width="641">
+   <canvas height="641" id="votespace" width="591">
       Your browser does not seem to support the <code>&lt;canvas&gt;</code> element correctly.&nbsp; Please use a recent version of a browser such as
       <a href="http://www.opera.com/">Opera</a>, <a href="http://www.google.com/chrome/">Chrome</a> or <a href="http://www.getfirefox.com/">Firefox</a> and enable
       JavaScript.
    </canvas>
-</td><td>
-   &nbsp;
-   &nbsp;
-   &nbsp;
 </td><td>
    <fieldset class="votespace-area">
       <legend>Votespace</legend>
@@ -58,21 +54,6 @@
          <label><input id="strategy-mode" name="mode-options" type="radio" />&nbsp;Automatic voter strategy</label>
       </div>
    </fieldset>
-   <fieldset id="animation-area">
-      <legend>Animation</legend>
-      <div class="animation-options">
-         <label><input id="ordered-mode-default" checked="checked" name ="animation-options" type="radio" />&nbsp;Voter-by-voter mode</label>
-         <label><input id="ordered-mode-with-vl" name="animation-options" type="radio" />&nbsp;Voter-by-voter mode with velocity limit</label>
-         <label><input id="batch-mode-with-vl" name="animation-options" type="radio" />&nbsp;All-at-once mode with velocity limit</label>
-      </div>
-      <div>
-         <label><input id="time-interval" type="text" size="5">&nbsp;milliseconds per voter</label>
-         <label>Velocity limit:&nbsp;<input id="velocity-limit" type="text" size="6"></label>
-      </div>
-      <div>
-         <input id="start-animation" type="button" value="Animate" />&nbsp;<input id="stop-animation" type="button" value="Reset" />
-      </div>
-   </fieldset>
    <fieldset class="outcome-options-area">
       <legend>Outcomes to display</legend>
       <div class="outcome-options">
@@ -85,6 +66,27 @@
       <div>
          <label><input id="show-outcome-border" type=checkbox>&nbsp;Show limits of outcome</label>
          <label><input id="show-strategic-outcomes" type=checkbox>&nbsp;Show strategic outcomes</label>
+      </div>
+   </fieldset>
+   <fieldset id="animation-area">
+      <legend>Animation</legend>
+      <div class="animation-options">
+         <label><input id="ordered-mode-default" checked="checked" name ="animation-options" type="radio" />&nbsp;Voter-by-voter mode</label>
+         <label><input id="ordered-mode-with-vl" name="animation-options" type="radio" />&nbsp;Voter-by-voter mode with velocity limit</label>
+         <label><input id="batch-mode-with-vl" name="animation-options" type="radio" />&nbsp;All-at-once mode with velocity limit</label>
+      </div>
+      <div>
+         <label><input id="time-interval" type="text" size="5">&nbsp;milliseconds per voter</label>
+         <label>Velocity limit:&nbsp;<input id="velocity-limit" type="text" size="6"></label>
+      </div>
+      <div class="animation-start-options">
+         <label><input id="start-sincere" checked="checked" name ="animation-start-options" type="radio" />&nbsp;Start at sincere points</label>
+         <label><input id="start-random" name="animation-start-options" type="radio" />&nbsp;Start at random points</label>
+         <label><input id="start-in-zero-corner" name="animation-start-options" type="radio" />&nbsp;Start all in same corner</label>
+         <label><input id="start-in-nearest-corner" name="animation-start-options" type="radio" />&nbsp;Start each in nearest corner</label>
+      </div>
+      <div>
+         <input id="start-animation" type="button" value="Animate" />&nbsp;<input id="stop-animation" type="button" value="Reset" />
       </div>
    </fieldset>
    <fieldset class="votepoints-area">
