@@ -45,6 +45,11 @@ var runDemo = function () {
    var animationModeBatchVLRadio = document.getElementById('batch-mode-with-vl');
    var timeIntervalTextbox = document.getElementById('time-interval');
    var velocityLimitTextbox = document.getElementById('velocity-limit');
+   var animationStartSincereRadio = document.getElementById('start-sincere');
+   var animationStartRandomRadio = document.getElementById('start-random');
+   var animationStartSameCornerRadio = document.getElementById('start-in-zero-corner');
+   var animationStartNearCornerRadio = document.getElementById('start-in-nearest-corner');
+
    var lockVotesCheckbox = document.getElementById('lock-votes');
    lockVotesCheckbox.checked = false;
    var moveStrategicCheckbox = document.getElementById('move-strategic');
@@ -105,7 +110,7 @@ var runDemo = function () {
 
    // points used to run demo
    var strategicPoints = [];
-   var animatedVote, animate, animationInProgress = false, animatedMovementLimit, animatedMovementLimitBase = 0.01, timeIncrementBase = 50, activePoint, votesLocked = false;
+   var animatedVote, animate, animationInProgress = false, animatedMovementLimit, animatedMovementLimitBase = 0.01, timeIncrementBase = 50, activeFocus, outcomeLast, votesLocked = false;
    var targetVote = [], targetVoteLast = [];
 
    timeIntervalTextbox.value = timeIncrementBase;
@@ -215,6 +220,15 @@ var runDemo = function () {
       }
       while (votePoints.length > numVoters) {
          votePoints.pop();
+      }
+      for (whichPoint = strategicPoints.length; whichPoint < numVoters; ++whichPoint) {
+         strategicPoints.push([]);
+         for (whichDim = 0; whichDim < votePoints[whichPoint].length; ++whichDim) {
+            strategicPoints[whichPoint].push(votePoints[whichPoint][whichDim]);
+         }
+      }
+      while (strategicPoints.length > numVoters) {
+         strategicPoints.pop();
       }
    };
    addOrRemoveVotePoints();
@@ -556,17 +570,38 @@ var runDemo = function () {
       votespaceContext.closePath();
    };
 
-   var isOutcomeCloser = function (idealPoint, newOutcome, oldOutcome, byDim, metric) {
+   var isOutcomeCloserByDim = function (idealPoint, newOutcome, oldOutcome) {
       var whichDim, differenceNew, differenceOld, closer = [];
       // absolute distance in each dimension; returns an array of booleans
-      if (byDim) {
-         for (whichDim = 0; whichDim < numDims; ++whichDim) {
-            differenceNew = (Math.abs(idealPoint[whichDim] - newOutcome[whichDim]));
-            differenceOld = (Math.abs(idealPoint[whichDim] - oldOutcome[whichDim]));
-            closer.push(differenceNew < differenceOld);
+      for (whichDim = 0; whichDim < numDims; ++whichDim) {
+         differenceNew = idealPoint[whichDim] - newOutcome[whichDim];
+         differenceOld = idealPoint[whichDim] - oldOutcome[whichDim];
+
+         if (differenceNew === differenceOld) {
+            closer.push(0);
+         } else if (differenceNew > 0 && differenceOld > 0) {
+            if (differenceNew < differenceOld) {
+               closer.push(1);
+            } else {
+               closer.push(-1);
+            }
+         } else if (differenceNew < 0 && differenceOld < 0) {
+            if (differenceNew > differenceOld) {
+               closer.push(1);
+            } else {
+               closer.push(-1);
+            }
+         } else {
+            closer.push(NaN);
          }
-         return closer;
-      } else if (isFinite(metric)) {
+      }
+      return closer;
+   };
+
+   var isOutcomeCloserByMetric = function (idealPoint, newOutcome, oldOutcome, metric) {
+      var whichDim, differenceNew, differenceOld;
+      // absolute distance in each dimension; returns an array of booleans
+      if (isFinite(metric)) {
          if (metric < 1) {
             return null;
          }
@@ -579,9 +614,11 @@ var runDemo = function () {
          differenceNew = Math.pow(differenceNew, 1 / metric);
          differenceOld = Math.pow(differenceOld, 1 / metric);
          if (differenceNew < differenceOld) {
-            return true;
+            return 1;
+         } else if (differenceNew === differenceOld) {
+            return 0;
          } else {
-            return false;
+            return -1;
          }
       } else {
          differenceNew = 0;
@@ -591,9 +628,11 @@ var runDemo = function () {
             differenceOld = Math.max(Math.abs(oldOutcome[whichDim] - idealPoint[whichDim]), differenceOld);
          }
          if (differenceNew < differenceOld) {
-            return true;
+            return 1;
+         } else if (differenceNew === differenceOld) {
+            return 0;
          } else {
-            return false;
+            return -1;
          }
       }
    };
@@ -639,6 +678,7 @@ var runDemo = function () {
    var redrawSpace = function (pointBeingDragged) {
       var whichDim, whichPoint, limitPoints, nonFocusColor = '#6699cc', focusColor = '#9966cc', nonFocusStrategicVoteColor = '#000000', focusStrategicVoteColor = '#000000';
       resetAnimation();
+
       if (!clearSpace()) {
          return;
       }
@@ -649,11 +689,6 @@ var runDemo = function () {
             focusStrategicVoteColor = focusColor;
             focusColor = '#6699cc';
          }
-      }
-
-      // for textbox focus
-      if (activePoint || activePoint === 0) {
-         pointBeingDragged = activePoint;
       }
 
       // draw limits of manipulation for voter 1 (i.e. votePoints[0])
@@ -677,7 +712,7 @@ var runDemo = function () {
       }
 
       // draw lines from sincere points to strategic votes
-      if (automaticStrategyRadio.checked || moveStrategicCheckbox.checked) {
+      if (automaticStrategyRadio.checked || moveStrategicCheckbox.checked || showStrategicOutcomesCheckbox.checked) {
          if (moveStrategicCheckbox.checked && lockVotesCheckbox.checked && automaticStrategyRadio.checked) {
             dsvAverage(0);
          } else if (!moveStrategicCheckbox.checked && automaticStrategyRadio.checked) {
@@ -706,6 +741,10 @@ var runDemo = function () {
       for (whichPoint = numVoters; whichPoint < maxNumVoters; ++whichPoint) {
          votePointRows[whichPoint].style.visibility = 'collapse';
       }
+      // make sure focus vote is visible
+      if (lockVotesCheckbox.checked) {
+         drawVotePoint(votePoints[0], focusColor, 6);
+      }
 
       // draw outcome points
       var avgOutcome, dsvOutcome, ferOutcome, medOutcome, midOutcome;
@@ -728,13 +767,6 @@ var runDemo = function () {
       if (displayAarDsvCheckbox.checked) {
          dsvOutcome = calcAarDsv(votePoints);
          drawVotePoint(dsvOutcome, '#000000', 7.5);
-         document.getElementById('aar-dsv-output').innerHTML = 'x = ' + dsvOutcome[0].toFixed(5);
-         if (dsvOutcome[1]) {
-            document.getElementById('aar-dsv-output').innerHTML += ', y = ' + dsvOutcome[1].toFixed(5);
-            if (dsvOutcome[2]) {
-               document.getElementById('aar-dsv-output').innerHTML += ', z = ' + dsvOutcome[2].toFixed(5);
-            }
-         }
          if (!testInequalities(dsvOutcome).obeysAll) {
             window.alert('OH NO: ' + testInequalities(dsvOutcome).dimSize[0] + ':' + testInequalities(dsvOutcome).dimSize[1] + ':' + testInequalities(dsvOutcome).dimSize[2]);
          }
@@ -771,10 +803,11 @@ var runDemo = function () {
       }
 
       // draw strategic votes and equilibrium Average outcome
-      if (automaticStrategyRadio.checked || moveStrategicCheckbox.checked) {
-         for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-            drawVotePoint(strategicPoints[whichPoint], whichPoint === 0 ? focusStrategicVoteColor : nonFocusStrategicVoteColor , 4);
+      if (automaticStrategyRadio.checked || moveStrategicCheckbox.checked || showStrategicOutcomesCheckbox.checked) {
+         for (whichPoint = 1; whichPoint < numVoters; ++whichPoint) {
+            drawVotePoint(strategicPoints[whichPoint], nonFocusStrategicVoteColor , 4);
          }
+         drawVotePoint(strategicPoints[0], focusStrategicVoteColor, 4);
          if (showStrategicOutcomesCheckbox.checked) {
             if (displayPerDimMidrangeCheckbox.checked) {
                midOutcome = calcPerDimMidrange(strategicPoints);
@@ -811,18 +844,45 @@ var runDemo = function () {
             if (displayAarDsvCheckbox.checked) {
                drawVotePoint(dsvOutcome, '#ffff00', 3.5);
             }
+            if (typeof(pointBeingDragged) === 'number' && pointBeingDragged >= 0) {
+               if (!outcomeLast) {
+                  outcomeLast = avgOutcome;
+               }
+               var closer = isOutcomeCloserByDim(votePoints[pointBeingDragged], avgOutcome, outcomeLast);
+               for (whichDim = 0; whichDim < numDims; ++whichDim) {
+                  if (closer[whichDim] === 0) {
+                     closer[whichDim] = "No Change";
+                  } else if (closer[whichDim] === 1) {
+                     closer[whichDim] = "Closer to ideal";
+                  } else if (closer[whichDim] === -1) {
+                     closer[whichDim] = "Further from ideal";
+                  } else {
+                     closer[whichDim] = "Overshot ideal";
+                  }
+               }
+               document.getElementById('aar-dsv-output').innerHTML = 'x : ' + closer[0];
+               if (numDims > 1) {
+                  document.getElementById('aar-dsv-output').innerHTML += ' , y : ' + closer[1];
+                  if (numDims > 2) {
+                     document.getElementById('aar-dsv-output').innerHTML += ' , z : ' + closer[2];
+                  }
+               }
+               outcomeLast = avgOutcome;
+            }
          }
       }
    };
 
    var focusOn = function (which) {
-      activePoint = which;
-      redrawSpace();
+      drawVotePoint(votePoints[which], '#9966cc', 6);
+      activeFocus = true;
    };
 
    var focusOff = function () {
-      activePoint = null;
-      redrawSpace();
+      activeFocus = false;
+      if (!animationInProgress) {
+         redrawSpace();
+      }
    };
 
    // anonymous function to add focus handlers for textboxes
@@ -834,9 +894,24 @@ var runDemo = function () {
                focusOn(Number(this.id[9]));
             }, false);
             votePointTextboxes[num][num2].addEventListener('blur', focusOff, false);
-
             votePointTextboxes[num][num2].disabled = false;
          }
+      }
+   }());
+
+   (function () {
+      var num;
+      for (num = 0; num < votePointRows.length; ++num) {
+         votePointRows[num].addEventListener('mousedown', function () {
+            if (!activeFocus) {
+               drawVotePoint(votePoints[this.id[9]],'#9966cc', 6);
+            }
+         } , false);
+         votePointRows[num].addEventListener('mouseup', function () {
+            if (!activeFocus && !animationInProgress) {
+               setTimeout(redrawSpace, 500);
+            }
+         }, false);
       }
    }());
 
@@ -862,7 +937,6 @@ var runDemo = function () {
                votePointTextboxes[num][num2].disabled = true;
             }
          }
-         activePoint = 0;
          votesLocked = true;
          redrawSpace();
       } else {
@@ -871,7 +945,6 @@ var runDemo = function () {
                votePointTextboxes[num][num2].disabled = false;
             }
          }
-         activePoint = null;
          votesLocked = false;
          redrawSpace();
       }
@@ -983,7 +1056,7 @@ var runDemo = function () {
          var smallestSumSqDiff = Number.POSITIVE_INFINITY;
          for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
             if (votesLocked && whichPoint > 0) {
-               break;
+               return closestPoint;
             }
             screen = toScreenCoords(moveStrategicCheckbox.checked ? strategicPoints[whichPoint] : votePoints[whichPoint]);
             xDiff = mouse.x - screen.x;
@@ -1035,6 +1108,7 @@ var runDemo = function () {
 
    document.getElementById('randomize-points').onclick = function () {
       votePoints = [];
+      strategicPoints = [];
       addOrRemoveVotePoints();
       redrawSpace();
       return false; // don't do anything else because of the click
@@ -1191,6 +1265,8 @@ var runDemo = function () {
          votespaceContext.strokeStyle = '#aaaaaa';
          votespaceContext.stroke();
          votespaceContext.closePath();
+      }
+      for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
          drawVotePoint(votePoints[whichPoint], active[whichPoint] ? '#9966cc' : '#6699cc', 6);
          drawVotePoint(animatedVote[whichPoint], '#C0C0C0', 4);
          drawVotePoint(targetVote[whichPoint], '#000000', 4);
@@ -1235,23 +1311,43 @@ var runDemo = function () {
       }
 
       // draw current average outcome
-      drawVotePoint(calcAverage(animatedVote), '#ffaa00', 4);
+      drawVotePoint(calcAverage(animatedVote), '#ffaa00', 3.5);
 
       if (showStrategicOutcomesCheckbox.checked) {
          if (displayPerDimMidrangeCheckbox.checked) {
-            drawVotePoint(calcPerDimMidrange(animatedVote), '#ff5555', 4);
+            midOutcome = calcPerDimMidrange(animatedVote);
+            drawVotePoint(midOutcome, '#000000', 4);
          }
          if (displayPerDimMedianCheckbox.checked) {
-            drawVotePoint(calcPerDimMedian(animatedVote), '#55ff55', 4);
+            medOutcome = calcPerDimMedian(animatedVote);
+            drawVotePoint(medOutcome, '#000000', 4);
          }
          if (displayFermatWeberCheckbox.checked) {
-            drawVotePoint(calcFermatWeber(animatedVote), '#aaff00', 4);
+            ferOutcome = calcFermatWeber(animatedVote);
+            drawVotePoint(ferOutcome, '#000000', 4);
          }
          if (displayAverageCheckbox.checked) {
-            drawVotePoint(calcAverage(animatedVote), '#ffaa00', 4);
+            avgOutcome = calcAverage(animatedVote);
+            drawVotePoint(avgOutcome, '#000000', 4);
          }
          if (displayAarDsvCheckbox.checked) {
-            drawVotePoint(calcAarDsv(animatedVote), '#ffff00', 4);
+            dsvOutcome = calcAarDsv(animatedVote);
+            drawVotePoint(dsvOutcome, '#000000', 4);
+         }
+         if (displayPerDimMidrangeCheckbox.checked) {
+            drawVotePoint(midOutcome, '#ff5555', 3.5);
+         }
+         if (displayPerDimMedianCheckbox.checked) {
+            drawVotePoint(medOutcome, '#55ff55', 3.5);
+         }
+         if (displayFermatWeberCheckbox.checked) {
+            drawVotePoint(ferOutcome, '#aaff00', 3.5);
+         }
+         if (displayAverageCheckbox.checked) {
+            drawVotePoint(avgOutcome, '#ffaa00', 3.5);
+         }
+         if (displayAarDsvCheckbox.checked) {
+            drawVotePoint(dsvOutcome, '#ffff00', 3.5);
          }
       }
 
@@ -1315,7 +1411,7 @@ var runDemo = function () {
    };
 
    startAnimationButton.onclick = function () {
-      var whichVoter, whichDim, userInput, updateFunction, timeIncrement, batchMode = false, strategize = true, velocityLimits = false;
+      var whichVoter, whichDim, userInput, updateFunction, timeIncrement, batchMode = false, strategize = true, velocityLimits = false, largestVal = 0, largestAt;
       redrawSpace();
 
       userInput = Number(velocityLimitTextbox.value);
@@ -1333,12 +1429,78 @@ var runDemo = function () {
       animatedVote = null;
       targetVote = [];
       targetVoteLast = [];
-      for (whichVoter = 0; whichVoter < numVoters; ++whichVoter) {
-         targetVote.push([]);
-         targetVoteLast.push([]);
-         for (whichDim = 0; whichDim < numDims; ++whichDim) {
-            targetVote[whichVoter].push(votePoints[whichVoter][whichDim]);
-            targetVoteLast[whichVoter].push(votePoints[whichVoter][whichDim]);
+      if (animationStartSincereRadio.checked) {
+         for (whichVoter = 0; whichVoter < numVoters; ++whichVoter) {
+            targetVote.push([]);
+            targetVoteLast.push([]);
+            for (whichDim = 0; whichDim < numDims; ++whichDim) {
+               targetVote[whichVoter].push(votePoints[whichVoter][whichDim]);
+               targetVoteLast[whichVoter].push(votePoints[whichVoter][whichDim]);
+            }
+         }
+      } else if (animationStartRandomRadio.checked) {
+         for (whichVoter = 0; whichVoter < numVoters; ++whichVoter) {
+            targetVote.push([]);
+            targetVoteLast.push([]);
+            if (numDims <= 2) {
+               for (whichDim = 0; whichDim < numDims; ++whichDim) {
+                  targetVote[whichVoter].push(Math.floor(Math.random() * 100001) / 100000);
+               }
+               targetVote[whichVoter] = projectVotePointToSpace(targetVote[whichVoter]);
+            } else if (numDims === 3) {
+               do {
+                  targetVote[whichVoter][0] = 1;
+                  for (whichDim = 1; whichDim < numDims; ++whichDim) {
+                     targetVote[whichVoter][whichDim] = Math.floor(Math.random() * 100001) / 100000;
+                     targetVote[whichVoter][0] -= targetVote[whichVoter][whichDim];
+                  }
+               } while (targetVote[whichVoter][0] < 0);
+            }
+            for (whichDim = 0; whichDim < numDims; ++whichDim) {
+               targetVoteLast[whichVoter].push(targetVote[whichVoter][whichDim]);
+            }
+         }
+      } else if (animationStartSameCornerRadio.checked) {
+         for (whichVoter = 0; whichVoter < numVoters; ++whichVoter) {
+            targetVote.push([]);
+            targetVoteLast.push([]);
+            for (whichDim = 0; whichDim < numDims; ++whichDim) {
+               if (whichDim === 2) {
+                  targetVote[whichVoter].push(1);
+                  targetVoteLast[whichVoter].push(1);
+               } else {
+                  targetVote[whichVoter].push(0);
+                  targetVoteLast[whichVoter].push(0);
+               }
+            }
+         }
+      } else if (animationStartNearCornerRadio.checked) {
+         for (whichVoter = 0; whichVoter < numVoters; ++whichVoter) {
+            targetVote.push([]);
+            targetVoteLast.push([]);
+            if (numDims < 3) {
+               for (whichDim = 0; whichDim < numDims; ++whichDim) {
+                  if (votePoints[whichVoter][whichDim] < 0.5) {
+                     targetVote[whichVoter].push(0);
+                     targetVoteLast[whichVoter].push(0);
+                  } else {
+                     targetVote[whichVoter].push(1);
+                     targetVoteLast[whichVoter].push(1);
+                  }
+               }
+            } else if (numDims === 3) {
+               largestVal = 0;
+               for (whichDim = 0; whichDim < numDims; ++whichDim) {
+                  targetVote[whichVoter].push(0);
+                  targetVoteLast[whichVoter].push(0);
+                  if (votePoints[whichVoter][whichDim] > largestVal) {
+                     largestVal = votePoints[whichVoter][whichDim];
+                     largestAt = whichDim;
+                  }
+               }
+               targetVote[whichVoter][largestAt] = 1;
+               targetVoteLast[whichVoter][largestAt] = 1;
+            }
          }
       }
 
