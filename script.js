@@ -87,6 +87,7 @@ var runDemo = function () {
          votePointTextboxes[whichVoter].push(votePointTextboxCollection[whichTextbox]);
       }
    }
+   var updateVotepointsButton = document.getElementById('update-votepoints');
 
    var fixNumDims = function () {
       var whichDim, whichRow;
@@ -99,7 +100,7 @@ var runDemo = function () {
       }
       for (whichDim = 0; whichDim < 3; ++whichDim) {
          for (whichRow = 0; whichRow < votePointCells[whichDim].length; ++whichRow) {
-            votePointCells[whichDim][whichRow].style.visibility = whichDim < numDims ? 'visible' : 'collapse';
+            votePointCells[whichDim][whichRow].style.display = whichDim < numDims ? 'table-cell' : 'none';
          }
       }
    };
@@ -572,7 +573,7 @@ var runDemo = function () {
 
    var isOutcomeCloserByDim = function (idealPoint, newOutcome, oldOutcome) {
       var whichDim, differenceNew, differenceOld, closer = [];
-      // absolute distance in each dimension; returns an array of booleans
+
       for (whichDim = 0; whichDim < numDims; ++whichDim) {
          differenceNew = idealPoint[whichDim] - newOutcome[whichDim];
          differenceOld = idealPoint[whichDim] - oldOutcome[whichDim];
@@ -600,7 +601,7 @@ var runDemo = function () {
 
    var isOutcomeCloserByMetric = function (idealPoint, newOutcome, oldOutcome, metric) {
       var whichDim, differenceNew, differenceOld;
-      // absolute distance in each dimension; returns an array of booleans
+
       if (isFinite(metric)) {
          if (metric < 1) {
             return null;
@@ -733,13 +734,13 @@ var runDemo = function () {
       // draw vote points
       for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
          drawVotePoint(votePoints[whichPoint], pointBeingDragged === whichPoint ? focusColor : nonFocusColor, 6);
-         votePointRows[whichPoint].style.visibility = 'visible';
+         votePointRows[whichPoint].style.display = 'table-row';
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
             votePointTextboxes[whichPoint][whichDim].value = votePoints[whichPoint][whichDim].toFixed(5);
          }
       }
       for (whichPoint = numVoters; whichPoint < maxNumVoters; ++whichPoint) {
-         votePointRows[whichPoint].style.visibility = 'collapse';
+         votePointRows[whichPoint].style.display = 'none';
       }
       // make sure focus vote is visible
       if (lockVotesCheckbox.checked) {
@@ -844,7 +845,7 @@ var runDemo = function () {
             if (displayAarDsvCheckbox.checked) {
                drawVotePoint(dsvOutcome, '#ffff00', 3.5);
             }
-            if (typeof(pointBeingDragged) === 'number' && pointBeingDragged >= 0) {
+            if (typeof pointBeingDragged === 'number' && pointBeingDragged >= 0) {
                if (!outcomeLast) {
                   outcomeLast = avgOutcome;
                }
@@ -1104,6 +1105,10 @@ var runDemo = function () {
          document.getElementById('click-output').innerHTML = str;
       }
       return true; // allow the default event handler to be called
+   };
+
+   document.onmouseup = function (ev) {
+      document.onmousemove = null; // stop moving point around
    };
 
    document.getElementById('randomize-points').onclick = function () {
