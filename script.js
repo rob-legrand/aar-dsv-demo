@@ -852,13 +852,13 @@ var runDemo = function () {
                var closer = isOutcomeCloserByDim(votePoints[pointBeingDragged], avgOutcome, outcomeLast);
                for (whichDim = 0; whichDim < numDims; ++whichDim) {
                   if (closer[whichDim] === 0) {
-                     closer[whichDim] = "No Change";
+                     closer[whichDim] = 'No Change';
                   } else if (closer[whichDim] === 1) {
-                     closer[whichDim] = "Closer to ideal";
+                     closer[whichDim] = 'Closer to ideal';
                   } else if (closer[whichDim] === -1) {
-                     closer[whichDim] = "Further from ideal";
+                     closer[whichDim] = 'Further from ideal';
                   } else {
-                     closer[whichDim] = "Overshot ideal";
+                     closer[whichDim] = 'Overshot ideal';
                   }
                }
                document.getElementById('aar-dsv-output').innerHTML = 'x : ' + closer[0];
@@ -1105,10 +1105,6 @@ var runDemo = function () {
          document.getElementById('click-output').innerHTML = str;
       }
       return true; // allow the default event handler to be called
-   };
-
-   document.onmouseup = function (ev) {
-      document.onmousemove = null; // stop moving point around
    };
 
    document.getElementById('randomize-points').onclick = function () {
