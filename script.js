@@ -111,8 +111,9 @@ var runDemo = function () {
 
    // points used to run demo
    var strategicPoints = [];
-   var animatedVote, animate, animationInProgress = false, animatedMovementLimit, animatedMovementLimitBase = 0.01, timeIncrementBase = 50, activeFocus, outcomeLast, votesLocked = false;
+   var animatedVote, animate, animationInProgress = false, animatedMovementLimit, animatedMovementLimitBase = 0.01, timeIncrementBase = 50, votesLocked = false;
    var targetVote = [], targetVoteLast = [];
+   var updateInProgress, updateRow;
 
    timeIntervalTextbox.value = timeIncrementBase;
    velocityLimitTextbox.value = animatedMovementLimitBase;
@@ -512,12 +513,15 @@ var runDemo = function () {
       } while (changed);
    };
 
-   var findLimits = function (votePoints, outcomeFunction) {
+   var findLimits = function (votePoints, outcomeFunction, focus) {
       var whichPoint, whichDim, snapshot = [], points = [], simplexIncrement = 0.02, hypercubeIncrement = 0.05;
+      if (!focus) {
+         focus = 0;
+      }
       for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
          snapshot.push([]);
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
-            if (whichPoint === 0) {
+            if (whichPoint === focus) {
                snapshot[whichPoint].push(0);
             } else {
                snapshot[whichPoint].push(votePoints[whichPoint][whichDim]);
@@ -526,32 +530,32 @@ var runDemo = function () {
       }
 
       if (simplexRadio.checked) {
-         for (snapshot[0][0] = 1; snapshot[0][0] > 0; snapshot[0][0] -= simplexIncrement, snapshot[0][2] += simplexIncrement) {
+         for (snapshot[focus][0] = 1; snapshot[focus][0] > 0; snapshot[focus][0] -= simplexIncrement, snapshot[focus][2] += simplexIncrement) {
             points.push(outcomeFunction(snapshot));
          }
-         snapshot[0][0] = 0;
-         snapshot[0][2] = 0;
-         for (snapshot[0][2] = 1; snapshot[0][2] > 0; snapshot[0][2] -= simplexIncrement, snapshot[0][1] += simplexIncrement) {
+         snapshot[focus][0] = 0;
+         snapshot[focus][2] = 0;
+         for (snapshot[focus][2] = 1; snapshot[focus][2] > 0; snapshot[focus][2] -= simplexIncrement, snapshot[focus][1] += simplexIncrement) {
             points.push(outcomeFunction(snapshot));
          }
-         snapshot[0][1] = 0;
-         snapshot[0][2] = 0;
-         for (snapshot[0][1] = 1; snapshot[0][1] > 0; snapshot[0][1] -= simplexIncrement, snapshot[0][0] += simplexIncrement) {
+         snapshot[focus][1] = 0;
+         snapshot[focus][2] = 0;
+         for (snapshot[focus][1] = 1; snapshot[focus][1] > 0; snapshot[focus][1] -= simplexIncrement, snapshot[focus][0] += simplexIncrement) {
             points.push(outcomeFunction(snapshot));
          }
       } else {
          points.push(outcomeFunction(snapshot));
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
-            for (snapshot[0][whichDim] = 0; snapshot[0][whichDim] < 1; snapshot[0][whichDim] += hypercubeIncrement) {
+            for (snapshot[focus][whichDim] = 0; snapshot[focus][whichDim] < 1; snapshot[focus][whichDim] += hypercubeIncrement) {
                points.push(outcomeFunction(snapshot));
             }
-            snapshot[0] = projectVotePointToSpace(snapshot[0]);
+            snapshot[focus] = projectVotePointToSpace(snapshot[focus]);
          }
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
-            for (snapshot[0][whichDim] = 1; snapshot[0][whichDim] > 0; snapshot[0][whichDim] -= hypercubeIncrement) {
+            for (snapshot[focus][whichDim] = 1; snapshot[focus][whichDim] > 0; snapshot[focus][whichDim] -= hypercubeIncrement) {
                points.push(outcomeFunction(snapshot));
             }
-            snapshot[0] = projectVotePointToSpace(snapshot[0]);
+            snapshot[focus] = projectVotePointToSpace(snapshot[focus]);
          }
       }
       return points;
@@ -735,8 +739,11 @@ var runDemo = function () {
       for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
          drawVotePoint(votePoints[whichPoint], pointBeingDragged === whichPoint ? focusColor : nonFocusColor, 6);
          votePointRows[whichPoint].style.display = 'table-row';
-         for (whichDim = 0; whichDim < numDims; ++whichDim) {
-            votePointTextboxes[whichPoint][whichDim].value = votePoints[whichPoint][whichDim].toFixed(5);
+         // don't update textboxes while update is pending
+         if (whichPoint !== updateInProgress) {
+            for (whichDim = 0; whichDim < numDims; ++whichDim) {
+               votePointTextboxes[whichPoint][whichDim].value = votePoints[whichPoint][whichDim].toFixed(5);
+            }
          }
       }
       for (whichPoint = numVoters; whichPoint < maxNumVoters; ++whichPoint) {
@@ -810,24 +817,30 @@ var runDemo = function () {
          }
          drawVotePoint(strategicPoints[0], focusStrategicVoteColor, 4);
          if (showStrategicOutcomesCheckbox.checked) {
+            var outcomeFunction;
             if (displayPerDimMidrangeCheckbox.checked) {
                midOutcome = calcPerDimMidrange(strategicPoints);
+               outcomeFunction = calcPerDimMidrange;
                drawVotePoint(midOutcome, '#000000', 4);
             }
             if (displayPerDimMedianCheckbox.checked) {
                medOutcome = calcPerDimMedian(strategicPoints);
+               outcomeFunction = calcPerDimMedian;
                drawVotePoint(medOutcome, '#000000', 4);
             }
             if (displayFermatWeberCheckbox.checked) {
                ferOutcome = calcFermatWeber(strategicPoints);
+               outcomeFunction = calcFermatWeber;
                drawVotePoint(ferOutcome, '#000000', 4);
             }
             if (displayAverageCheckbox.checked) {
                avgOutcome = calcAverage(strategicPoints);
+               outcomeFunction = calcAverage;
                drawVotePoint(avgOutcome, '#000000', 4);
             }
             if (displayAarDsvCheckbox.checked) {
                dsvOutcome = calcAarDsv(strategicPoints);
+               outcomeFunction = calcAarDsv;
                drawVotePoint(dsvOutcome, '#000000', 4);
             }
             if (displayPerDimMidrangeCheckbox.checked) {
@@ -845,11 +858,24 @@ var runDemo = function () {
             if (displayAarDsvCheckbox.checked) {
                drawVotePoint(dsvOutcome, '#ffff00', 3.5);
             }
-            if (typeof pointBeingDragged === 'number' && pointBeingDragged >= 0) {
-               if (!outcomeLast) {
-                  outcomeLast = avgOutcome;
+            if (typeof pointBeingDragged === 'number' && pointBeingDragged >= 0 && outcomeFunction && moveStrategicCheckbox.checked) {
+               var temp = [];
+               for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
+                  temp.push([]);
+                  for (whichDim = 0; whichDim < numDims; ++whichDim) {
+                     if (whichPoint === pointBeingDragged) {
+                        temp[whichPoint].push(votePoints[whichPoint][whichDim]);
+                     } else {
+                        temp[whichPoint].push(strategicPoints[whichPoint][whichDim]);
+                     }
+                  }
                }
-               var closer = isOutcomeCloserByDim(votePoints[pointBeingDragged], avgOutcome, outcomeLast);
+               if (showOutcomeBorderCheckbox.checked) {
+                  limitPoints = findLimits(temp, outcomeFunction, pointBeingDragged);
+                  drawLimits(limitPoints, '#aaaaaa');
+               }
+               drawVotePoint(outcomeFunction(temp), '#aaaaaa', 6);
+               var closer = isOutcomeCloserByDim(votePoints[pointBeingDragged], outcomeFunction(strategicPoints), outcomeFunction(temp));
                for (whichDim = 0; whichDim < numDims; ++whichDim) {
                   if (closer[whichDim] === 0) {
                      closer[whichDim] = 'No Change';
@@ -868,7 +894,15 @@ var runDemo = function () {
                      document.getElementById('aar-dsv-output').innerHTML += ' , z : ' + closer[2];
                   }
                }
-               outcomeLast = avgOutcome;
+               closer = isOutcomeCloserByMetric(votePoints[pointBeingDragged], outcomeFunction(strategicPoints), outcomeFunction(temp), 2);
+               if (closer === 0) {
+                  closer = 'No change';
+               } else if (closer === 1) {
+                  closer = 'Closer to ideal';
+               } else if (closer === -1) {
+                  closer = 'Further from ideal';
+               }
+               document.getElementById('aar-dsv-output').innerHTML += ' , By Euclidean Distance: ' + closer;
             }
          }
       }
@@ -876,11 +910,19 @@ var runDemo = function () {
 
    var focusOn = function (which) {
       drawVotePoint(votePoints[which], '#9966cc', 6);
-      activeFocus = true;
+      if (updateInProgress === which) {
+         window.clearTimeout(updateRow);
+      }
    };
 
-   var focusOff = function () {
-      activeFocus = false;
+   var focusOff = function (which) {
+      // really hacky, but makes sure update takes place when it should
+      if (updateInProgress === which) {
+         window.clearTimeout(updateRow);
+         updateRow = window.setTimeout(function () {
+            makePointChange(updateInProgress);
+         }, 50);
+      }
       if (!animationInProgress) {
          redrawSpace();
       }
@@ -894,24 +936,53 @@ var runDemo = function () {
             votePointTextboxes[num][num2].addEventListener('focus', function () {
                focusOn(Number(this.id[9]));
             }, false);
-            votePointTextboxes[num][num2].addEventListener('blur', focusOff, false);
+            votePointTextboxes[num][num2].addEventListener('blur', function () {
+               focusOff(Number(this.id[9]));
+            }, false);
             votePointTextboxes[num][num2].disabled = false;
          }
       }
    }());
 
+   // updates point using all data in its table row; called whenever a table row registers a change
+   var makePointChange = function (num) {
+      var input, whichDim;
+      for (whichDim = 0; whichDim < numDims; ++whichDim) {
+         input = parseFloat(votePointTextboxes[num][whichDim].value, 10);
+         if (!isNaN(input)) {
+            votePoints[num][whichDim] = input;
+         }
+      }
+      votePoints[num] = projectVotePointToSpace(votePoints[num]);
+      updateInProgress = null;
+      redrawSpace();
+   };
+
    (function () {
       var num;
       for (num = 0; num < votePointRows.length; ++num) {
+         // highlight point corresponding to row clicked on
          votePointRows[num].addEventListener('mousedown', function () {
-            if (!activeFocus) {
+            // make sure not to interfere with focus and blur handlers
+            if (document.activeElement.id.substring(0, 9) !== 'votepoint') {
                drawVotePoint(votePoints[this.id[9]],'#9966cc', 6);
             }
          } , false);
          votePointRows[num].addEventListener('mouseup', function () {
-            if (!activeFocus && !animationInProgress) {
-               setTimeout(redrawSpace, 500);
+            if (document.activeElement.id.substring(0, 9) !== 'votepoint' && !animationInProgress) {
+               setTimeout(function () {
+                  redrawSpace();
+               }, 200);
             }
+         }, false);
+         // update points based on user input
+         votePointRows[num].addEventListener('change', function () {
+            // updateInProgress used globally to tell which row has a change pending
+            updateInProgress = Number(this.id[9]);
+            // updateRow used globally to clear timeout when needed; reset if element in same row gains focus (see function focusOn)
+            updateRow = window.setTimeout(function () {
+               makePointChange(updateInProgress);
+            }, 50);
          }, false);
       }
    }());
@@ -997,24 +1068,6 @@ var runDemo = function () {
    showOutcomeBorderCheckbox.addEventListener('change', redrawSpace, false);
    showStrategicOutcomesCheckbox.addEventListener('change', redrawSpace, false);
 
-   var makePointTextChangeFunc = function (whichPoint, whichDim) {
-      return function () {
-         var num = parseFloat(votePointTextboxes[whichPoint][whichDim].value, 10);
-         if (!isNaN(num)) {
-            votePoints[whichPoint][whichDim] = num;
-            votePoints[whichPoint] = projectVotePointToSpace(votePoints[whichPoint]);
-            redrawSpace();
-         }
-      };
-   };
-
-   var whichDim, whichPoint;
-   for (whichPoint = 0; whichPoint < maxNumVoters; ++whichPoint) {
-      for (whichDim = 0; whichDim < 3; ++whichDim) {
-         votePointTextboxes[whichPoint][whichDim].onchange = makePointTextChangeFunc(whichPoint, whichDim);
-      }
-   }
-
    // allow the user to drag a vote point around
    votespaceCanvas.onmousedown = function (ev) {
       resetAnimation();
@@ -1080,11 +1133,12 @@ var runDemo = function () {
             } else {
                votePoints[whichPoint] = projectVotePointToSpace(toVoteDims(getMouse(ev)));
             }
-
             for (whichDim = 0; whichDim < numDims; ++whichDim) {
                votePointTextboxes[whichPoint][whichDim].value = votePoints[whichPoint][whichDim].toFixed(5);
             }
-            document.getElementById('click-output').innerHTML = 'x = ' + votePoints[whichPoint][0].toFixed(5) + ', y = ' + votePoints[whichPoint][1].toFixed(5);
+            if (numDims > 1) {
+               document.getElementById('click-output').innerHTML = 'x = ' + votePoints[whichPoint][0].toFixed(5) + ', y = ' + votePoints[whichPoint][1].toFixed(5);
+            }
             redrawSpace(whichPoint);
          };
          document.onmousemove(ev); // immediately show that the point has been selected
