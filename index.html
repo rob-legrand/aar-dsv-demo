@@ -68,6 +68,16 @@
          <label><input id="show-strategic-outcomes" type=checkbox>&nbsp;Show strategic outcomes</label>
       </div>
    </fieldset>
+   <fieldset class="strategy-system-options-area">
+      <legend>System to manipulate</legend>
+      <div class="strategy-system-options">
+         <label class="per-dim-midrange-option"><input id="manipulate-per-dim-midrange" name="strategy-system-options" type="radio" />&nbsp;Per-dimension midrange</label>
+         <label class="average-option"><input checked="checked" id="manipulate-average" name="strategy-system-options" type="radio" />&nbsp;Average</label>
+         <label class="aar-dsv-option"><input id="manipulate-aar-dsv" name="strategy-system-options" type="radio" />&nbsp;AAR DSV</label>
+         <label class="fermat-weber-option"><input id="manipulate-fermat-weber" name="strategy-system-options" type="radio" />&nbsp;Fermat-Weber point</label>
+         <label class="per-dim-median-option"><input id="manipulate-per-dim-median" name="strategy-system-options" type="radio" />&nbsp;Per-dimension median</label>
+      </div>
+   </fieldset>
    <fieldset id="animation-area">
       <legend>Animation</legend>
       <div class="animation-options">
@@ -145,7 +155,7 @@
          <td class="z-dim"><input class="z-value" id="votepoint82-value" size="7" type="text" /></td>
       </tr></table>
       <div>
-         <input id="update-votepoints" type="button" value="Update vote points" />
+         <input id="reset-strategic-points" type="button" value="Reset strategic points to sincere" />
       </div>
    </fieldset>
 </td></tr></table>

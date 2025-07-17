@@ -604,12 +604,13 @@ var runDemo = function () {
    };
 
    var isOutcomeCloserByMetric = function (idealPoint, newOutcome, oldOutcome, metric) {
+      // metric === 1: Manhattan distance
+      // metric === 2: Euclidean distance
+      // metric === Number.POSITIVE_INFINITY: Chebyshev distance
+      // returns 1 if newOutcome is closer to idealPoint than oldOutcome
       var whichDim, differenceNew, differenceOld;
 
       if (isFinite(metric)) {
-         if (metric < 1) {
-            return null;
-         }
          differenceNew = 0;
          differenceOld = 0;
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
@@ -859,53 +860,66 @@ var runDemo = function () {
                drawVotePoint(dsvOutcome, '#ffff00', 3.5);
             }
             if (typeof pointBeingDragged === 'number' && pointBeingDragged >= 0 && outcomeFunction && moveStrategicCheckbox.checked) {
-               var temp = [];
+               var focalSincerePoints = [];
                for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-                  temp.push([]);
+                  focalSincerePoints.push([]);
                   for (whichDim = 0; whichDim < numDims; ++whichDim) {
                      if (whichPoint === pointBeingDragged) {
-                        temp[whichPoint].push(votePoints[whichPoint][whichDim]);
+                        focalSincerePoints[whichPoint].push(votePoints[whichPoint][whichDim]);
                      } else {
-                        temp[whichPoint].push(strategicPoints[whichPoint][whichDim]);
+                        focalSincerePoints[whichPoint].push(strategicPoints[whichPoint][whichDim]);
                      }
                   }
                }
                if (showOutcomeBorderCheckbox.checked) {
-                  limitPoints = findLimits(temp, outcomeFunction, pointBeingDragged);
+                  limitPoints = findLimits(focalSincerePoints, outcomeFunction, pointBeingDragged);
                   drawLimits(limitPoints, '#aaaaaa');
                }
-               drawVotePoint(outcomeFunction(temp), '#aaaaaa', 6);
-               var closer = isOutcomeCloserByDim(votePoints[pointBeingDragged], outcomeFunction(strategicPoints), outcomeFunction(temp));
+               drawVotePoint(outcomeFunction(focalSincerePoints), '#aaaaaa', 6);
+               var closerByDim = isOutcomeCloserByDim(votePoints[pointBeingDragged], outcomeFunction(strategicPoints), outcomeFunction(focalSincerePoints));
                for (whichDim = 0; whichDim < numDims; ++whichDim) {
-                  if (closer[whichDim] === 0) {
-                     closer[whichDim] = 'No Change';
-                  } else if (closer[whichDim] === 1) {
-                     closer[whichDim] = 'Closer to ideal';
-                  } else if (closer[whichDim] === -1) {
-                     closer[whichDim] = 'Further from ideal';
+                  if (closerByDim[whichDim] === 0) {
+                     closerByDim[whichDim] = 'No change';
+                  } else if (closerByDim[whichDim] === 1) {
+                     closerByDim[whichDim] = 'Closer to ideal';
+                  } else if (closerByDim[whichDim] === -1) {
+                     closerByDim[whichDim] = 'Further from ideal';
                   } else {
-                     closer[whichDim] = 'Overshot ideal';
+                     closerByDim[whichDim] = 'Overshot ideal';
                   }
                }
-               document.getElementById('aar-dsv-output').innerHTML = 'x : ' + closer[0];
+               document.getElementById('aar-dsv-output').innerHTML = 'x: ' + closerByDim[0];
                if (numDims > 1) {
-                  document.getElementById('aar-dsv-output').innerHTML += ' , y : ' + closer[1];
+                  document.getElementById('aar-dsv-output').innerHTML += ', y: ' + closerByDim[1];
                   if (numDims > 2) {
-                     document.getElementById('aar-dsv-output').innerHTML += ' , z : ' + closer[2];
+                     document.getElementById('aar-dsv-output').innerHTML += ', z: ' + closerByDim[2];
                   }
                }
-               closer = isOutcomeCloserByMetric(votePoints[pointBeingDragged], outcomeFunction(strategicPoints), outcomeFunction(temp), 2);
-               if (closer === 0) {
-                  closer = 'No change';
-               } else if (closer === 1) {
-                  closer = 'Closer to ideal';
-               } else if (closer === -1) {
-                  closer = 'Further from ideal';
+               var closerByEuclidean = isOutcomeCloserByMetric(votePoints[pointBeingDragged], outcomeFunction(strategicPoints), outcomeFunction(focalSincerePoints), 2);
+               if (closerByEuclidean === 0) {
+                  document.getElementById('aar-dsv-output').innerHTML += '; by Euclidean distance: ' + 'No change';
+               } else if (closerByEuclidean === 1) {
+                  document.getElementById('aar-dsv-output').innerHTML += '; by Euclidean distance: ' + 'Closer to ideal';
+               } else if (closerByEuclidean === -1) {
+                  document.getElementById('aar-dsv-output').innerHTML += '; by Euclidean distance: ' + 'Further from ideal';
                }
-               document.getElementById('aar-dsv-output').innerHTML += ' , By Euclidean Distance: ' + closer;
             }
          }
       }
+   };
+
+   // updates point using all data in its table row; called whenever a table row registers a change
+   var getPointFromTextboxes = function (num) {
+      var input, whichDim;
+      for (whichDim = 0; whichDim < numDims; ++whichDim) {
+         input = parseFloat(votePointTextboxes[num][whichDim].value, 10);
+         if (!isNaN(input)) {
+            votePoints[num][whichDim] = input;
+         }
+      }
+      votePoints[num] = projectVotePointToSpace(votePoints[num]);
+      updateInProgress = null;
+      redrawSpace();
    };
 
    var focusOn = function (which) {
@@ -920,7 +934,7 @@ var runDemo = function () {
       if (updateInProgress === which) {
          window.clearTimeout(updateRow);
          updateRow = window.setTimeout(function () {
-            makePointChange(updateInProgress);
+            getPointFromTextboxes(updateInProgress);
          }, 50);
       }
       if (!animationInProgress) {
@@ -943,20 +957,6 @@ var runDemo = function () {
          }
       }
    }());
-
-   // updates point using all data in its table row; called whenever a table row registers a change
-   var makePointChange = function (num) {
-      var input, whichDim;
-      for (whichDim = 0; whichDim < numDims; ++whichDim) {
-         input = parseFloat(votePointTextboxes[num][whichDim].value, 10);
-         if (!isNaN(input)) {
-            votePoints[num][whichDim] = input;
-         }
-      }
-      votePoints[num] = projectVotePointToSpace(votePoints[num]);
-      updateInProgress = null;
-      redrawSpace();
-   };
 
    (function () {
       var num;
@@ -981,7 +981,7 @@ var runDemo = function () {
             updateInProgress = Number(this.id[9]);
             // updateRow used globally to clear timeout when needed; reset if element in same row gains focus (see function focusOn)
             updateRow = window.setTimeout(function () {
-               makePointChange(updateInProgress);
+               getPointFromTextboxes(updateInProgress);
             }, 50);
          }, false);
       }
@@ -1136,27 +1136,32 @@ var runDemo = function () {
             for (whichDim = 0; whichDim < numDims; ++whichDim) {
                votePointTextboxes[whichPoint][whichDim].value = votePoints[whichPoint][whichDim].toFixed(5);
             }
+            document.getElementById('click-output').innerHTML = 'x = ' + votePoints[whichPoint][0].toFixed(5);
             if (numDims > 1) {
-               document.getElementById('click-output').innerHTML = 'x = ' + votePoints[whichPoint][0].toFixed(5) + ', y = ' + votePoints[whichPoint][1].toFixed(5);
+               document.getElementById('click-output').innerHTML += ', y = ' + votePoints[whichPoint][1].toFixed(5);
+               if (numDims > 2) {
+                  document.getElementById('click-output').innerHTML += ', z = ' + votePoints[whichPoint][2].toFixed(5);
+               }
             }
             redrawSpace(whichPoint);
          };
          document.onmousemove(ev); // immediately show that the point has been selected
-         document.onmouseup = function () {
+         document.onmouseup = function (ev) {
             document.onmousemove = null; // stop moving point around
-            document.onmouseup = null;
+            document.onmouseup = function (ev) {
+               document.onmousemove = null; // stop moving point around (in case it gets sticky)
+            };
             redrawSpace();
          };
       } else {
          var testResult = testInequalities(projectVotePointToSpace(toVoteDims(getMouse(ev))));
-         var str = testResult.dimSize[0] < 0 ? 'x too small' : testResult.dimSize[0] > 0 ? 'x too big' : 'x just right';
+         document.getElementById('click-output').innerHTML = testResult.dimSize[0] < 0 ? 'x too small' : testResult.dimSize[0] > 0 ? 'x too big' : 'x just right';
          if (numDims > 1) {
-            str += '; ' + (testResult.dimSize[1] < 0 ? 'y too small' : testResult.dimSize[1] > 0 ? 'y too big' : 'y just right');
+            document.getElementById('click-output').innerHTML += '; ' + (testResult.dimSize[1] < 0 ? 'y too small' : testResult.dimSize[1] > 0 ? 'y too big' : 'y just right');
             if (numDims > 2) {
-               str += '; ' + (testResult.dimSize[2] < 0 ? 'z too small' : testResult.dimSize[2] > 0 ? 'z too big' : 'z just right');
+               document.getElementById('click-output').innerHTML += '; ' + (testResult.dimSize[2] < 0 ? 'z too small' : testResult.dimSize[2] > 0 ? 'z too big' : 'z just right');
             }
          }
-         document.getElementById('click-output').innerHTML = str;
       }
       return true; // allow the default event handler to be called
    };
