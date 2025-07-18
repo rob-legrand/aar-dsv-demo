@@ -6,8 +6,8 @@ var runDemo = function () {
    var votespaceCanvas = document.getElementById('votespace');
    var votespaceContext = votespaceCanvas.getContext && votespaceCanvas.getContext('2d');
    if (!votespaceContext) {
-      document.getElementById('instructions').innerHTML = 'Your browser does not seem to support the <code>&lt;canvas&gt;</code> element correctly.&nbsp; Please use a recent version of a browser such as <a href="http://www.opera.com/">Opera</a>, <a href="http://www.google.com/chrome/">Chrome</a> or <a href="http://www.getfirefox.com/">Firefox</a>.';
-      window.alert('Your browser does not seem to support the <canvas> element correctly.\nPlease use a recent version of a browser such as Opera, Chrome or Firefox.');
+      document.getElementById('instructions').innerHTML = 'Your browser does not seem to support the <code>&lt;canvas&gt;</code> element correctly.&nbsp; Please use a recent version of a standards-compliant browser such as <a href="http://www.opera.com/">Opera</a>, <a href="http://www.google.com/chrome/">Chrome</a> or <a href="http://www.getfirefox.com/">Firefox</a>.';
+      window.alert('Your browser does not seem to support the <canvas> element correctly.\nPlease use a recent version of a standards-compliant browser such as Opera, Chrome or Firefox.');
       return;
    }
 
@@ -29,9 +29,8 @@ var runDemo = function () {
    var lineSegmentRadio = document.getElementById('use-line-segment');
    var hypercubeRadio = document.getElementById('use-hypercube');
    var simplexRadio = document.getElementById('use-simplex');
+   var drawGridLinesCheckbox = document.getElementById('draw-grid-lines');
    var numDims;
-   var automaticStrategyRadio = document.getElementById('strategy-mode');
-   var noAutomaticStrategyRadio = document.getElementById('regular-mode');
    var startAnimationButton = document.getElementById('start-animation');
    var stopAnimationButton = document.getElementById('stop-animation');
    var displayAarDsvCheckbox = document.getElementById('display-aar-dsv');
@@ -54,6 +53,7 @@ var runDemo = function () {
    lockVotesCheckbox.checked = false;
    var moveStrategicCheckbox = document.getElementById('move-strategic');
    moveStrategicCheckbox.checked = false;
+   var automaticStrategyCheckbox = document.getElementById('automatic-strategy');
    var showStrategicOutcomesCheckbox = document.getElementById('show-strategic-outcomes');
    var showOutcomeBorderCheckbox = document.getElementById('show-outcome-border');
    var resetStrategicButton = document.getElementById('reset-strategic-points');
@@ -657,10 +657,14 @@ var runDemo = function () {
    };
 
    var clearSpace = function () {
+      var point, whichVoter;
+      var gridLineColor = '#eeeeee';
+
+      // fill canvas background to match page background
       votespaceContext.fillStyle = '#ddeeff';
       votespaceContext.fillRect(0, 0, votespaceCanvas.width, votespaceCanvas.height);
 
-      // draw votespace boundary
+      // draw votespace interior, grid lines, boundary
       if (lineSegmentRadio.checked) {
          votespaceContext.beginPath();
          votespaceContext.moveTo(lineSegmentLeftX + 0.5, lineSegmentY + 0.5);
@@ -676,6 +680,46 @@ var runDemo = function () {
          votespaceContext.lineTo(hypercubeLeftX + 0.5, hypercubeTopY + 0.5);
          votespaceContext.fillStyle = '#ffffff';
          votespaceContext.fill();
+         if (drawGridLinesCheckbox.checked) {
+            for (whichVoter = 0; whichVoter < numVoters; ++whichVoter) {
+               votespaceContext.beginPath();
+               point = toScreenCoords([votePoints[whichVoter][0], 0]);
+               votespaceContext.moveTo(point.x + 0.5, point.y + 0.5);
+               point = toScreenCoords([votePoints[whichVoter][0], 1]);
+               votespaceContext.lineTo(point.x + 0.5, point.y + 0.5);
+               votespaceContext.strokeStyle = gridLineColor;
+               votespaceContext.stroke();
+               votespaceContext.beginPath();
+               point = toScreenCoords([0, votePoints[whichVoter][1]]);
+               votespaceContext.moveTo(point.x + 0.5, point.y + 0.5);
+               point = toScreenCoords([1, votePoints[whichVoter][1]]);
+               votespaceContext.lineTo(point.x + 0.5, point.y + 0.5);
+               votespaceContext.strokeStyle = gridLineColor;
+               votespaceContext.stroke();
+            }
+            for (whichVoter = 1; whichVoter < numVoters; ++whichVoter) {
+               votespaceContext.beginPath();
+               point = toScreenCoords([whichVoter / numVoters, 0]);
+               votespaceContext.moveTo(point.x + 0.5, point.y + 0.5);
+               point = toScreenCoords([whichVoter / numVoters, 1]);
+               votespaceContext.lineTo(point.x + 0.5, point.y + 0.5);
+               votespaceContext.strokeStyle = gridLineColor;
+               votespaceContext.stroke();
+               votespaceContext.beginPath();
+               point = toScreenCoords([0, whichVoter / numVoters]);
+               votespaceContext.moveTo(point.x + 0.5, point.y + 0.5);
+               point = toScreenCoords([1, whichVoter / numVoters]);
+               votespaceContext.lineTo(point.x + 0.5, point.y + 0.5);
+               votespaceContext.strokeStyle = gridLineColor;
+               votespaceContext.stroke();
+            }
+         }
+         votespaceContext.beginPath();
+         votespaceContext.moveTo(hypercubeLeftX + 0.5, hypercubeTopY + 0.5);
+         votespaceContext.lineTo(hypercubeRightX + 0.5, hypercubeTopY + 0.5);
+         votespaceContext.lineTo(hypercubeRightX + 0.5, hypercubeBottomY + 0.5);
+         votespaceContext.lineTo(hypercubeLeftX + 0.5, hypercubeBottomY + 0.5);
+         votespaceContext.lineTo(hypercubeLeftX + 0.5, hypercubeTopY + 0.5);
          votespaceContext.strokeStyle = '#000000';
          votespaceContext.stroke();
       } else if (simplexRadio.checked) {
@@ -686,6 +730,59 @@ var runDemo = function () {
          votespaceContext.lineTo(simplexLeftX + 0.5, simplexMiddleY + 0.5);
          votespaceContext.fillStyle = '#ffffff';
          votespaceContext.fill();
+         if (drawGridLinesCheckbox.checked) {
+            for (whichVoter = 0; whichVoter < numVoters; ++whichVoter) {
+               votespaceContext.beginPath();
+               point = toScreenCoords(votePoints[whichVoter]);
+               votespaceContext.moveTo(point.x + 0.5, point.y + 0.5);
+               point = toScreenCoords(votePoints[whichVoter][0] > votePoints[whichVoter][1] ? [votePoints[whichVoter][0] - votePoints[whichVoter][1], 0, votePoints[whichVoter][2] + 2 * votePoints[whichVoter][1]] : [0, votePoints[whichVoter][1] - votePoints[whichVoter][0], votePoints[whichVoter][2] + 2 * votePoints[whichVoter][0]]);
+               votespaceContext.lineTo(point.x + 0.5, point.y + 0.5);
+               votespaceContext.strokeStyle = gridLineColor;
+               votespaceContext.stroke();
+               votespaceContext.beginPath();
+               point = toScreenCoords(votePoints[whichVoter]);
+               votespaceContext.moveTo(point.x + 0.5, point.y + 0.5);
+               point = toScreenCoords(votePoints[whichVoter][0] > votePoints[whichVoter][2] ? [votePoints[whichVoter][0] - votePoints[whichVoter][2], votePoints[whichVoter][1] + 2 * votePoints[whichVoter][2], 0] : [0, votePoints[whichVoter][1] + 2 * votePoints[whichVoter][0], votePoints[whichVoter][2] - votePoints[whichVoter][0]]);
+               votespaceContext.lineTo(point.x + 0.5, point.y + 0.5);
+               votespaceContext.strokeStyle = gridLineColor;
+               votespaceContext.stroke();
+               votespaceContext.beginPath();
+               point = toScreenCoords(votePoints[whichVoter]);
+               votespaceContext.moveTo(point.x + 0.5, point.y + 0.5);
+               point = toScreenCoords(votePoints[whichVoter][1] > votePoints[whichVoter][2] ? [votePoints[whichVoter][0] + 2 * votePoints[whichVoter][2], votePoints[whichVoter][1] - votePoints[whichVoter][2], 0] : [votePoints[whichVoter][0] + 2 * votePoints[whichVoter][1], 0, votePoints[whichVoter][2] - votePoints[whichVoter][1]]);
+               votespaceContext.lineTo(point.x + 0.5, point.y + 0.5);
+               votespaceContext.strokeStyle = gridLineColor;
+               votespaceContext.stroke();
+            }
+            for (whichVoter = 1; whichVoter < numVoters; ++whichVoter) {
+               votespaceContext.beginPath();
+               point = toScreenCoords([whichVoter / numVoters, 1 - whichVoter / numVoters, 0]);
+               votespaceContext.moveTo(point.x + 0.5, point.y + 0.5);
+               point = toScreenCoords([whichVoter / numVoters, 0, 1 - whichVoter / numVoters]);
+               votespaceContext.lineTo(point.x + 0.5, point.y + 0.5);
+               votespaceContext.strokeStyle = gridLineColor;
+               votespaceContext.stroke();
+               votespaceContext.beginPath();
+               point = toScreenCoords([1 - whichVoter / numVoters, whichVoter / numVoters, 0]);
+               votespaceContext.moveTo(point.x + 0.5, point.y + 0.5);
+               point = toScreenCoords([0, whichVoter / numVoters, 1 - whichVoter / numVoters]);
+               votespaceContext.lineTo(point.x + 0.5, point.y + 0.5);
+               votespaceContext.strokeStyle = gridLineColor;
+               votespaceContext.stroke();
+               votespaceContext.beginPath();
+               point = toScreenCoords([1 - whichVoter / numVoters, 0, whichVoter / numVoters]);
+               votespaceContext.moveTo(point.x + 0.5, point.y + 0.5);
+               point = toScreenCoords([0, 1 - whichVoter / numVoters, whichVoter / numVoters]);
+               votespaceContext.lineTo(point.x + 0.5, point.y + 0.5);
+               votespaceContext.strokeStyle = gridLineColor;
+               votespaceContext.stroke();
+            }
+         }
+         votespaceContext.beginPath();
+         votespaceContext.moveTo(simplexLeftX + 0.5, simplexMiddleY + 0.5);
+         votespaceContext.lineTo(simplexRightX + 0.5, simplexTopY + 0.5);
+         votespaceContext.lineTo(simplexRightX + 0.5, simplexBottomY + 0.5);
+         votespaceContext.lineTo(simplexLeftX + 0.5, simplexMiddleY + 0.5);
          votespaceContext.strokeStyle = '#000000';
          votespaceContext.stroke();
       } else {
@@ -695,7 +792,11 @@ var runDemo = function () {
    };
 
    var redrawSpace = function (pointBeingDragged) {
-      var whichDim, whichPoint, limitPoints, nonFocusColor = '#6699cc', focusColor = '#9966cc', nonFocusStrategicVoteColor = '#000000', focusStrategicVoteColor = '#000000', outcomeFunction, outcomeBorderColor;
+      var whichDim, whichPoint, limitPoints, outcomeFunction, outcomeBorderColor;
+      var nonFocusColor = '#6699cc';
+      var focusColor = '#9966cc';
+      var nonFocusStrategicVoteColor = '#000000';
+      var focusStrategicVoteColor = '#000000';
       resetAnimation();
 
       if (!clearSpace()) {
@@ -724,10 +825,10 @@ var runDemo = function () {
       }
 
       // draw lines from sincere points to strategic votes
-      if (automaticStrategyRadio.checked || moveStrategicCheckbox.checked || showStrategicOutcomesCheckbox.checked) {
-         if (moveStrategicCheckbox.checked && lockVotesCheckbox.checked && automaticStrategyRadio.checked) {
+      if (automaticStrategyCheckbox.checked || moveStrategicCheckbox.checked || showStrategicOutcomesCheckbox.checked) {
+         if (moveStrategicCheckbox.checked && lockVotesCheckbox.checked && automaticStrategyCheckbox.checked) {
             dsvAverage(0);
-         } else if (!moveStrategicCheckbox.checked && automaticStrategyRadio.checked) {
+         } else if (!moveStrategicCheckbox.checked && automaticStrategyCheckbox.checked) {
             dsvAverage();
          }
 
@@ -765,26 +866,23 @@ var runDemo = function () {
       var avgOutcome, dsvOutcome, ferOutcome, medOutcome, midOutcome;
       if (displayPerDimMidrangeCheckbox.checked) {
          midOutcome = calcPerDimMidrange(votePoints);
-         drawVotePoint(midOutcome, '#000000', 7.5);
+         drawVotePoint(midOutcome, '#000000', 7);
       }
       if (displayPerDimMedianCheckbox.checked) {
          medOutcome = calcPerDimMedian(votePoints);
-         drawVotePoint(medOutcome, '#000000', 7.5);
+         drawVotePoint(medOutcome, '#000000', 7);
       }
       if (displayFermatWeberCheckbox.checked) {
          ferOutcome = calcFermatWeber(votePoints);
-         drawVotePoint(ferOutcome, '#000000', 7.5);
+         drawVotePoint(ferOutcome, '#000000', 7);
       }
       if (displayAverageCheckbox.checked) {
          avgOutcome = calcAverage(votePoints);
-         drawVotePoint(avgOutcome, '#000000', 7.5);
+         drawVotePoint(avgOutcome, '#000000', 7);
       }
       if (displayAarDsvCheckbox.checked) {
          dsvOutcome = calcAarDsv(votePoints);
-         drawVotePoint(dsvOutcome, '#000000', 7.5);
-         if (!testInequalities(dsvOutcome).obeysAll) {
-            window.alert('OH NO: ' + testInequalities(dsvOutcome).dimSize[0] + ':' + testInequalities(dsvOutcome).dimSize[1] + ':' + testInequalities(dsvOutcome).dimSize[2]);
-         }
+         drawVotePoint(dsvOutcome, '#000000', 7);
       }
       if (displayPerDimMidrangeCheckbox.checked) {
          drawVotePoint(midOutcome, '#ff5555', 6);
@@ -818,7 +916,7 @@ var runDemo = function () {
       }
 
       // draw strategic votes and equilibrium Average outcome
-      if (automaticStrategyRadio.checked || moveStrategicCheckbox.checked || showStrategicOutcomesCheckbox.checked) {
+      if (automaticStrategyCheckbox.checked || moveStrategicCheckbox.checked || showStrategicOutcomesCheckbox.checked) {
          for (whichPoint = 1; whichPoint < numVoters; ++whichPoint) {
             drawVotePoint(strategicPoints[whichPoint], nonFocusStrategicVoteColor , 4);
          }
@@ -1008,7 +1106,7 @@ var runDemo = function () {
 
    moveStrategicCheckbox.addEventListener('change', function () {
       var whichPoint, whichDim;
-      if (strategicPoints.length !== numVoters || !automaticStrategyRadio.checked && !showStrategicOutcomesCheckbox.checked) {
+      if (strategicPoints.length !== numVoters || !automaticStrategyCheckbox.checked && !showStrategicOutcomesCheckbox.checked) {
          resetStrategic();
       }
       redrawSpace();
@@ -1065,11 +1163,11 @@ var runDemo = function () {
       redrawSpace();
    };
 
-   automaticStrategyRadio.onchange = function () {
+   automaticStrategyCheckbox.onchange = function () {
       redrawSpace();
    };
 
-   noAutomaticStrategyRadio.onchange = function () {
+   drawGridLinesCheckbox.onchange = function () {
       redrawSpace();
    };
 
@@ -1422,23 +1520,23 @@ var runDemo = function () {
       var avgOutcome, dsvOutcome, ferOutcome, medOutcome, midOutcome;
       if (displayPerDimMidrangeCheckbox.checked) {
          midOutcome = calcPerDimMidrange(votePoints);
-         drawVotePoint(midOutcome, '#000000', 7.5);
+         drawVotePoint(midOutcome, '#000000', 7);
       }
       if (displayPerDimMedianCheckbox.checked) {
          medOutcome = calcPerDimMedian(votePoints);
-         drawVotePoint(medOutcome, '#000000', 7.5);
+         drawVotePoint(medOutcome, '#000000', 7);
       }
       if (displayFermatWeberCheckbox.checked) {
          ferOutcome = calcFermatWeber(votePoints);
-         drawVotePoint(ferOutcome, '#000000', 7.5);
+         drawVotePoint(ferOutcome, '#000000', 7);
       }
       if (displayAverageCheckbox.checked) {
          avgOutcome = calcAverage(votePoints);
-         drawVotePoint(avgOutcome, '#000000', 7.5);
+         drawVotePoint(avgOutcome, '#000000', 7);
       }
       if (displayAarDsvCheckbox.checked) {
          dsvOutcome = calcAarDsv(votePoints);
-         drawVotePoint(dsvOutcome, '#000000', 7.5);
+         drawVotePoint(dsvOutcome, '#000000', 7);
       }
       if (displayPerDimMidrangeCheckbox.checked) {
          drawVotePoint(midOutcome, '#ff5555', 6);

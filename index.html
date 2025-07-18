@@ -17,7 +17,7 @@
 
 <table><tr><td>
    <canvas height="641" id="votespace" width="591">
-      Your browser does not seem to support the <code>&lt;canvas&gt;</code> element correctly.&nbsp; Please use a recent version of a browser such as
+      Your browser does not seem to support the <code>&lt;canvas&gt;</code> element correctly.&nbsp; Please use a recent version of a standards-compliant browser such as
       <a href="http://www.opera.com/">Opera</a>, <a href="http://www.google.com/chrome/">Chrome</a> or <a href="http://www.getfirefox.com/">Firefox</a> and enable
       JavaScript.
    </canvas>
@@ -29,10 +29,10 @@
          <label><input checked="checked" id="use-hypercube" name="votespace-options" type="radio" />&nbsp;Hypercube</label>
          <label><input id="use-simplex" name="votespace-options" type="radio" />&nbsp;Simplex</label>
       </div>
+      <label><input id="draw-grid-lines" type="checkbox">&nbsp;Draw grid lines</label>
    </fieldset>
    <div>
-      <label for="select-n">Number of voters:&nbsp;
-      <select id="select-n">
+      <label for="select-n">Number of voters:&nbsp;<select id="select-n">
          <option>2</option>
          <option>3</option>
          <option>4</option>
@@ -41,19 +41,9 @@
          <option>7</option>
          <option>8</option>
          <option>9</option>
-      </select>
-      </label>
-   </div>
-   <div>
+      </select></label>
       <input id="randomize-points" type="button" value="Randomize vote points" />
    </div>
-   <fieldset class="mode-area">
-      <legend>Mode</legend>
-      <div class="mode-options">
-         <label><input checked="checked" id="regular-mode" name="mode-options" type="radio" />&nbsp;No automatic voter strategy</label>
-         <label><input id="strategy-mode" name="mode-options" type="radio" />&nbsp;Automatic voter strategy</label>
-      </div>
-   </fieldset>
    <fieldset class="outcome-options-area">
       <legend>Outcomes to display</legend>
       <div class="outcome-options">
@@ -64,7 +54,6 @@
          <label class="per-dim-median-option"><input id="display-per-dim-median" type="checkbox" />&nbsp;Per-dimension median</label>
       </div>
       <div>
-         <label><input id="show-outcome-border" type=checkbox>&nbsp;Show limits of outcome</label>
          <label><input id="show-strategic-outcomes" type=checkbox>&nbsp;Show strategic outcomes</label>
       </div>
    </fieldset>
@@ -76,6 +65,9 @@
          <label class="aar-dsv-option"><input id="manipulate-aar-dsv" name="strategy-system-options" type="radio" />&nbsp;AAR DSV</label>
          <label class="fermat-weber-option"><input id="manipulate-fermat-weber" name="strategy-system-options" type="radio" />&nbsp;Fermat-Weber point</label>
          <label class="per-dim-median-option"><input id="manipulate-per-dim-median" name="strategy-system-options" type="radio" />&nbsp;Per-dimension median</label>
+      </div>
+      <div>
+         <label><input id="show-outcome-border" type=checkbox>&nbsp;Show limits of outcome</label>
       </div>
    </fieldset>
    <fieldset id="animation-area">
@@ -101,8 +93,9 @@
    </fieldset>
    <fieldset class="votepoints-area">
       <legend>Vote points</legend>
-      <div><label><input id="lock-votes" type="checkbox" />&nbsp;Lock all but focal vote</label></div>
-      <div><label><input id="move-strategic" type="checkbox">&nbsp;Move strategic votes</label></div>
+      <label><input id="lock-votes" type="checkbox" />&nbsp;Lock all but focal vote</label>
+      <label><input id="move-strategic" type="checkbox">&nbsp;Move strategic votes</label>
+      <label><input id="automatic-strategy" type="checkbox">&nbsp;Automatically update strategic votes based on optimal Average strategy</label>
       <table id="votepoints"><tr>
          <th></th>
          <th class="x-dim"><span class="variable">x</span></th>
