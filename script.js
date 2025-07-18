@@ -55,9 +55,8 @@ var runDemo = function () {
    var moveStrategicCheckbox = document.getElementById('move-strategic');
    moveStrategicCheckbox.checked = false;
    var showStrategicOutcomesCheckbox = document.getElementById('show-strategic-outcomes');
-
    var showOutcomeBorderCheckbox = document.getElementById('show-outcome-border');
-
+   var resetStrategicButton = document.getElementById('reset-strategic-points');
    var votePointTable = document.getElementById('votepoints');
    var votePointRowCollection = votePointTable.getElementsByTagName('tr');
    var votePointRows = [];
@@ -73,6 +72,8 @@ var runDemo = function () {
    votePointCells[0] = votePointTable.getElementsByClassName('x-dim');
    votePointCells[1] = votePointTable.getElementsByClassName('y-dim');
    votePointCells[2] = votePointTable.getElementsByClassName('z-dim');
+
+   var strategySystemOptions = document.getElementsByName('strategy-system-options');
 
    var votePointTextboxCollection = votePointTable.getElementsByTagName('input');
    var votePointTextboxes = [];
@@ -112,7 +113,7 @@ var runDemo = function () {
    // points used to run demo
    var strategicPoints = [];
    var animatedVote, animate, animationInProgress = false, animatedMovementLimit, animatedMovementLimitBase = 0.01, timeIncrementBase = 50, votesLocked = false;
-   var targetVote = [], targetVoteLast = [];
+   var targetVote, targetVoteLast;
    var updateInProgress, updateRow;
 
    timeIntervalTextbox.value = timeIncrementBase;
@@ -457,6 +458,18 @@ var runDemo = function () {
       return projectVotePointToSpace(outcome);
    };
 
+   // add references to associated functions and colors to each strategy system option
+   strategySystemOptions[0].func = calcPerDimMidrange;
+   strategySystemOptions[0].color = '#ff5555';
+   strategySystemOptions[1].func = calcAverage;
+   strategySystemOptions[1].color = '#ffaa00';
+   strategySystemOptions[2].func = calcAarDsv;
+   strategySystemOptions[2].color = '#ffff00';
+   strategySystemOptions[3].func = calcFermatWeber;
+   strategySystemOptions[3].color = '#aaff00';
+   strategySystemOptions[4].func = calcPerDimMedian;
+   strategySystemOptions[4].color = '#55ff55';
+
    // calculate strategicPoints at Average equilibrium
    var dsvAverage = function (onWhich) {
       var average, calculatedTotal, changed, whichDim, whichPoint, whichPoint2;
@@ -514,48 +527,48 @@ var runDemo = function () {
    };
 
    var findLimits = function (votePoints, outcomeFunction, focus) {
-      var whichPoint, whichDim, snapshot = [], points = [], simplexIncrement = 0.02, hypercubeIncrement = 0.05;
+      var whichPoint, whichDim, copyArray = [], points = [], simplexIncrement = 0.02, hypercubeIncrement = 0.05;
       if (!focus) {
          focus = 0;
       }
       for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-         snapshot.push([]);
+         copyArray.push([]);
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
             if (whichPoint === focus) {
-               snapshot[whichPoint].push(0);
+               copyArray[whichPoint].push(0);
             } else {
-               snapshot[whichPoint].push(votePoints[whichPoint][whichDim]);
+               copyArray[whichPoint].push(votePoints[whichPoint][whichDim]);
             }
          }
       }
 
       if (simplexRadio.checked) {
-         for (snapshot[focus][0] = 1; snapshot[focus][0] > 0; snapshot[focus][0] -= simplexIncrement, snapshot[focus][2] += simplexIncrement) {
-            points.push(outcomeFunction(snapshot));
+         for (copyArray[focus][0] = 1; copyArray[focus][0] > 0; copyArray[focus][0] -= simplexIncrement, copyArray[focus][2] += simplexIncrement) {
+            points.push(outcomeFunction(copyArray));
          }
-         snapshot[focus][0] = 0;
-         snapshot[focus][2] = 0;
-         for (snapshot[focus][2] = 1; snapshot[focus][2] > 0; snapshot[focus][2] -= simplexIncrement, snapshot[focus][1] += simplexIncrement) {
-            points.push(outcomeFunction(snapshot));
+         copyArray[focus][0] = 0;
+         copyArray[focus][2] = 0;
+         for (copyArray[focus][2] = 1; copyArray[focus][2] > 0; copyArray[focus][2] -= simplexIncrement, copyArray[focus][1] += simplexIncrement) {
+            points.push(outcomeFunction(copyArray));
          }
-         snapshot[focus][1] = 0;
-         snapshot[focus][2] = 0;
-         for (snapshot[focus][1] = 1; snapshot[focus][1] > 0; snapshot[focus][1] -= simplexIncrement, snapshot[focus][0] += simplexIncrement) {
-            points.push(outcomeFunction(snapshot));
+         copyArray[focus][1] = 0;
+         copyArray[focus][2] = 0;
+         for (copyArray[focus][1] = 1; copyArray[focus][1] > 0; copyArray[focus][1] -= simplexIncrement, copyArray[focus][0] += simplexIncrement) {
+            points.push(outcomeFunction(copyArray));
          }
       } else {
-         points.push(outcomeFunction(snapshot));
+         points.push(outcomeFunction(copyArray));
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
-            for (snapshot[focus][whichDim] = 0; snapshot[focus][whichDim] < 1; snapshot[focus][whichDim] += hypercubeIncrement) {
-               points.push(outcomeFunction(snapshot));
+            for (copyArray[focus][whichDim] = 0; copyArray[focus][whichDim] < 1; copyArray[focus][whichDim] += hypercubeIncrement) {
+               points.push(outcomeFunction(copyArray));
             }
-            snapshot[focus] = projectVotePointToSpace(snapshot[focus]);
+            copyArray[focus] = projectVotePointToSpace(copyArray[focus]);
          }
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
-            for (snapshot[focus][whichDim] = 1; snapshot[focus][whichDim] > 0; snapshot[focus][whichDim] -= hypercubeIncrement) {
-               points.push(outcomeFunction(snapshot));
+            for (copyArray[focus][whichDim] = 1; copyArray[focus][whichDim] > 0; copyArray[focus][whichDim] -= hypercubeIncrement) {
+               points.push(outcomeFunction(copyArray));
             }
-            snapshot[focus] = projectVotePointToSpace(snapshot[focus]);
+            copyArray[focus] = projectVotePointToSpace(copyArray[focus]);
          }
       }
       return points;
@@ -682,7 +695,7 @@ var runDemo = function () {
    };
 
    var redrawSpace = function (pointBeingDragged) {
-      var whichDim, whichPoint, limitPoints, nonFocusColor = '#6699cc', focusColor = '#9966cc', nonFocusStrategicVoteColor = '#000000', focusStrategicVoteColor = '#000000';
+      var whichDim, whichPoint, limitPoints, nonFocusColor = '#6699cc', focusColor = '#9966cc', nonFocusStrategicVoteColor = '#000000', focusStrategicVoteColor = '#000000', outcomeFunction, outcomeBorderColor;
       resetAnimation();
 
       if (!clearSpace()) {
@@ -698,23 +711,16 @@ var runDemo = function () {
       }
 
       // draw limits of manipulation for voter 1 (i.e. votePoints[0])
+      // now uses radio buttons for selection instead of checkboxes
       if (showOutcomeBorderCheckbox.checked) {
-         if (displayPerDimMidrangeCheckbox.checked) {
-            limitPoints = findLimits(votePoints, calcPerDimMidrange);
-            drawLimits(limitPoints, '#ff5555');
-         } else if (displayPerDimMedianCheckbox.checked) {
-            limitPoints = findLimits(votePoints, calcPerDimMedian);
-            drawLimits(limitPoints, '#55ff55');
-         } else if (displayFermatWeberCheckbox.checked) {
-            limitPoints = findLimits(votePoints, calcFermatWeber);
-            drawLimits(limitPoints, '#aaff00');
-         } else if (displayAverageCheckbox.checked) {
-            limitPoints = findLimits(votePoints, calcAverage);
-            drawLimits(limitPoints, '#ffaa00');
-         } else if (displayAarDsvCheckbox.checked) {
-            limitPoints = findLimits(votePoints, calcAarDsv);
-            drawLimits(limitPoints, '#ffff00');
+         for (whichPoint = 0; whichPoint < strategySystemOptions.length; ++whichPoint) {
+            if (strategySystemOptions[whichPoint].checked) {
+               outcomeFunction = strategySystemOptions[whichPoint].func;
+               outcomeBorderColor = strategySystemOptions[whichPoint].color;
+            }
          }
+         limitPoints = findLimits(votePoints, outcomeFunction);
+         drawLimits(limitPoints, outcomeBorderColor);
       }
 
       // draw lines from sincere points to strategic votes
@@ -818,47 +824,6 @@ var runDemo = function () {
          }
          drawVotePoint(strategicPoints[0], focusStrategicVoteColor, 4);
          if (showStrategicOutcomesCheckbox.checked) {
-            var outcomeFunction;
-            if (displayPerDimMidrangeCheckbox.checked) {
-               midOutcome = calcPerDimMidrange(strategicPoints);
-               outcomeFunction = calcPerDimMidrange;
-               drawVotePoint(midOutcome, '#000000', 4);
-            }
-            if (displayPerDimMedianCheckbox.checked) {
-               medOutcome = calcPerDimMedian(strategicPoints);
-               outcomeFunction = calcPerDimMedian;
-               drawVotePoint(medOutcome, '#000000', 4);
-            }
-            if (displayFermatWeberCheckbox.checked) {
-               ferOutcome = calcFermatWeber(strategicPoints);
-               outcomeFunction = calcFermatWeber;
-               drawVotePoint(ferOutcome, '#000000', 4);
-            }
-            if (displayAverageCheckbox.checked) {
-               avgOutcome = calcAverage(strategicPoints);
-               outcomeFunction = calcAverage;
-               drawVotePoint(avgOutcome, '#000000', 4);
-            }
-            if (displayAarDsvCheckbox.checked) {
-               dsvOutcome = calcAarDsv(strategicPoints);
-               outcomeFunction = calcAarDsv;
-               drawVotePoint(dsvOutcome, '#000000', 4);
-            }
-            if (displayPerDimMidrangeCheckbox.checked) {
-               drawVotePoint(midOutcome, '#ff5555', 3.5);
-            }
-            if (displayPerDimMedianCheckbox.checked) {
-               drawVotePoint(medOutcome, '#55ff55', 3.5);
-            }
-            if (displayFermatWeberCheckbox.checked) {
-               drawVotePoint(ferOutcome, '#aaff00', 3.5);
-            }
-            if (displayAverageCheckbox.checked) {
-               drawVotePoint(avgOutcome, '#ffaa00', 3.5);
-            }
-            if (displayAarDsvCheckbox.checked) {
-               drawVotePoint(dsvOutcome, '#ffff00', 3.5);
-            }
             if (typeof pointBeingDragged === 'number' && pointBeingDragged >= 0 && outcomeFunction && moveStrategicCheckbox.checked) {
                var focalSincerePoints = [];
                for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
@@ -904,9 +869,61 @@ var runDemo = function () {
                   document.getElementById('aar-dsv-output').innerHTML += '; by Euclidean distance: ' + 'Further from ideal';
                }
             }
+            if (displayPerDimMidrangeCheckbox.checked) {
+               midOutcome = calcPerDimMidrange(strategicPoints);
+               drawVotePoint(midOutcome, '#000000', 4);
+            }
+            if (displayPerDimMedianCheckbox.checked) {
+               medOutcome = calcPerDimMedian(strategicPoints);
+               drawVotePoint(medOutcome, '#000000', 4);
+            }
+            if (displayFermatWeberCheckbox.checked) {
+               ferOutcome = calcFermatWeber(strategicPoints);
+               drawVotePoint(ferOutcome, '#000000', 4);
+            }
+            if (displayAverageCheckbox.checked) {
+               avgOutcome = calcAverage(strategicPoints);
+               drawVotePoint(avgOutcome, '#000000', 4);
+            }
+            if (displayAarDsvCheckbox.checked) {
+               dsvOutcome = calcAarDsv(strategicPoints);
+               drawVotePoint(dsvOutcome, '#000000', 4);
+            }
+            if (displayPerDimMidrangeCheckbox.checked) {
+               drawVotePoint(midOutcome, '#ff5555', 3.5);
+            }
+            if (displayPerDimMedianCheckbox.checked) {
+               drawVotePoint(medOutcome, '#55ff55', 3.5);
+            }
+            if (displayFermatWeberCheckbox.checked) {
+               drawVotePoint(ferOutcome, '#aaff00', 3.5);
+            }
+            if (displayAverageCheckbox.checked) {
+               drawVotePoint(avgOutcome, '#ffaa00', 3.5);
+            }
+            if (displayAarDsvCheckbox.checked) {
+               drawVotePoint(dsvOutcome, '#ffff00', 3.5);
+            }
          }
       }
    };
+
+   // reset strategic to sincere points
+   var resetStrategic = function () {
+      var whichPoint, whichDim;
+      strategicPoints = [];
+      for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
+         strategicPoints.push([]);
+         for (whichDim = 0; whichDim < numDims; ++whichDim) {
+            strategicPoints[whichPoint].push(votePoints[whichPoint][whichDim]);
+         }
+      }
+   };
+
+   resetStrategicButton.addEventListener('click', function () {
+      resetStrategic();
+      redrawSpace();
+   }, false);
 
    // updates point using all data in its table row; called whenever a table row registers a change
    var getPointFromTextboxes = function (num) {
@@ -930,7 +947,9 @@ var runDemo = function () {
    };
 
    var focusOff = function (which) {
-      // really hacky, but makes sure update takes place when it should
+      // really hacky, but makes sure pending updates take place when they should;
+      // pending updates would otherwise not take place when moving between entries in a row where
+      // the last entry moved to was not changed
       if (updateInProgress === which) {
          window.clearTimeout(updateRow);
          updateRow = window.setTimeout(function () {
@@ -989,14 +1008,8 @@ var runDemo = function () {
 
    moveStrategicCheckbox.addEventListener('change', function () {
       var whichPoint, whichDim;
-      if (strategicPoints.length !== numVoters) {
-         strategicPoints = [];
-         for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-            strategicPoints.push([]);
-            for (whichDim = 0; whichDim < numDims; ++whichDim) {
-               strategicPoints[whichPoint].push(votePoints[whichPoint][whichDim]);
-            }
-         }
+      if (strategicPoints.length !== numVoters || !automaticStrategyRadio.checked && !showStrategicOutcomesCheckbox.checked) {
+         resetStrategic();
       }
       redrawSpace();
    }, false);
@@ -1060,6 +1073,7 @@ var runDemo = function () {
       redrawSpace();
    };
 
+   document.getElementById('strategy-system-options-radio').onchange = redrawSpace;
    displayAarDsvCheckbox.onchange = redrawSpace;
    displayAverageCheckbox.onchange = redrawSpace;
    displayFermatWeberCheckbox.onchange = redrawSpace;
@@ -1175,28 +1189,94 @@ var runDemo = function () {
    };
 
    // makes changes to global targetVote array; used for voter-by-voter modes in animateElection
-   var strategizeIndividual = function (onWhich) {
+   var strategizeIndividual = function (onWhich, checked) {
       if (onWhich > numVoters || targetVote.length !== numVoters) {
          return;
       }
-      var average = calcAverage(targetVote);
-      var whichPoint, whichDim, calculatedTotal;
-      for (whichDim = 0; whichDim < numDims; ++whichDim) {
-         if (votePoints[onWhich][whichDim] !== average[whichDim]) {
-            calculatedTotal = 0;
-            for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-               if (whichPoint !== onWhich) {
-                  calculatedTotal += targetVote[whichPoint][whichDim];
+
+      var outcomeFunction = strategySystemOptions[checked].func;
+      var outcome = outcomeFunction(targetVote);
+      var whichPoint, whichDim, calculatedTotal, tempPoint, newOutcome, copy = [];
+      if (checked === 1) {
+         for (whichDim = 0; whichDim < numDims; ++whichDim) {
+            if (votePoints[onWhich][whichDim] !== outcome[whichDim]) {
+               calculatedTotal = 0;
+               for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
+                  if (whichPoint !== onWhich) {
+                     calculatedTotal += targetVote[whichPoint][whichDim];
+                  }
+               }
+               targetVote[onWhich][whichDim] = votePoints[onWhich][whichDim] * numVoters - calculatedTotal;
+            }
+         }
+         targetVote[onWhich] = projectVotePointToSpace(targetVote[onWhich]);
+      } else {
+         // look at points along edges
+         var simplexIncrement = 0.02, hypercubeIncrement = 0.05;
+         for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
+            copy.push([]);
+            for (whichDim = 0; whichDim < numDims; ++whichDim) {
+               if (whichPoint === onWhich) {
+                  copy[whichPoint].push(0);
+               } else {
+                  copy[whichPoint].push(targetVote[whichPoint][whichDim]);
                }
             }
-            targetVote[onWhich][whichDim] = votePoints[onWhich][whichDim] * numVoters - calculatedTotal;
+         }
+
+         if (simplexRadio.checked) {
+            for (copy[onWhich][0] = 1; copy[onWhich][0] > 0; copy[onWhich][0] -= simplexIncrement, copy[onWhich][2] += simplexIncrement) {
+               newOutcome = outcomeFunction(copy);
+               if (isOutcomeCloserByMetric(votePoints[onWhich], newOutcome, outcome, 2) === 1) {
+                  outcome = newOutcome;
+                  targetVote[onWhich] = projectVotePointToSpace(copy[onWhich]);
+               }
+            }
+            copy[onWhich][0] = 0;
+            copy[onWhich][2] = 0;
+            for (copy[onWhich][2] = 1; copy[onWhich][2] > 0; copy[onWhich][2] -= simplexIncrement, copy[onWhich][1] += simplexIncrement) {
+               newOutcome = outcomeFunction(copy);
+               if (isOutcomeCloserByMetric(votePoints[onWhich], newOutcome, outcome, 2) === 1) {
+                  outcome = newOutcome;
+                  targetVote[onWhich] = projectVotePointToSpace(copy[onWhich]);
+               }
+            }
+            copy[onWhich][1] = 0;
+            copy[onWhich][2] = 0;
+            for (copy[onWhich][1] = 1; copy[onWhich][1] > 0; copy[onWhich][1] -= simplexIncrement, copy[onWhich][0] += simplexIncrement) {
+               newOutcome = outcomeFunction(copy);
+               if (isOutcomeCloserByMetric(votePoints[onWhich], newOutcome, outcome, 2) === 1) {
+                  outcome = newOutcome;
+                  targetVote[onWhich] = projectVotePointToSpace(copy[onWhich]);
+               }
+            }
+         } else {
+            for (whichDim = 0; whichDim < numDims; ++whichDim) {
+               for (copy[onWhich][whichDim] = 0; copy[onWhich][whichDim] < 1; copy[onWhich][whichDim] += hypercubeIncrement) {
+                  newOutcome = outcomeFunction(copy);
+                  if (isOutcomeCloserByMetric(votePoints[onWhich], newOutcome, outcome, 2) === 1) {
+                     outcome = newOutcome;
+                     targetVote[onWhich] = projectVotePointToSpace(copy[onWhich]);
+                  }
+               }
+               copy[onWhich] = projectVotePointToSpace(copy[onWhich]);
+            }
+            for (whichDim = 0; whichDim < numDims; ++whichDim) {
+               for (copy[onWhich][whichDim] = 1; copy[onWhich][whichDim] > 0; copy[onWhich][whichDim] -= hypercubeIncrement) {
+                  newOutcome = outcomeFunction(copy);
+                  if (isOutcomeCloserByMetric(votePoints[onWhich], newOutcome, outcome, 2) === 1) {
+                     outcome = newOutcome;
+                     targetVote[onWhich] = projectVotePointToSpace(copy[onWhich]);
+                  }
+               }
+               copy[onWhich] = projectVotePointToSpace(copy[onWhich]);
+            }
          }
       }
-      targetVote[onWhich] = projectVotePointToSpace(targetVote[onWhich]);
    };
 
    // makes changes to global targetVote array; used for batchMode by animateElection
-   var strategizeAll = function (onWhich) {
+   var strategizeAll = function (onWhich, checked) {
       var average = calcAverage(targetVote);
       var whichPoint, whichDim, calculatedTotal, copy = [];
 
@@ -1238,15 +1318,14 @@ var runDemo = function () {
     * order is assumed to be an array of objects, and is used to randomize the ordering of voters in voter-by-voter modes. The array is
     * created within the function, so it's best not to pass anything to order.
     */
-   var animateElection = function (strategize, batchMode, withLimits, updateFunction, onWhich, timeIncrement, order) {
+   var animateElection = function (strategize, batchMode, withLimits, updateFunction, onWhich, timeIncrement, order, checked) {
       var whichPoint, whichDim, voteScreen, demoScreen, moved = false, active = [];
-      if (!animationInProgress) {
+      if (!animationInProgress || targetVote.length !== numVoters) {
          resetAnimation();
          return;
       }
-      if (targetVote.length !== numVoters) {
-         resetAnimation();
-         return;
+      if (checked === undefined || checked > 4) {
+         checked = 1;
       }
       if (!order) {
          order = [];
@@ -1264,7 +1343,7 @@ var runDemo = function () {
             }
          }
          if (updateFunction) {
-            updateFunction(order[onWhich][1]);
+            updateFunction(order[onWhich][1], checked);
          } else if (batchMode) {
             for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
                for (whichDim = 0; whichDim < numDims; ++whichDim) {
@@ -1284,6 +1363,13 @@ var runDemo = function () {
       for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
          active.push(false);
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
+            if (animatedVote[whichPoint][whichDim] < 1.0e-10) {
+               animatedVote[whichPoint][whichDim] = 0;
+            }
+            if (targetVote[whichPoint][whichDim] < 1.0e-10) {
+               targetVote[whichPoint][whichDim] = 0;
+            }
+
             if (animatedVote[whichPoint][whichDim] < (targetVote[whichPoint][whichDim] - 0.0000001)) {
                moved = true;
                if (!batchMode && !withLimits) {
@@ -1429,6 +1515,11 @@ var runDemo = function () {
             // finish animation if no point has moved since last round
             if (!updated) {
                animatedVote = null;
+               for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
+                  for (whichDim = 0; whichDim < numDims; ++whichDim) {
+                     strategicPoints[whichPoint][whichDim] = targetVote[whichPoint][whichDim];
+                  }
+               }
                return;
                // otherwise, store old targets for comparison next round
             } else {
@@ -1456,12 +1547,12 @@ var runDemo = function () {
             }
          }
          if (updateFunction) {
-            updateFunction(order[onWhich][1]);
+            updateFunction(order[onWhich][1], checked);
          }
 
          animationInProgress = true;
          animate = window.setInterval(function () {
-            animateElection(strategize, batchMode, withLimits, updateFunction, onWhich, timeIncrement, order);
+            animateElection(strategize, batchMode, withLimits, updateFunction, onWhich, timeIncrement, order, checked);
          }, timeIncrement);
       }
    };
@@ -1471,7 +1562,7 @@ var runDemo = function () {
    };
 
    startAnimationButton.onclick = function () {
-      var whichVoter, whichDim, userInput, updateFunction, timeIncrement, batchMode = false, strategize = true, velocityLimits = false, largestVal = 0, largestAt;
+      var whichVoter, whichDim, userInput, updateFunction, timeIncrement, batchMode = false, strategize = true, velocityLimits = false, largestVal = 0, largestAt, checked;
       redrawSpace();
 
       userInput = Number(velocityLimitTextbox.value);
@@ -1486,9 +1577,17 @@ var runDemo = function () {
       velocityLimitTextbox.value = animatedMovementLimitBase;
       animatedMovementLimit = animatedMovementLimitBase;
       timeIncrement = timeIncrementBase;
+
+      for (whichVoter = 0; whichVoter < strategySystemOptions.length; ++whichVoter) {
+         if (strategySystemOptions[whichVoter].checked) {
+            checked = whichVoter;
+         }
+      }
+
       animatedVote = null;
       targetVote = [];
       targetVoteLast = [];
+      // initialize starting points depending on which option was selected
       if (animationStartSincereRadio.checked) {
          for (whichVoter = 0; whichVoter < numVoters; ++whichVoter) {
             targetVote.push([]);
@@ -1581,7 +1680,7 @@ var runDemo = function () {
       }
 
       animate = window.setInterval(function () {
-         animateElection(strategize, batchMode, velocityLimits, updateFunction, 0, timeIncrement);
+         animateElection(strategize, batchMode, velocityLimits, updateFunction, 0, timeIncrement, false, checked);
       }, timeIncrement);
    };
 
