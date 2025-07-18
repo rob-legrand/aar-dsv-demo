@@ -66,14 +66,8 @@ body {
    color: #001122;
 }
 
-canvas#votespace {
-   border-color: #000000;
-   border-style: solid;
-   border-width: 0px;
-   background-color: #ffffff;
-   display: block;
-   margin-left: auto;
-   margin-right: auto;
+canvas#votespace, fieldset {
+   float: left;
 }
 
 input {
@@ -85,26 +79,31 @@ label {
 }
 
 label.aar-dsv-option {
+   background-color: #000000;
    color: #ffff00;
    font-weight: bold;
 }
 
 label.average-option {
+   background-color: #000000;
    color: #ffaa00;
    font-weight: bold;
 }
 
 label.fermat-weber-option {
+   background-color: #000000;
    color: #aaff00;
    font-weight: bold;
 }
 
 label.per-dim-median-option {
+   background-color: #000000;
    color: #55ff55;
    font-weight: bold;
 }
 
 label.per-dim-midrange-option {
+   background-color: #000000;
    color: #ff5555;
    font-weight: bold;
 }
@@ -116,12 +115,12 @@ label.per-dim-midrange-option {
    font-weight: bold;
 }
 
-.dimension-value {
-   text-align: right;
+.debug-at-bottom {
+   clear: both;
 }
 
-.outcome-options, .strategy-system-options {
-   background-color: #000000;
+.dimension-value {
+   text-align: right;
 }
 
 .smalltop {
