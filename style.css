@@ -123,6 +123,12 @@ label.per-dim-midrange-option {
    text-align: right;
 }
 
+/*
+.outcome-options, .strategy-system-options {
+   background-color: #000000;
+}
+*/
+
 .smalltop {
    color: #660033;
    font-family: Garamond, Georgia, Baskerville, Palatino, "Palatino Linotype", Didot, Bodoni, serif;

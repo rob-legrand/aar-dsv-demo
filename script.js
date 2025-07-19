@@ -866,23 +866,23 @@ var runDemo = function () {
       var avgOutcome, dsvOutcome, ferOutcome, medOutcome, midOutcome;
       if (displayPerDimMidrangeCheckbox.checked) {
          midOutcome = calcPerDimMidrange(votePoints);
-         drawVotePoint(midOutcome, '#000000', 7);
+         drawVotePoint(midOutcome, '#000000', 7.5);
       }
       if (displayPerDimMedianCheckbox.checked) {
          medOutcome = calcPerDimMedian(votePoints);
-         drawVotePoint(medOutcome, '#000000', 7);
+         drawVotePoint(medOutcome, '#000000', 7.5);
       }
       if (displayFermatWeberCheckbox.checked) {
          ferOutcome = calcFermatWeber(votePoints);
-         drawVotePoint(ferOutcome, '#000000', 7);
+         drawVotePoint(ferOutcome, '#000000', 7.5);
       }
       if (displayAverageCheckbox.checked) {
          avgOutcome = calcAverage(votePoints);
-         drawVotePoint(avgOutcome, '#000000', 7);
+         drawVotePoint(avgOutcome, '#000000', 7.5);
       }
       if (displayAarDsvCheckbox.checked) {
          dsvOutcome = calcAarDsv(votePoints);
-         drawVotePoint(dsvOutcome, '#000000', 7);
+         drawVotePoint(dsvOutcome, '#000000', 7.5);
       }
       if (displayPerDimMidrangeCheckbox.checked) {
          drawVotePoint(midOutcome, '#ff5555', 6);
@@ -1520,23 +1520,23 @@ var runDemo = function () {
       var avgOutcome, dsvOutcome, ferOutcome, medOutcome, midOutcome;
       if (displayPerDimMidrangeCheckbox.checked) {
          midOutcome = calcPerDimMidrange(votePoints);
-         drawVotePoint(midOutcome, '#000000', 7);
+         drawVotePoint(midOutcome, '#000000', 7.5);
       }
       if (displayPerDimMedianCheckbox.checked) {
          medOutcome = calcPerDimMedian(votePoints);
-         drawVotePoint(medOutcome, '#000000', 7);
+         drawVotePoint(medOutcome, '#000000', 7.5);
       }
       if (displayFermatWeberCheckbox.checked) {
          ferOutcome = calcFermatWeber(votePoints);
-         drawVotePoint(ferOutcome, '#000000', 7);
+         drawVotePoint(ferOutcome, '#000000', 7.5);
       }
       if (displayAverageCheckbox.checked) {
          avgOutcome = calcAverage(votePoints);
-         drawVotePoint(avgOutcome, '#000000', 7);
+         drawVotePoint(avgOutcome, '#000000', 7.5);
       }
       if (displayAarDsvCheckbox.checked) {
          dsvOutcome = calcAarDsv(votePoints);
-         drawVotePoint(dsvOutcome, '#000000', 7);
+         drawVotePoint(dsvOutcome, '#000000', 7.5);
       }
       if (displayPerDimMidrangeCheckbox.checked) {
          drawVotePoint(midOutcome, '#ff5555', 6);
