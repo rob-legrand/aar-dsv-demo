@@ -20,7 +20,7 @@
    <a href="http://www.opera.com/">Opera</a>, <a href="http://www.google.com/chrome/">Chrome</a> or <a href="http://www.getfirefox.com/">Firefox</a> and enable
    JavaScript.
 </canvas>
-<fieldset class="votespace-area">
+<fieldset class="votespace-options-area">
    <legend>Votespace</legend>
    <div class="votespace-options">
       <label><input id="use-line-segment" name="votespace-options" type="radio" />&nbsp;Line segment</label>
@@ -67,15 +67,16 @@
       <label>Velocity limit:&nbsp;<input id="velocity-limit" type="text" size="6"></label>
    </div>
    <div class="animation-start-options">
-      <label><input id="start-sincere" checked="checked" name="animation-start-options" type="radio" />&nbsp;Start at sincere points</label>
-      <label><input id="start-strategic" name="animation-start-options" type="radio" />&nbsp;Start at strategic points</label>
+      <label><input id="start-strategic" checked="checked" name="animation-start-options" type="radio" />&nbsp;Start at current strategic points</label>
+      <label><input id="start-sincere" name="animation-start-options" type="radio" />&nbsp;Start at sincere points</label>
       <label><input id="start-random" name="animation-start-options" type="radio" />&nbsp;Start at random points</label>
       <label><input id="start-in-zero-corner" name="animation-start-options" type="radio" />&nbsp;Start all in same corner</label>
       <label><input id="start-in-nearest-corner" name="animation-start-options" type="radio" />&nbsp;Start each in nearest corner</label>
    </div>
    <div>
       <input id="start-animation" type="button" value="Animate" />
-      <input id="stop-animation" type="button" value="Reset" />
+      <input id="stop-animation" type="button" value="Stop" />
+      <input id="reset-animation" type="button" value="Reset" />
    </div>
 </fieldset>
 <fieldset class="votepoints-area">
