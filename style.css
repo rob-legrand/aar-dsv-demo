@@ -108,11 +108,56 @@ label.per-dim-midrange-option {
    font-weight: bold;
 }
 
+ol.tour-menu {
+   counter-reset: tour-menu-number;
+   margin-left: 0;
+   padding-left: 0;
+}
+
+ol.tour-menu li {
+   background-color: white;
+   border: thick green solid;
+   counter-increment: tour-menu-number;
+   display: inline-block;
+   padding: 3px;
+}
+
+ol.tour-menu li:before {
+   content: counter(tour-menu-number) ". ";
+}
+
+ol.tour-menu li:hover {
+   border-color: lime;
+}
+
+ul.mode-menu {
+   margin-left: 0;
+   padding-left: 0;
+}
+
+ul.mode-menu li {
+   background-color: white;
+   border: thick green solid;
+   display: inline-block;
+   padding: 3px;
+}
+
+ul.mode-menu li:hover {
+   border-color: lime;
+}
+
 .bigtop {
    color: #660033;
    font-family: Futura, "Century Gothic", Geneva, Tahoma, Verdana, Arial, sans-serif;
    font-size: 250%;
    font-weight: bold;
+}
+
+.credits {
+   border-top: 1px #000000 solid;
+   clear: both;
+   font-style: italic;
+   padding-top: 3px;
 }
 
 .debug-at-bottom {
@@ -122,12 +167,6 @@ label.per-dim-midrange-option {
 .dimension-value {
    text-align: right;
 }
-
-/*
-.outcome-options, .strategy-system-options {
-   background-color: #000000;
-}
-*/
 
 .smalltop {
    color: #660033;

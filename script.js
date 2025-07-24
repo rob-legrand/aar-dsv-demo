@@ -1023,7 +1023,7 @@ var runDemo = function () {
       // draw strategic votes and equilibrium Average outcome
       if (automaticStrategyCheckbox.checked || moveStrategicCheckbox.checked || showStrategicOutcomesCheckbox.checked) {
          for (whichPoint = 1; whichPoint < numVoters; ++whichPoint) {
-            drawVotePoint(strategicPoints[whichPoint], nonFocusStrategicVoteColor , 4);
+            drawVotePoint(strategicPoints[whichPoint], nonFocusStrategicVoteColor, 4);
          }
          drawVotePoint(strategicPoints[0], focusStrategicVoteColor, 4);
          if (showStrategicOutcomesCheckbox.checked) {
@@ -1189,7 +1189,7 @@ var runDemo = function () {
             if (document.activeElement.id.substring(0, 9) !== 'votepoint') {
                drawVotePoint(votePoints[this.id[9]],'#9966cc', 6);
             }
-         } , false);
+         }, false);
          votePointRows[num].addEventListener('mouseup', function () {
             if (document.activeElement.id.substring(0, 9) !== 'votepoint' && !animationInProgress) {
                setTimeout(function () {
@@ -1429,7 +1429,7 @@ var runDemo = function () {
             found = false;
             for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
                for (whichDim = 0; whichDim < numDims; ++whichDim) {
-                       copy[whichPoint][whichDim] = strategicPoints[whichPoint][whichDim];
+                  copy[whichPoint][whichDim] = strategicPoints[whichPoint][whichDim];
                }
             }
             for (whichPoint = 0; whichPoint < numToCheck && !found; ++whichPoint) {
