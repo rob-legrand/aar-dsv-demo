@@ -4,7 +4,7 @@ var runDemo = function () {
    'use strict';
 
    var votespaceCanvas = document.getElementById('votespace');
-   var votespaceContext = votespaceCanvas.getContext && votespaceCanvas.getContext('2d');
+   var votespaceContext = votespaceCanvas && votespaceCanvas.getContext && votespaceCanvas.getContext('2d');
    if (!votespaceContext) {
       document.getElementById('instructions').innerHTML = 'Your browser does not seem to support the <code>&lt;canvas&gt;</code> element correctly.&nbsp; Please use a recent version of a standards-compliant browser such as <a href="http://www.opera.com/">Opera</a>, <a href="http://www.google.com/chrome/">Chrome</a> or <a href="http://www.getfirefox.com/">Firefox</a>.';
       window.alert('Your browser does not seem to support the <canvas> element correctly.\nPlease use a recent version of a standards-compliant browser such as Opera, Chrome or Firefox.');
@@ -102,7 +102,7 @@ var runDemo = function () {
       }
       for (whichDim = 0; whichDim < 3; ++whichDim) {
          for (whichRow = 0; whichRow < votePointCells[whichDim].length; ++whichRow) {
-            votePointCells[whichDim][whichRow].style.display = whichDim < numDims ? 'table-cell' : 'none';
+            votePointCells[whichDim][whichRow].style.display = whichDim < numDims ? '' : 'none';
          }
       }
    };
@@ -247,13 +247,18 @@ var runDemo = function () {
       }
    };
 
-   var drawVotePoint = function (point, color, size) {
+   var drawVotePoint = function (point, color, size, isHollow) {
       var screen = toScreenCoords(point);
       votespaceContext.beginPath();
-      votespaceContext.fillStyle = color;
-      votespaceContext.moveTo(screen.x + 0.5, screen.y + 0.5);
-      votespaceContext.arc(screen.x + 0.5, screen.y + 0.5, size, 0, 2 * Math.PI, true);
-      votespaceContext.fill();
+      votespaceContext.arc(screen.x + 0.5, screen.y + 0.5, size, 0, 2 * Math.PI, false);
+      if (isHollow) {
+         votespaceContext.arc(screen.x + 0.5, screen.y + 0.5, size - 1, 0, 2 * Math.PI, false);
+         votespaceContext.strokeStyle = color;
+         votespaceContext.stroke();
+      } else {
+         votespaceContext.fillStyle = color;
+         votespaceContext.fill();
+      }
    };
 
    var addOrRemoveVotePoints = function () {
@@ -494,9 +499,11 @@ var runDemo = function () {
       var numPoints = points.length;
       var outcome = [];
       var sumSqDiff, whichDim, whichPoint;
+      // start outcome at the center of the votespace
       for (whichDim = 0; whichDim < numDims; ++whichDim) {
-         outcome.push(Math.random());
+         outcome.push(0.5);
       }
+      outcome = projectVotePointToSpace(outcome);
       numer = [];
       do {
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
@@ -951,7 +958,7 @@ var runDemo = function () {
       // draw vote points
       for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
          drawVotePoint(votePoints[whichPoint], pointBeingDragged === whichPoint ? focusColor : nonFocusColor, 6);
-         votePointRows[whichPoint].style.display = 'table-row';
+         votePointRows[whichPoint].style.display = '';
          // don't update textboxes while update is pending
          if (whichPoint !== updateInProgress) {
             for (whichDim = 0; whichDim < numDims; ++whichDim) {
@@ -1187,7 +1194,7 @@ var runDemo = function () {
          votePointRows[num].addEventListener('mousedown', function () {
             // make sure not to interfere with focus and blur handlers
             if (document.activeElement.id.substring(0, 9) !== 'votepoint') {
-               drawVotePoint(votePoints[this.id[9]],'#9966cc', 6);
+               drawVotePoint(votePoints[this.id[9]], '#9966cc', 6);
             }
          }, false);
          votePointRows[num].addEventListener('mouseup', function () {
@@ -1362,12 +1369,15 @@ var runDemo = function () {
          document.onmousemove(ev); // immediately show that the point has been selected
          document.onmouseup = function (ev) {
             document.onmousemove = null; // stop moving point around
+            if (!moveStrategicCheckbox.checked) {
+               strategicPoints[whichPoint] = votePoints[whichPoint];
+            }
             document.onmouseup = function (ev) {
                document.onmousemove = null; // stop moving point around (in case it gets sticky)
             };
             redrawSpace();
          };
-      } else {
+      } else { // give result of testing according to AAR DSV inequalities
          var testResult = testInequalities(projectVotePointToSpace(toVoteDims(getMouse(ev))));
          document.getElementById('click-output').innerHTML = testResult.dimSize[0] < 0 ? 'x too small' : testResult.dimSize[0] > 0 ? 'x too big' : 'x just right';
          if (numDims > 1) {
@@ -1480,7 +1490,7 @@ var runDemo = function () {
     * order is assumed to be an array of objects, and is used to randomize the ordering of voters in voter-by-voter modes. The array is
     * created within the function, so it's best not to pass anything to order.
     */
-   var animateElection = function (strategize, batchMode, withLimits, updateFunction, onWhich, timeIncrement, order, checked) {
+   var animateElection = function animateElection(strategize, batchMode, withLimits, updateFunction, onWhich, timeIncrement, order, checked) {
       var whichPoint, whichDim, voteScreen, demoScreen, moved = false, active = [], maxRounds = 200, rounds = 0, randomVotesPerVoter = 1;
       if (!animationInProgress || strategicPoints.length !== numVoters) {
          resetAnimation();
