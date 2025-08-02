@@ -402,6 +402,7 @@ var runDemo = function () {
       var numPoints = points.length;
       var outcome = [];
       var newStrategicPoint, somethingChanged, sortedPoints, strategicPoints, whichDim, whichPoint, whichOtherPoint;
+      var largestVal, largestAt;
       if (numDims !== 3) {
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
             sortedPoints = [];
@@ -418,7 +419,17 @@ var runDemo = function () {
       } else {
          strategicPoints = [];
          for (whichPoint = 0; whichPoint < numPoints; ++whichPoint) {
-            strategicPoints.push([1 / 3, 1 / 3, 1 / 3]);
+            // start each strategic vote in the nearest corner
+            strategicPoints.push([]);
+            largestVal = 0;
+            for (whichDim = 0; whichDim < numDims; ++whichDim) {
+               strategicPoints[whichPoint].push(0);
+               if (points[whichPoint][whichDim] > largestVal) {
+                  largestVal = points[whichPoint][whichDim];
+                  largestAt = whichDim;
+               }
+            }
+            strategicPoints[whichPoint][largestAt] = 1;
          }
          do {
             somethingChanged = false;
@@ -733,6 +744,27 @@ var runDemo = function () {
       return closer;
    };
 
+   var isOutcomeDominatinglyCloser = function (idealPoint, newOutcome, oldOutcome, significance) {
+      var closerByDim = isOutcomeCloserByDim(idealPoint, newOutcome, oldOutcome, significance);
+      var whichDim, result = 0;
+      for (whichDim = 0; whichDim < numDims; ++whichDim) {
+         if (isNaN(closerByDim[whichDim])) {
+            return NaN;
+         } else if (closerByDim[whichDim] < 0) {
+            if (result > 0) {
+               return NaN;
+            }
+            result = -1;
+         } else if (closerByDim[whichDim] > 0) {
+            if (result < 0) {
+               return NaN;
+            }
+            result = 1;
+         }
+      }
+      return result;
+   };
+
    var isOutcomeCloserByMetric = function (idealPoint, newOutcome, oldOutcome, metric, significance) {
       // metric === 1: Manhattan distance
       // metric === 2: Euclidean distance
@@ -917,6 +949,7 @@ var runDemo = function () {
       var focusColor = '#9966cc';
       var nonFocusStrategicVoteColor = '#000000';
       var focusStrategicVoteColor = '#000000';
+
       if (animationInProgress) {
          resetAnimation();
       }
@@ -961,7 +994,33 @@ var runDemo = function () {
             votespaceContext.beginPath();
             votespaceContext.moveTo(strategicScreen.x + 0.5, strategicScreen.y + 0.5);
             votespaceContext.lineTo(voteScreen.x + 0.5, voteScreen.y + 0.5);
-            votespaceContext.strokeStyle = '#aaaaaa';
+            votespaceContext.strokeStyle = '#999999';
+            if (moveStrategicCheckbox.checked) {
+               // color rubber bands: green for successful manipulation, red for backfire
+               var pointsIfSincere = [];
+               var pointsIfStrategic = [];
+               var outcomeIfSincere, outcomeIfStrategic;
+               var whichOtherPoint, whichSystem;
+               for (whichOtherPoint = 0; whichOtherPoint < numVoters; ++whichOtherPoint) {
+                  pointsIfSincere.push([]);
+                  pointsIfStrategic.push([]);
+                  for (whichDim = 0; whichDim < numDims; ++whichDim) {
+                     pointsIfSincere[whichOtherPoint].push(whichOtherPoint === whichPoint ? votePoints[whichOtherPoint][whichDim] : strategicPoints[whichOtherPoint][whichDim]);
+                     pointsIfStrategic[whichOtherPoint].push(strategicPoints[whichOtherPoint][whichDim]);
+                  }
+               }
+               for (whichSystem = 0; whichSystem < strategySystemOptions.length; ++whichSystem) {
+                  if (strategySystemOptions[whichSystem].checked) {
+                     outcomeIfSincere = strategySystemOptions[whichSystem].func(pointsIfSincere);
+                     outcomeIfStrategic = strategySystemOptions[whichSystem].func(pointsIfStrategic);
+                  }
+               }
+               if (isOutcomeDominatinglyCloser(votePoints[whichPoint], outcomeIfStrategic, outcomeIfSincere) > 0) {
+                  votespaceContext.strokeStyle = '#339966';
+               } else if (isOutcomeDominatinglyCloser(votePoints[whichPoint], outcomeIfStrategic, outcomeIfSincere) < 0) {
+                  votespaceContext.strokeStyle = '#993366';
+               }
+            }
             votespaceContext.stroke();
          }
       }
@@ -1021,21 +1080,6 @@ var runDemo = function () {
       }
       if (displayAarDsvCheckbox.checked) {
          drawVotePoint(dsvOutcome, '#ffff00', 6);
-      }
-      if (displayPerDimMidrangeCheckbox.checked) {
-         drawVotePoint(midOutcome, '#000000', 1);
-      }
-      if (displayPerDimMedianCheckbox.checked) {
-         drawVotePoint(medOutcome, '#000000', 1);
-      }
-      if (displayFermatWeberCheckbox.checked) {
-         drawVotePoint(ferOutcome, '#000000', 1);
-      }
-      if (displayAverageCheckbox.checked) {
-         drawVotePoint(avgOutcome, '#000000', 1);
-      }
-      if (displayAarDsvCheckbox.checked) {
-         drawVotePoint(dsvOutcome, '#000000', 1);
       }
 
       // draw strategic votes and equilibrium Average outcome
@@ -1394,12 +1438,28 @@ var runDemo = function () {
             redrawSpace();
          };
       } else { // give result of testing according to AAR DSV inequalities
-         var testResult = testInequalities(projectVotePointToSpace(toVoteDims(getMouse(ev))), votePoints);
-         document.getElementById('click-output').innerHTML = testResult.dimSize[0] < 0 ? 'x too small' : testResult.dimSize[0] > 0 ? 'x too big' : 'x just right';
+         var clickedPoint = projectVotePointToSpace(toVoteDims(getMouse(ev)));
+         var testResult = testInequalities(clickedPoint, votePoints);
+         document.getElementById('click-output').innerHTML = 'x = ' + clickedPoint[0].toFixed(5);
+         if (numDims > 1) {
+            document.getElementById('click-output').innerHTML += ', y = ' + clickedPoint[1].toFixed(5);
+            if (numDims > 2) {
+               document.getElementById('click-output').innerHTML += ', z = ' + clickedPoint[2].toFixed(5);
+            }
+         }
+         document.getElementById('click-output').innerHTML += '<br />by inequalities: ' + (testResult.dimSize[0] < 0 ? 'x too small' : testResult.dimSize[0] > 0 ? 'x too big' : 'x just right');
          if (numDims > 1) {
             document.getElementById('click-output').innerHTML += '; ' + (testResult.dimSize[1] < 0 ? 'y too small' : testResult.dimSize[1] > 0 ? 'y too big' : 'y just right');
             if (numDims > 2) {
                document.getElementById('click-output').innerHTML += '; ' + (testResult.dimSize[2] < 0 ? 'z too small' : testResult.dimSize[2] > 0 ? 'z too big' : 'z just right');
+            }
+         }
+         var outcome = calcAarDsv(votePoints);
+         document.getElementById('click-output').innerHTML += '<br />by DSV outcome: ' + (clickedPoint[0] < outcome[0] ? 'x too small' : clickedPoint[0] > outcome[0] ? 'x too big' : 'x just right');
+         if (numDims > 1) {
+            document.getElementById('click-output').innerHTML += '; ' + (clickedPoint[1] < outcome[1] ? 'x too small' : clickedPoint[1] > outcome[1] ? 'x too big' : 'x just right');
+            if (numDims > 2) {
+               document.getElementById('click-output').innerHTML += '; ' + (clickedPoint[2] < outcome[2] ? 'x too small' : clickedPoint[2] > outcome[2] ? 'x too big' : 'x just right');
             }
          }
       }
@@ -1499,7 +1559,6 @@ var runDemo = function () {
                   }
                } else {
                   distanceByDim = isOutcomeCloserByDim(votePoints[currentVoter], newOutcome, outcome, significance);
-
                   for (whichDim = 0; whichDim < numDims; ++whichDim) {
                      if (isNaN(distanceByDim[whichDim]) || distanceByDim[whichDim] === -1) {
                         found = true;
