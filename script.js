@@ -399,10 +399,48 @@ var runDemo = function () {
 
    // find AAR DSV outcome of input points
    var calcAarDsv = function (points) {
+      var crossMultiply = function (x, y) {
+         var result = [x[1] * y[2] - x[2] * y[1], x[2] * y[0] - x[0] * y[2], x[0] * y[1] - x[1] * y[0]];
+         return result;
+      };
+      var dotProduct = function (x, y) {
+         var num = x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
+         return num;
+      };
+      // x and y are each assumed to be pairs of points in the same plane
+      var findIntersection = function (x, y) {
+         var a = [], b, c, aXb, normaXbsquared, cXb, cXbDaXb, s, intersection;
+         a = [(x[1][0] - x[0][0]), (x[1][1] - x[0][1]), (x[1][2] - x[0][2])];
+         b = [y[1][0] - y[0][0], y[1][1] - y[0][1], y[1][2] - y[0][2]];
+         c = [y[0][0] - x[0][0], y[0][1] - x[0][1], y[0][2] - x[0][2]];
+         aXb = crossMultiply(a, b);
+         normaXbsquared = dotProduct(aXb, aXb);
+         if (normaXbsquared < 0.00001) {
+            return null;
+         }
+         cXb = crossMultiply(c, b);
+         cXbDaXb = dotProduct(cXb, aXb);
+         s = cXbDaXb / normaXbsquared;
+         a[0] *= s;
+         a[1] *= s;
+         a[2] *= s;
+         intersection = [x[0][0] + a[0], x[0][1] + a[1], x[0][2] + a[2]];
+         return intersection;
+      };
+      // points should all be in the plane, so x + y + z is assumed (approximately) to equal 1
+      var isPointInSpace = function (x) {
+         var whichDim;
+         for (whichDim = 0; whichDim < numDims; ++whichDim) {
+            if (x[whichDim] > 1 || x[whichDim] < 0) {
+               return false;
+            }
+         }
+         return true;
+      };
+
       var numPoints = points.length;
       var outcome = [];
       var newStrategicPoint, somethingChanged, sortedPoints, strategicPoints, whichDim, whichPoint, whichOtherPoint;
-      var largestVal, largestAt;
       if (numDims !== 3) {
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
             sortedPoints = [];
@@ -417,42 +455,102 @@ var runDemo = function () {
          }
          return projectVotePointToSpace(outcome);
       } else {
-         strategicPoints = [];
-         for (whichPoint = 0; whichPoint < numPoints; ++whichPoint) {
-            // start each strategic vote in the nearest corner
-            strategicPoints.push([]);
-            largestVal = 0;
-            for (whichDim = 0; whichDim < numDims; ++whichDim) {
-               strategicPoints[whichPoint].push(0);
-               if (points[whichPoint][whichDim] > largestVal) {
-                  largestVal = points[whichPoint][whichDim];
-                  largestAt = whichDim;
+         var i, j, k, results, whichOtherDim;
+         var gridPairs = [], pointPairs = [];
+         var pointToTest;
+         // test points in points array
+         for (i = 0; i < points.length; ++i) {
+            if (isPointInSpace(points[i])) {
+               if (testInequalities(points[i], points).obeysAll) {
+                  return points[i];
                }
             }
-            strategicPoints[whichPoint][largestAt] = 1;
          }
-         do {
-            somethingChanged = false;
-            for (whichPoint = 0; whichPoint < numPoints; ++whichPoint) {
-               newStrategicPoint = [];
-               for (whichDim = 0; whichDim < numDims; ++whichDim) {
-                  newStrategicPoint.push(points[whichPoint][whichDim] * numVoters);
-                  for (whichOtherPoint = 0; whichOtherPoint < numPoints; ++whichOtherPoint) {
-                     if (whichOtherPoint !== whichPoint) {
-                        newStrategicPoint[whichDim] -= strategicPoints[whichOtherPoint][whichDim];
+         // test intersections between grid lines
+         for (i = 0; i <= 1; i += 1 / numVoters) {
+            for (j = 0; j <= 1; j += 1 / numVoters) {
+               if (i + j > 1.1) {
+                  break;
+               }
+               for (k = 0; k <= 1; k += 1 / numVoters) {
+                  if (Math.abs(i + j + k - 1) < 0.001) {
+                     outcome = [i, j, k];
+                     if (isPointInSpace(outcome)) {
+                        results = testInequalities(outcome, points);
+                        if (results.obeysAll) {
+                           return outcome;
+                        }
+                     }
+                  } else if (i + j + k > 1.1) {
+                     break;
+                  }
+               }
+            }
+         }
+         j = 0;
+         // get points to define grid lines
+         for (whichDim = 0; whichDim < numDims; ++whichDim) {
+            for (i = 1; i < numVoters; ++i) {
+               gridPairs[j] = [];
+               if (whichDim === 0) {
+                  gridPairs[j].push([i/numVoters, (numVoters-i)/numVoters, 0]);
+                  gridPairs[j].push([i/numVoters, 0, (numVoters-i)/numVoters]);
+               } else if (whichDim === 1) {
+                  gridPairs[j].push([(numVoters-i)/numVoters, i/numVoters, 0]);
+                  gridPairs[j].push([0, i/numVoters, (numVoters-i)/numVoters]);
+               } else {
+                  gridPairs[j].push([(numVoters-i)/numVoters, 0, i/numVoters]);
+                  gridPairs[j].push([0, (numVoters-i)/numVoters, i/numVoters]);
+               }
+               ++j;
+            }
+         }
+         // get points to define lines from points array
+         for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
+            pointPairs[whichPoint] = [];
+            j = 0;
+            pointPairs[whichPoint][j] = [];
+            pointPairs[whichPoint][j].push(points[whichPoint][0] > points[whichPoint][1] ? [points[whichPoint][0] - points[whichPoint][1], 0, points[whichPoint][2] + 2 * points[whichPoint][1]] : [0, points[whichPoint][1] - points[whichPoint][0], points[whichPoint][2] + 2 * points[whichPoint][0]]);
+            pointPairs[whichPoint][j].push(points[whichPoint]);
+            ++j;
+            pointPairs[whichPoint][j] = [];
+            pointPairs[whichPoint][j].push(points[whichPoint][0] > points[whichPoint][2] ? [points[whichPoint][0] - points[whichPoint][2], points[whichPoint][1] + 2 * points[whichPoint][2], 0] : [0, points[whichPoint][1] + 2 * points[whichPoint][0], points[whichPoint][2] - points[whichPoint][0]]);
+            pointPairs[whichPoint][j].push(points[whichPoint]);
+            ++j;
+            pointPairs[whichPoint][j] = [];
+            pointPairs[whichPoint][j].push(points[whichPoint][1] > points[whichPoint][2] ? [points[whichPoint][0] + 2 * points[whichPoint][2], points[whichPoint][1] - points[whichPoint][2], 0] : [points[whichPoint][0] + 2 * points[whichPoint][1], 0, points[whichPoint][2] - points[whichPoint][1]]);
+            pointPairs[whichPoint][j].push(points[whichPoint]);
+         }
+         // find all intersections between lines from points and grid lines in space
+         for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
+            for (whichDim = 0; whichDim < numDims; ++whichDim) {
+               for (i = 0; i < gridPairs.length; ++i) {
+                  pointToTest = findIntersection(pointPairs[whichPoint][whichDim], gridPairs[i]);
+                  if (pointToTest && isPointInSpace(pointToTest) && testInequalities(pointToTest, points).obeysAll) {
+                     return pointToTest;
+                  }
+               }
+            }
+         }
+         // find all intersections between lines from points and other lines from points (or something like that)
+         for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
+            for (whichDim = 0; whichDim < numDims; ++whichDim) {
+               for (whichOtherPoint = whichPoint + 1; whichOtherPoint < numVoters; ++whichOtherPoint) {
+                  for (whichOtherDim = 0; whichOtherDim < numDims; ++whichOtherDim) {
+                     if (whichOtherDim !== whichDim) {
+                        pointToTest = findIntersection(pointPairs[whichPoint][whichDim], pointPairs[whichOtherPoint][whichOtherDim]);
+                        if (pointToTest && isPointInSpace(pointToTest) && testInequalities(pointToTest, points).obeysAll) {
+                           return pointToTest;
+                        }
                      }
                   }
                }
-               newStrategicPoint = projectVotePointToSpace(newStrategicPoint);
-               for (whichDim = 0; whichDim < numDims; ++whichDim) {
-                  if (Math.abs(newStrategicPoint[whichDim] - strategicPoints[whichPoint][whichDim]) > 0.00000001) {
-                     somethingChanged = true;
-                  }
-                  strategicPoints[whichPoint][whichDim] = newStrategicPoint[whichDim];
-               }
             }
-         } while (somethingChanged);
-         return calcAverage(strategicPoints);
+         }
+
+         // if this is returned, there's a problem
+         console.log('missed one');
+         return [1, 0, 0];
       }
    };
 
@@ -668,17 +766,17 @@ var runDemo = function () {
       }
 
       if (simplexRadio.checked) {
-         for (copyArray[focus][0] = 1; copyArray[focus][0] > 0; copyArray[focus][0] -= simplexIncrement, copyArray[focus][2] += simplexIncrement) {
+         for (copyArray[focus][0] = 1; copyArray[focus][0] > simplexIncrement; copyArray[focus][0] -= simplexIncrement, copyArray[focus][2] += simplexIncrement) {
             points.push(outcomeFunction(copyArray));
          }
          copyArray[focus][0] = 0;
          copyArray[focus][2] = 0;
-         for (copyArray[focus][2] = 1; copyArray[focus][2] > 0; copyArray[focus][2] -= simplexIncrement, copyArray[focus][1] += simplexIncrement) {
+         for (copyArray[focus][2] = 1; copyArray[focus][2] > simplexIncrement; copyArray[focus][2] -= simplexIncrement, copyArray[focus][1] += simplexIncrement) {
             points.push(outcomeFunction(copyArray));
          }
          copyArray[focus][1] = 0;
          copyArray[focus][2] = 0;
-         for (copyArray[focus][1] = 1; copyArray[focus][1] > 0; copyArray[focus][1] -= simplexIncrement, copyArray[focus][0] += simplexIncrement) {
+         for (copyArray[focus][1] = 1; copyArray[focus][1] > simplexIncrement; copyArray[focus][1] -= simplexIncrement, copyArray[focus][0] += simplexIncrement) {
             points.push(outcomeFunction(copyArray));
          }
       } else {
@@ -771,9 +869,6 @@ var runDemo = function () {
       // metric === Number.POSITIVE_INFINITY: Chebyshev distance
       // returns 1 if newOutcome is closer to idealPoint than oldOutcome, -1 if further, 0 if (nearly) identical
       var whichDim, differenceNew, differenceOld;
-      if (!metric || metric < 1) {
-         metric = 2;
-      }
       // significance: how large a difference must exist between two outcomes for them not to be considered the same
       if (!significance) {
          significance = 1.0e-6;
@@ -1055,7 +1150,7 @@ var runDemo = function () {
                copy[currentVoter][whichDim] = tempPoint[whichDim];
             }
          }
-      } else {
+      } else { // try corners; still not done
          if (numDims === 3) {
             for (currentVoter = (batchMode ? startingPoint : onWhich); currentVoter < (batchMode ? numVoters : onWhich + 1); ++currentVoter) {
                found = false;
@@ -1477,7 +1572,7 @@ var runDemo = function () {
 
    // allow the user to drag a vote point around
    votespaceCanvas.onmousedown = function (ev) {
-      if (animationInProgress) {
+      if (animationInProgress && !votesLocked) {
          redrawSpace();
       }
 
@@ -1564,7 +1659,9 @@ var runDemo = function () {
                   }
                }
             }
-            redrawSpace(whichPoint);
+            if (!(animationInProgress && votesLocked)) {
+               redrawSpace(whichPoint);
+            }
          };
          document.onmousemove(ev); // immediately show that the point has been selected
          document.onmouseup = function (ev) {
@@ -1581,7 +1678,9 @@ var runDemo = function () {
             document.onmouseup = function (ev) {
                document.onmousemove = null; // stop moving point around (in case it gets sticky)
             };
-            redrawSpace();
+            if (!(animationInProgress && votesLocked)) {
+               redrawSpace();
+            }
          };
       } else { // give result of testing according to AAR DSV inequalities
          var clickedPoint = projectVotePointToSpace(toVoteDims(getMouse(ev)));
@@ -1754,6 +1853,13 @@ var runDemo = function () {
             }
          }
       }
+      // temp fix for moving focal point during animation
+      if (votesLocked) {
+         for (whichDim = 0; whichDim < numDims; ++whichDim) {
+            animatedVote[0][whichDim] = strategicPoints[0][whichDim];
+         }
+      }
+
       // enforce movement limit
       if (withLimits) {
          moved = false;
@@ -1915,10 +2021,28 @@ var runDemo = function () {
                }
             }
             if (rounds >= maxRounds) {
-               animatedVote = null;
-               animationInProgress = false;
-               redrawSpace();
-               return;
+               if (votesLocked) {
+                  if (!animateElection.d) {
+                     animateElection.d = new Date();
+                  }
+                  var c = new Date();
+                  // if 30 seconds have passed without any changes, finish animation
+                  if (c - animateElection.d > 30000) {
+                     animatedVote = null;
+                     animationInProgress = false;
+                     redrawSpace();
+                     return;
+                  }
+               } else {
+                  animatedVote = null;
+                  animationInProgress = false;
+                  redrawSpace();
+                  return;
+               }
+            } else {
+               if (votesLocked) {
+                  animateElection.d = null;
+               }
             }
          }
 
@@ -2028,6 +2152,10 @@ var runDemo = function () {
          velocityLimits = true;
          timeIncrement = timeIncrementBase * numVoters;
          batchMode = true;
+      }
+      // reset any timer that was active
+      if (votesLocked) {
+         animateElection.d = null;
       }
       animateElection(strategize, batchMode, velocityLimits, strategizeOutcome, 0, timeIncrement, false, checked, 0);
    };
