@@ -114,7 +114,7 @@ var runDemo = function () {
    // points used to run demo
    var strategicPoints = [];
    var animatedVote, animateIntervalId, animationInProgress = false, animatedMovementLimit, animatedMovementLimitBase = 0.01, timeIncrementBase = 50, votesLocked = false;
-   // used to keep track up vote point updates from textboxes
+   // used to keep track of votepoint updates from textboxes
    var updateInProgress, updateRow;
 
    timeIntervalTextbox.value = timeIncrementBase.toString();
@@ -457,7 +457,7 @@ var runDemo = function () {
    };
 
    // find AAR DSV outcome of input points with larger internal votespace
-   var calcAarDsvGiveMeAName = function (points, votespaceSize) {
+   var calcAarDsvLargerSpace = function (points, votespaceSize) {
       var numPoints = points.length;
       var outcome = [];
       var newStrategicPoint, somethingChanged, sortedPoints, strategicPoints, whichDim, whichPoint, whichOtherPoint;
@@ -715,7 +715,7 @@ var runDemo = function () {
 
    var isOutcomeCloserByDim = function (idealPoint, newOutcome, oldOutcome, significance) {
       var whichDim, differenceNew, differenceOld, closer = [];
-      // significance how large a difference must exist between two outcomes for them not to be considered the same
+      // significance: how large a difference must exist between two outcomes for them not to be considered the same
       if (!significance) {
          significance = 1.0e-6;
       }
@@ -771,7 +771,10 @@ var runDemo = function () {
       // metric === Number.POSITIVE_INFINITY: Chebyshev distance
       // returns 1 if newOutcome is closer to idealPoint than oldOutcome, -1 if further, 0 if (nearly) identical
       var whichDim, differenceNew, differenceOld;
-      // significance how large a difference must exist between two outcomes for them not to be considered the same
+      if (!metric || metric < 1) {
+         metric = 2;
+      }
+      // significance: how large a difference must exist between two outcomes for them not to be considered the same
       if (!significance) {
          significance = 1.0e-6;
       }
@@ -1142,9 +1145,10 @@ var runDemo = function () {
                      outcomeIfStrategic = strategySystemOptions[whichSystem].func(pointsIfStrategic);
                   }
                }
-               if (isOutcomeDominatinglyCloser(votePoints[whichPoint], outcomeIfStrategic, outcomeIfSincere) > 0) {
+               var betterOrWorse = isOutcomeDominatinglyCloser(votePoints[whichPoint], outcomeIfStrategic, outcomeIfSincere);
+               if (betterOrWorse > 0) {
                   votespaceContext.strokeStyle = '#339966';
-               } else if (isOutcomeDominatinglyCloser(votePoints[whichPoint], outcomeIfStrategic, outcomeIfSincere) < 0) {
+               } else if (betterOrWorse < 0) {
                   votespaceContext.strokeStyle = '#993366';
                }
             }
