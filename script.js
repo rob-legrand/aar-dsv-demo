@@ -441,6 +441,7 @@ var runDemo = function () {
       var numPoints = points.length;
       var outcome = [];
       var newStrategicPoint, somethingChanged, sortedPoints, strategicPoints, whichDim, whichPoint, whichOtherPoint;
+      var largestVal, largestAt;
       if (numDims !== 3) {
          for (whichDim = 0; whichDim < numDims; ++whichDim) {
             sortedPoints = [];
@@ -455,102 +456,42 @@ var runDemo = function () {
          }
          return projectVotePointToSpace(outcome);
       } else {
-         var i, j, k, results, whichOtherDim;
-         var gridPairs = [], pointPairs = [];
-         var pointToTest;
-         // test points in points array
-         for (i = 0; i < points.length; ++i) {
-            if (isPointInSpace(points[i])) {
-               if (testInequalities(points[i], points).obeysAll) {
-                  return points[i];
-               }
-            }
-         }
-         // test intersections between grid lines
-         for (i = 0; i <= 1; i += 1 / numVoters) {
-            for (j = 0; j <= 1; j += 1 / numVoters) {
-               if (i + j > 1.1) {
-                  break;
-               }
-               for (k = 0; k <= 1; k += 1 / numVoters) {
-                  if (Math.abs(i + j + k - 1) < 0.001) {
-                     outcome = [i, j, k];
-                     if (isPointInSpace(outcome)) {
-                        results = testInequalities(outcome, points);
-                        if (results.obeysAll) {
-                           return outcome;
-                        }
-                     }
-                  } else if (i + j + k > 1.1) {
-                     break;
-                  }
-               }
-            }
-         }
-         j = 0;
-         // get points to define grid lines
-         for (whichDim = 0; whichDim < numDims; ++whichDim) {
-            for (i = 1; i < numVoters; ++i) {
-               gridPairs[j] = [];
-               if (whichDim === 0) {
-                  gridPairs[j].push([i/numVoters, (numVoters-i)/numVoters, 0]);
-                  gridPairs[j].push([i/numVoters, 0, (numVoters-i)/numVoters]);
-               } else if (whichDim === 1) {
-                  gridPairs[j].push([(numVoters-i)/numVoters, i/numVoters, 0]);
-                  gridPairs[j].push([0, i/numVoters, (numVoters-i)/numVoters]);
-               } else {
-                  gridPairs[j].push([(numVoters-i)/numVoters, 0, i/numVoters]);
-                  gridPairs[j].push([0, (numVoters-i)/numVoters, i/numVoters]);
-               }
-               ++j;
-            }
-         }
-         // get points to define lines from points array
-         for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-            pointPairs[whichPoint] = [];
-            j = 0;
-            pointPairs[whichPoint][j] = [];
-            pointPairs[whichPoint][j].push(points[whichPoint][0] > points[whichPoint][1] ? [points[whichPoint][0] - points[whichPoint][1], 0, points[whichPoint][2] + 2 * points[whichPoint][1]] : [0, points[whichPoint][1] - points[whichPoint][0], points[whichPoint][2] + 2 * points[whichPoint][0]]);
-            pointPairs[whichPoint][j].push(points[whichPoint]);
-            ++j;
-            pointPairs[whichPoint][j] = [];
-            pointPairs[whichPoint][j].push(points[whichPoint][0] > points[whichPoint][2] ? [points[whichPoint][0] - points[whichPoint][2], points[whichPoint][1] + 2 * points[whichPoint][2], 0] : [0, points[whichPoint][1] + 2 * points[whichPoint][0], points[whichPoint][2] - points[whichPoint][0]]);
-            pointPairs[whichPoint][j].push(points[whichPoint]);
-            ++j;
-            pointPairs[whichPoint][j] = [];
-            pointPairs[whichPoint][j].push(points[whichPoint][1] > points[whichPoint][2] ? [points[whichPoint][0] + 2 * points[whichPoint][2], points[whichPoint][1] - points[whichPoint][2], 0] : [points[whichPoint][0] + 2 * points[whichPoint][1], 0, points[whichPoint][2] - points[whichPoint][1]]);
-            pointPairs[whichPoint][j].push(points[whichPoint]);
-         }
-         // find all intersections between lines from points and grid lines in space
-         for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
+         strategicPoints = [];
+         for (whichPoint = 0; whichPoint < numPoints; ++whichPoint) {
+            // start each strategic vote in the nearest corner
+            strategicPoints.push([]);
+            largestVal = 0;
             for (whichDim = 0; whichDim < numDims; ++whichDim) {
-               for (i = 0; i < gridPairs.length; ++i) {
-                  pointToTest = findIntersection(pointPairs[whichPoint][whichDim], gridPairs[i]);
-                  if (pointToTest && isPointInSpace(pointToTest) && testInequalities(pointToTest, points).obeysAll) {
-                     return pointToTest;
-                  }
+               strategicPoints[whichPoint].push(0);
+               if (points[whichPoint][whichDim] > largestVal) {
+                  largestVal = points[whichPoint][whichDim];
+                  largestAt = whichDim;
                }
             }
+            strategicPoints[whichPoint][largestAt] = 1;
          }
-         // find all intersections between lines from points and other lines from points (or something like that)
-         for (whichPoint = 0; whichPoint < numVoters; ++whichPoint) {
-            for (whichDim = 0; whichDim < numDims; ++whichDim) {
-               for (whichOtherPoint = whichPoint + 1; whichOtherPoint < numVoters; ++whichOtherPoint) {
-                  for (whichOtherDim = 0; whichOtherDim < numDims; ++whichOtherDim) {
-                     if (whichOtherDim !== whichDim) {
-                        pointToTest = findIntersection(pointPairs[whichPoint][whichDim], pointPairs[whichOtherPoint][whichOtherDim]);
-                        if (pointToTest && isPointInSpace(pointToTest) && testInequalities(pointToTest, points).obeysAll) {
-                           return pointToTest;
-                        }
+         do {
+            somethingChanged = false;
+            for (whichPoint = 0; whichPoint < numPoints; ++whichPoint) {
+               newStrategicPoint = [];
+               for (whichDim = 0; whichDim < numDims; ++whichDim) {
+                  newStrategicPoint.push(points[whichPoint][whichDim] * numVoters);
+                  for (whichOtherPoint = 0; whichOtherPoint < numPoints; ++whichOtherPoint) {
+                     if (whichOtherPoint !== whichPoint) {
+                        newStrategicPoint[whichDim] -= strategicPoints[whichOtherPoint][whichDim];
                      }
                   }
                }
+               newStrategicPoint = projectVotePointToSpace(newStrategicPoint);
+               for (whichDim = 0; whichDim < numDims; ++whichDim) {
+                  if (Math.abs(newStrategicPoint[whichDim] - strategicPoints[whichPoint][whichDim]) > 0.00000001) {
+                     somethingChanged = true;
+                  }
+                  strategicPoints[whichPoint][whichDim] = newStrategicPoint[whichDim];
+               }
             }
-         }
-
-         // if this is returned, there's a problem
-         console.log('missed one');
-         return [1, 0, 0];
+         } while (somethingChanged);
+         return calcAverage(strategicPoints);
       }
    };
 
