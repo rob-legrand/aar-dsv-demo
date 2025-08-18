@@ -27,7 +27,7 @@
       <label><input checked="checked" id="use-hypercube" name="votespace-options" type="radio" />&nbsp;Hypercube</label>
       <label><input id="use-simplex" name="votespace-options" type="radio" />&nbsp;Simplex</label>
    </div>
-   <label><input id="draw-grid-lines" type="checkbox">&nbsp;Draw grid lines</label>
+   <label><input id="draw-grid-lines" type="checkbox" />&nbsp;Draw grid lines</label>
 </fieldset>
 <fieldset class="outcome-options-area">
    <legend>Outcomes to display</legend>
@@ -39,7 +39,7 @@
       <label class="per-dim-median-option"><input id="display-per-dim-median" type="checkbox" />&nbsp;Per-dimension median</label>
    </div>
    <div>
-      <label><input id="show-strategic-outcomes" type=checkbox>&nbsp;Show strategic outcomes</label>
+      <label><input id="show-strategic-outcomes" type="checkbox" />&nbsp;Show strategic outcomes</label>
    </div>
 </fieldset>
 <fieldset class="strategy-system-options-area">
@@ -52,22 +52,22 @@
       <label class="per-dim-median-option"><input id="manipulate-per-dim-median" name="strategy-system-options" type="radio" />&nbsp;Per-dimension median</label>
    </div>
    <div>
-      <label><input id="show-outcome-border" type=checkbox>&nbsp;Show limits of outcome</label>
+      <label><input id="show-outcome-border" type="checkbox" />&nbsp;Show limits of outcome</label>
    </div>
 </fieldset>
 <fieldset id="animation-area">
    <legend>Animation</legend>
    <div class="animation-options">
-      <label><input id="ordered-mode-default" checked="checked" name="animation-options" type="radio" />&nbsp;Voter-by-voter mode</label>
+      <label><input checked="checked" id="ordered-mode-default" name="animation-options" type="radio" />&nbsp;Voter-by-voter mode</label>
       <label><input id="ordered-mode-with-vl" name="animation-options" type="radio" />&nbsp;Voter-by-voter mode with velocity limit</label>
       <label><input id="batch-mode-with-vl" name="animation-options" type="radio" />&nbsp;All-at-once mode with velocity limit</label>
    </div>
    <div>
-      <label><input id="time-interval" type="text" size="5">&nbsp;milliseconds per voter</label>
-      <label>Velocity limit:&nbsp;<input id="velocity-limit" type="text" size="6"></label>
+      <label><input id="time-interval" type="text" size="5" />&nbsp;milliseconds per voter</label>
+      <label>Velocity limit:&nbsp;<input id="velocity-limit" size="6" type="text" /></label>
    </div>
    <div class="animation-start-options">
-      <label><input id="start-strategic" checked="checked" name="animation-start-options" type="radio" />&nbsp;Start at current strategic points</label>
+      <label><input checked="checked" id="start-strategic" name="animation-start-options" type="radio" />&nbsp;Start at current strategic points</label>
       <label><input id="start-sincere" name="animation-start-options" type="radio" />&nbsp;Start at sincere points</label>
       <label><input id="start-random" name="animation-start-options" type="radio" />&nbsp;Start at random points</label>
       <label><input id="start-in-zero-corner" name="animation-start-options" type="radio" />&nbsp;Start all in same corner</label>
@@ -91,8 +91,8 @@
       <option>9</option>
    </select></label>
    <label><input id="lock-votes" type="checkbox" />&nbsp;Lock all but focal vote</label>
-   <label><input id="move-strategic" type="checkbox">&nbsp;Move strategic votes</label>
-   <label><input id="automatic-strategy" type="checkbox">&nbsp;Automatically update strategic votes based on optimal Average strategy</label>
+   <label><input id="move-strategic" type="checkbox" />&nbsp;Move strategic votes</label>
+   <label><input id="automatic-strategy" type="checkbox" />&nbsp;Automatically update strategic votes based on optimal Average strategy</label>
    <div>
       <input id="randomize-points" type="button" value="Randomize vote points" />
       <input id="reset-strategic-points" type="button" value="Reset strategic points to sincere" />
