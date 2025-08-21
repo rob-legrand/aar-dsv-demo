@@ -31,12 +31,17 @@ var runDemo = function () {
    var truncatedSimplexMiddleX = (truncatedSimplexLeftX + truncatedSimplexRightX) / 2;
    var truncatedSimplexNearBottomY = (3 * truncatedSimplexBottomY + truncatedSimplexTopY) / 4;
    var truncatedSimplexNearTopY = (truncatedSimplexBottomY + 3 * truncatedSimplexTopY) / 4;
+   var orthogonalSimplexBottomY = 570;
+   var orthogonalSimplexLeftX = 70;
+   var orthogonalSimplexRightX = 570;
+   var orthogonalSimplexTopY = 70;
    var selectNElement = document.getElementById('select-n');
    var numVoters = parseInt(selectNElement.options[selectNElement.selectedIndex].value, 10);
    var lineSegmentRadio = document.getElementById('use-line-segment');
    var hypercubeRadio = document.getElementById('use-hypercube');
    var simplexRadio = document.getElementById('use-simplex');
    var truncatedSimplexRadio = document.getElementById('use-truncated-simplex');
+   var orthogonalSimplexRadio = document.getElementById('use-orthogonal-simplex');
    var drawGridLinesCheckbox = document.getElementById('draw-grid-lines');
    var numDims;
    var startAnimationButton = document.getElementById('start-animation');
@@ -103,7 +108,7 @@ var runDemo = function () {
       var whichDim, whichRow;
       if (lineSegmentRadio.checked) {
          numDims = 1;
-      } else if (hypercubeRadio.checked) {
+      } else if (hypercubeRadio.checked || orthogonalSimplexRadio.checked) {
          numDims = 2;
       } else if (simplexRadio.checked || truncatedSimplexRadio.checked) {
          numDims = 3;
@@ -164,6 +169,9 @@ var runDemo = function () {
          var tSimplexMiddleY = (truncatedSimplexBottomY + truncatedSimplexTopY) / 2;
          return {x: (tSimplexRightX * (vote[0] + vote[1]) + tSimplexLeftX * vote[2]) / 1.5,
                  y: (tSimplexBottomY * vote[0] + tSimplexTopY * vote[1] + tSimplexMiddleY * vote[2]) / 1.5};
+      } else if (orthogonalSimplexRadio.checked) {
+         return {x: orthogonalSimplexLeftX + (orthogonalSimplexRightX - orthogonalSimplexLeftX) * vote[0],
+                 y: orthogonalSimplexBottomY - (orthogonalSimplexBottomY - orthogonalSimplexTopY) * vote[1]};
       } else {
          return null;
       }
@@ -190,6 +198,9 @@ var runDemo = function () {
          return [((screen.x - tSimplexLeftX) / (tSimplexRightX - tSimplexLeftX) + (screen.y - tSimplexMiddleY) / (tSimplexBottomY - tSimplexMiddleY)) / 2 * 1.5,
                  ((screen.x - tSimplexLeftX) / (tSimplexRightX - tSimplexLeftX) + (tSimplexMiddleY - screen.y) / (tSimplexMiddleY - tSimplexTopY)) / 2 * 1.5,
                  (tSimplexRightX - screen.x) / (tSimplexRightX - tSimplexLeftX) * 1.5];
+      } else if (orthogonalSimplexRadio.checked) {
+         return [(screen.x - orthogonalSimplexLeftX) / (orthogonalSimplexRightX - orthogonalSimplexLeftX),
+                 (orthogonalSimplexBottomY - screen.y) / (orthogonalSimplexBottomY - orthogonalSimplexTopY)];
       } else {
          return null;
       }
@@ -259,6 +270,93 @@ var runDemo = function () {
          } else {
             return [point[0], point[1], point[2]];
          }
+      } else if (orthogonalSimplexRadio.checked) {
+         if (point[0] < 0) {
+            point[0] = 0;
+         }
+         if (point[1] < 0) {
+            point[1] = 0;
+         }
+         if (point[0] + point[1] > 1) {
+            surplus = (point[0] + point[1] - 1) / 2;
+            point[0] -= surplus;
+            point[1] = 1 - point[0];
+         }
+         if (point[0] < 0) {
+            return [0, 1];
+         } else if (point[1] < 0) {
+            return [1, 0];
+         } else {
+            return [point[0], point[1]];
+         }
+      } else {
+         return null;
+      }
+   };
+
+   var projectVotePointToSpaceObliquely = function (point) {
+      var dimensionsAdded, ratio, q1, q2, differenceItShouldBe, difference, dimension;
+      var upperLim, lowerLim, upperSumLimit, lowerSumLimit;
+      if (!point || point.length !== numDims) {
+         return null;
+      } else if (lineSegmentRadio.checked) {
+         return [Math.min(Math.max(point[0], 0), 1)];
+      } else if (hypercubeRadio.checked) {
+         return [Math.min(Math.max(point[0], 0), 1), Math.min(Math.max(point[1], 0), 1)];
+      } else if (simplexRadio.checked) {
+         upperLim = 1;
+         lowerLim = 0;
+         upperSumLimit = 1;
+         lowerSumLimit = 1;
+      } else if (truncatedSimplexRadio.checked) {
+         upperLim = 1;
+         lowerLim = 0;
+         upperSumLimit = 1.5;
+         lowerSumLimit = 1.5;
+      } else if (orthogonalSimplexRadio.checked) {
+         upperLim = 1;
+         lowerLim = 0;
+         upperSumLimit = 1;
+         lowerSumLimit = 0;
+      }
+      dimensionsAdded = 0;
+      for (dimension = 0; dimension < numDims; dimension += 1) {
+         if (point[dimension] > upperLim) {
+            point[dimension] = upperLim;
+         } else if (point[dimension] < lowerLim) {
+            point[dimension] = lowerLim;
+         }
+         dimensionsAdded += point[dimension];
+      }
+      if (dimensionsAdded > upperSumLimit) {
+         difference = 0;
+         for (dimension = 0; dimension < numDims; dimension += 1) {
+            difference += (point[dimension] - lowerLim);
+         }
+         q1 = upperSumLimit / numDims;
+         q2 = q1 - lowerLim;
+         differenceItShouldBe = q2 * numDims;
+         ratio = differenceItShouldBe / difference;
+         for (dimension = 0; dimension < numDims; dimension += 1) {
+            point[dimension] = lowerLim + (ratio * (point[dimension] - lowerLim));
+         }
+      } else if (dimensionsAdded < lowerSumLimit) {
+         difference = 0;
+         for (dimension = 0; dimension < numDims; dimension += 1) {
+            difference += upperLim - point[dimension];
+         }
+         q1 = lowerSumLimit / numDims;
+         q2 = upperLim - q1;
+         differenceItShouldBe = q2 * numDims;
+         ratio = differenceItShouldBe / difference;
+         for (dimension = 0; dimension < numDims; dimension += 1) {
+            point[dimension] = upperLim - (ratio * (upperLim - point[dimension]));
+         }
+      }
+      if (numDims === 2) {
+         return [point[0], point[1]];
+      } else if (numDims === 3) {
+         return [point[0], point[1], point[2]];
       } else {
          return null;
       }
@@ -344,6 +442,12 @@ var runDemo = function () {
                   votePoints[whichPoint][0] -= votePoints[whichPoint][whichDim];
                }
             } while (votePoints[whichPoint][0] < 0 || votePoints[whichPoint][0] > 1);
+         } else if (orthogonalSimplexRadio.checked) {
+            do {
+               for (whichDim = 0; whichDim < numDims; whichDim += 1) {
+                  votePoints[whichPoint][whichDim] = Math.floor(Math.random() * 100001) / 100000;
+               }
+            } while (votePoints[whichPoint][0] + votePoints[whichPoint][1] > 1);
          }
          votePoints[whichPoint] = projectVotePointToSpace(votePoints[whichPoint]);
       }
@@ -443,6 +547,12 @@ var runDemo = function () {
             obeysAll: false,
             dimSize: null
          };
+      } else if (orthogonalSimplexRadio.checked) {
+         window.alert('FIXME testInequalities');
+         return {
+            obeysAll: false,
+            dimSize: null
+         };
       } else {
          return {
             obeysAll: false,
@@ -528,13 +638,15 @@ var runDemo = function () {
             outcome.push(sortedPoints[numPoints - 1]);
          }
          return projectVotePointToSpace(outcome);
-      } else if (simplexRadio.checked || truncatedSimplexRadio.checked) {
+      } else if (simplexRadio.checked || truncatedSimplexRadio.checked || orthogonalSimplexRadio.checked) {
          strategicPoints = [];
          for (whichPoint = 0; whichPoint < numPoints; whichPoint += 1) {
             if (simplexRadio.checked) {
                strategicPoints.push([1 / 3, 1 / 3, 1 / 3]);
             } else if (truncatedSimplexRadio.checked) {
                strategicPoints.push([1 / 2, 1 / 2, 1 / 2]);
+            } else if (orthogonalSimplexRadio.checked) {
+               strategicPoints.push([1 / 3, 1 / 3]);
             }
          }
          do {
@@ -560,6 +672,50 @@ var runDemo = function () {
          } while (somethingChanged);
          return calcAverage(strategicPoints);
       }
+   };
+
+   // find AAR DSV outcome of input points with oblique projection
+   var calcAarDsvOblique = function (points) {
+      var numPoints = points.length;
+      var outcome = [];
+      var newStrategicPoint, somethingChanged, sortedPoints, strategicPoints, whichDim, whichPoint, whichOtherPoint;
+      var largestVal, largestAt;
+      strategicPoints = [];
+      for (whichPoint = 0; whichPoint < numPoints; whichPoint += 1) {
+         if (lineSegmentRadio.checked) {
+            strategicPoints.push([1 / 2]);
+         } else if (hypercubeRadio.checked) {
+            strategicPoints.push([1 / 2, 1 / 2]);
+         } else if (simplexRadio.checked) {
+            strategicPoints.push([1 / 3, 1 / 3, 1 / 3]);
+         } else if (truncatedSimplexRadio.checked) {
+            strategicPoints.push([1 / 2, 1 / 2, 1 / 2]);
+         } else if (orthogonalSimplexRadio.checked) {
+            strategicPoints.push([1 / 3, 1 / 3]);
+         }
+      }
+      do {
+         somethingChanged = false;
+         for (whichPoint = 0; whichPoint < numPoints; whichPoint += 1) {
+            newStrategicPoint = [];
+            for (whichDim = 0; whichDim < numDims; whichDim += 1) {
+               newStrategicPoint.push(points[whichPoint][whichDim] * numVoters);
+               for (whichOtherPoint = 0; whichOtherPoint < numPoints; whichOtherPoint += 1) {
+                  if (whichOtherPoint !== whichPoint) {
+                     newStrategicPoint[whichDim] -= strategicPoints[whichOtherPoint][whichDim];
+                  }
+               }
+            }
+            newStrategicPoint = projectVotePointToSpaceObliquely(newStrategicPoint);
+            for (whichDim = 0; whichDim < numDims; whichDim += 1) {
+               if (Math.abs(newStrategicPoint[whichDim] - strategicPoints[whichPoint][whichDim]) > 0.00000001) {
+                  somethingChanged = true;
+               }
+               strategicPoints[whichPoint][whichDim] = newStrategicPoint[whichDim];
+            }
+         }
+      } while (somethingChanged);
+      return calcAverage(strategicPoints);
    };
 
    // find AAR DSV outcome of input points with larger internal votespace
@@ -611,6 +767,9 @@ var runDemo = function () {
          } while (somethingChanged);
          return calcAverage(strategicPoints);
       } else if (truncatedSimplexRadio.checked) {
+         window.alert('FIXME calcAarDsvLargerSpace');
+         return null;
+      } else if (orthogonalSimplexRadio.checked) {
          window.alert('FIXME calcAarDsvLargerSpace');
          return null;
       } else {
@@ -790,6 +949,8 @@ var runDemo = function () {
             points.push(outcomeFunction(copyArray));
          }
       } else if (truncatedSimplexRadio.checked) {
+         window.alert('FIXME findLimits');
+      } else if (orthogonalSimplexRadio.checked) {
          window.alert('FIXME findLimits');
       } else {
          points.push(outcomeFunction(copyArray));
@@ -1058,6 +1219,21 @@ var runDemo = function () {
          votespaceContext.lineTo(truncatedSimplexLeftX + 0.5, truncatedSimplexNearTopY + 0.5);
          votespaceContext.strokeStyle = '#000000';
          votespaceContext.stroke();
+      } else if (orthogonalSimplexRadio.checked) {
+         votespaceContext.beginPath();
+         votespaceContext.moveTo(orthogonalSimplexLeftX + 0.5, orthogonalSimplexTopY + 0.5);
+         votespaceContext.lineTo(orthogonalSimplexRightX + 0.5, orthogonalSimplexBottomY + 0.5);
+         votespaceContext.lineTo(orthogonalSimplexLeftX + 0.5, orthogonalSimplexBottomY + 0.5);
+         votespaceContext.lineTo(orthogonalSimplexLeftX + 0.5, orthogonalSimplexTopY + 0.5);
+         votespaceContext.fillStyle = '#ffffff';
+         votespaceContext.fill();
+         votespaceContext.beginPath();
+         votespaceContext.moveTo(orthogonalSimplexLeftX + 0.5, orthogonalSimplexTopY + 0.5);
+         votespaceContext.lineTo(orthogonalSimplexRightX + 0.5, orthogonalSimplexBottomY + 0.5);
+         votespaceContext.lineTo(orthogonalSimplexLeftX + 0.5, orthogonalSimplexBottomY + 0.5);
+         votespaceContext.lineTo(orthogonalSimplexLeftX + 0.5, orthogonalSimplexTopY + 0.5);
+         votespaceContext.strokeStyle = '#000000';
+         votespaceContext.stroke();
       } else {
          return false;
       }
@@ -1146,6 +1322,8 @@ var runDemo = function () {
                         copy[currentVoter][0] -= copy[currentVoter][whichDim];
                      }
                   } while (copy[currentVoter][0] < 0);
+               } else if (orthogonalSimplexRadio.checked) {
+                  window.alert('FIXME strategizeOutcome');
                }
                newOutcome = outcomeFunction(copy);
 
@@ -1599,6 +1777,14 @@ var runDemo = function () {
       redrawSpace();
    };
 
+   orthogonalSimplexRadio.onchange = function () {
+      fixNumDims();
+      votePoints = [];
+      strategicPoints = [];
+      addOrRemoveVotePoints();
+      redrawSpace();
+   };
+
    automaticStrategyCheckbox.onchange = function () {
       redrawSpace();
    };
@@ -1649,8 +1835,10 @@ var runDemo = function () {
             return trueOffsetTop;
          };
 
-         return {x: ev.clientX - getTrueOffsetLeft(votespaceCanvas) + window.pageXOffset - (votespaceCanvas.offsetWidth - votespaceCanvas.width) / 2,
-                 y: ev.clientY - getTrueOffsetTop(votespaceCanvas) + window.pageYOffset - (votespaceCanvas.offsetHeight - votespaceCanvas.height) / 2};
+         return {
+            x: ev.clientX - getTrueOffsetLeft(votespaceCanvas) + window.pageXOffset - (votespaceCanvas.offsetWidth - votespaceCanvas.width) / 2,
+            y: ev.clientY - getTrueOffsetTop(votespaceCanvas) + window.pageYOffset - (votespaceCanvas.offsetHeight - votespaceCanvas.height) / 2
+         };
       };
 
       var whichPoint = (function () {
@@ -2157,6 +2345,8 @@ var runDemo = function () {
                } while (strategicPoints[whichVoter][0] < 0);
             } else if (truncatedSimplexRadio.checked) {
                window.alert('FIXME startAnimationButton.onclick 1');
+            } else if (orthogonalSimplexRadio.checked) {
+               window.alert('FIXME startAnimationButton.onclick 1');
             }
          }
       } else if (animationStartSameCornerRadio.checked) {
@@ -2190,6 +2380,8 @@ var runDemo = function () {
                }
                strategicPoints[whichVoter][largestAt] = 1;
             } else if (truncatedSimplexRadio.checked) {
+               window.alert('FIXME startAnimationButton.onclick 2');
+            } else if (orthogonalSimplexRadio.checked) {
                window.alert('FIXME startAnimationButton.onclick 2');
             }
          }
