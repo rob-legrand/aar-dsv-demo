@@ -18,7 +18,9 @@ a:visited {
 }
 
 a:hover {
-   bottom: 1px; position: relative; text-decoration: underline;
+   bottom: 1px;
+   position: relative;
+   text-decoration: underline;
 }
 
 a:active {
