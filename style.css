@@ -28,44 +28,9 @@ a:active {
 }
 
 body {
-   background-color: #f4f8fc;
-   color: #002040;
-   font-family: Didot, Palatino, "Palatino Linotype", serif;
-}
-
-.bigtop {
-   font-family: Futura, "Century Gothic", Geneva, Tahoma, Verdana, Arial, sans-serif;
-   font-size: 250%;
-   font-weight: bold;
-}
-
-.email {
-   font-family: monospace;
-}
-
-.endtag {
-   font-size: 60%;
-   font-style: italic;
-   margin-left: 2em;
-}
-
-.header {
-   font-family: "Computer Modern", Didot, Palatino, "Palatino Linotype", serif;
-   font-size: 150%;
-}
-
-.smalltop {
-   font-family: "Computer Modern", Garamond, Georgia, Baskerville, Palatino, "Palatino Linotype", Didot, Bodoni, serif;
-   font-size: 120%;
-}
-
-.url {
-   font-family: monospace;
-}
-
-body {
    background-color: #ddeeff;
    color: #001122;
+   font-family: Didot, Palatino, "Palatino Linotype", serif;
 }
 
 canvas#votespace, fieldset {
@@ -170,11 +135,30 @@ ul.mode-menu li:hover {
    text-align: right;
 }
 
+.email {
+   font-family: monospace;
+}
+
+.endtag {
+   font-size: 60%;
+   font-style: italic;
+   margin-left: 2em;
+}
+
+.header {
+   font-family: "Computer Modern", Didot, Palatino, "Palatino Linotype", serif;
+   font-size: 150%;
+}
+
 .smalltop {
    color: #660033;
    font-family: Garamond, Georgia, Baskerville, Palatino, "Palatino Linotype", Didot, Bodoni, serif;
    font-size: 100%;
    font-weight: normal;
+}
+
+.url {
+   font-family: monospace;
 }
 
 .variable {
