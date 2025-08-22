@@ -842,6 +842,42 @@ var runDemo = function () {
       return projectVotePointToSpace(calcPerDimMedianUnprojected(points));
    };
 
+   // find moving-phamtom-median outcome of input points
+   const calcMovingPhantomMedian = function (points) {
+      let highPhantomFactor;
+      let lowPhantomFactor;
+      let outcome;
+      const numPhantoms = points.length + 1;
+      lowPhantomFactor = 0;
+      highPhantomFactor = 1;
+      do {
+         const newPhantomFactor = (lowPhantomFactor + highPhantomFactor) / 2;
+         const allPoints = [
+            ...points,
+            ...Array.from(
+               {length: numPhantoms},
+               (ignore, index) => Array.from(
+                  {length: numDims},
+                  () => index * newPhantomFactor
+               )
+            )
+         ];
+         outcome = calcPerDimMedianUnprojected(allPoints);
+         const outcomeTotal = outcome.reduce(
+            (x, y) => x + y,
+            0
+         );
+         if (outcomeTotal < 1) {
+            lowPhantomFactor = newPhantomFactor;
+         } else if (outcomeTotal > 1) {
+            highPhantomFactor = newPhantomFactor;
+         } else {
+            return outcome;
+         }
+      } while (lowPhantomFactor + 1.0e-10 <= highPhantomFactor);
+      return outcome;
+   };
+
    // find Midrange outcome of input points
    var calcPerDimMidrange = function (points) {
       var numPoints = points.length;
