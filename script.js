@@ -818,8 +818,8 @@ var runDemo = function () {
       return projectVotePointToSpace(outcome);
    };
 
-   // find Median outcome of input points
-   var calcPerDimMedian = function (points) {
+   // find Median outcome of input points without projecting to votespace
+   var calcPerDimMedianUnprojected = function (points) {
       var numPoints = points.length;
       var outcome = [];
       var sortedPoints, whichDim, whichPoint;
@@ -834,7 +834,12 @@ var runDemo = function () {
          sortedPoints.sort(smallestToLargest);
          outcome.push(sortedPoints[Math.floor(numPoints / 2)]);
       }
-      return projectVotePointToSpace(outcome);
+      return outcome;
+   };
+
+   // find Median outcome of input points
+   const calcPerDimMedian = function (points) {
+      return projectVotePointToSpace(calcPerDimMedianUnprojected(points));
    };
 
    // find Midrange outcome of input points
