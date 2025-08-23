@@ -75,44 +75,6 @@ label.per-dim-midrange-option {
    font-weight: bold;
 }
 
-ol.tour-menu {
-   counter-reset: tour-menu-number;
-   margin-left: 0;
-   padding-left: 0;
-}
-
-ol.tour-menu li {
-   background-color: white;
-   border: thick green solid;
-   counter-increment: tour-menu-number;
-   display: inline-block;
-   padding: 3px;
-}
-
-ol.tour-menu li:before {
-   content: counter(tour-menu-number) ". ";
-}
-
-ol.tour-menu li:hover {
-   border-color: lime;
-}
-
-ul.mode-menu {
-   margin-left: 0;
-   padding-left: 0;
-}
-
-ul.mode-menu li {
-   background-color: white;
-   border: thick green solid;
-   display: inline-block;
-   padding: 3px;
-}
-
-ul.mode-menu li:hover {
-   border-color: lime;
-}
-
 .bigtop {
    color: #660033;
    font-family: Futura, "Century Gothic", Geneva, Tahoma, Verdana, Arial, sans-serif;
@@ -131,34 +93,11 @@ ul.mode-menu li:hover {
    clear: both;
 }
 
-.dimension-value {
-   text-align: right;
-}
-
-.email {
-   font-family: monospace;
-}
-
-.endtag {
-   font-size: 60%;
-   font-style: italic;
-   margin-left: 2em;
-}
-
-.header {
-   font-family: "Computer Modern", Didot, Palatino, "Palatino Linotype", serif;
-   font-size: 150%;
-}
-
 .smalltop {
    color: #660033;
    font-family: Garamond, Georgia, Baskerville, Palatino, "Palatino Linotype", Didot, Bodoni, serif;
    font-size: 100%;
    font-weight: normal;
-}
-
-.url {
-   font-family: monospace;
 }
 
 .variable {
