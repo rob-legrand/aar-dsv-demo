@@ -82,7 +82,7 @@ var runDemo = function () {
       }
    }
 
-   const votePointCells = ['x', 'y', 'z'].map(
+   const votePointCells = [...'xyz'].map(
       (dim) => votePointTable.querySelectorAll(
          '.' + dim + '-dim'
       )
