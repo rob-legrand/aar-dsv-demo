@@ -82,10 +82,11 @@ var runDemo = function () {
       }
    }
 
-   var votePointCells = [];
-   votePointCells[0] = votePointTable.getElementsByClassName('x-dim');
-   votePointCells[1] = votePointTable.getElementsByClassName('y-dim');
-   votePointCells[2] = votePointTable.getElementsByClassName('z-dim');
+   const votePointCells = [
+      votePointTable.getElementsByClassName('x-dim'),
+      votePointTable.getElementsByClassName('y-dim'),
+      votePointTable.getElementsByClassName('z-dim')
+   ];
 
    var strategySystemOptions = document.getElementsByName('strategy-system-options');
 
