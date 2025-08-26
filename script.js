@@ -82,11 +82,11 @@ var runDemo = function () {
       }
    }
 
-   const votePointCells = [
-      votePointTable.querySelectorAll('.x-dim'),
-      votePointTable.querySelectorAll('.y-dim'),
-      votePointTable.querySelectorAll('.z-dim')
-   ];
+   const votePointCells = ['x', 'y', 'z'].map(
+      (dim) => votePointTable.querySelectorAll(
+         '.' + dim + '-dim'
+      )
+   );
 
    var strategySystemOptions = document.getElementsByName('strategy-system-options');
 
