@@ -83,9 +83,9 @@ var runDemo = function () {
    }
 
    const votePointCells = [
-      votePointTable.getElementsByClassName('x-dim'),
-      votePointTable.getElementsByClassName('y-dim'),
-      votePointTable.getElementsByClassName('z-dim')
+      votePointTable.querySelectorAll('.x-dim'),
+      votePointTable.querySelectorAll('.y-dim'),
+      votePointTable.querySelectorAll('.z-dim')
    ];
 
    var strategySystemOptions = document.getElementsByName('strategy-system-options');
