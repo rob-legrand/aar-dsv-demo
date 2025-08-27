@@ -36,7 +36,7 @@ a:active {
 body {
    background-color: #ddeeff;
    color: #001122;
-   font-family: Didot, Palatino, "Palatino Linotype", serif;
+   font-family: var(--serif);
 }
 
 canvas#votespace, fieldset {
@@ -83,7 +83,7 @@ label.per-dim-midrange-option {
 
 .bigtop {
    color: #660033;
-   font-family: Futura, "Century Gothic", Geneva, Tahoma, Verdana, Arial, sans-serif;
+   font-family: var(--geometric);
    font-size: 250%;
    font-weight: bold;
 }
@@ -101,7 +101,7 @@ label.per-dim-midrange-option {
 
 .smalltop {
    color: #660033;
-   font-family: Garamond, Georgia, Baskerville, Palatino, "Palatino Linotype", Didot, Bodoni, serif;
+   font-family: var(--serif);
    font-size: 100%;
    font-weight: normal;
 }
