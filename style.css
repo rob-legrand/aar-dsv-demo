@@ -1,10 +1,5 @@
 @charset "UTF-8";
 
-@font-face {font-family: "Computer Modern"; src: url(http://mirror.ctan.org/fonts/cm/ps-type1/bakoma/ttf/cmr10.ttf) format("truetype")}
-@font-face {font-family: "Computer Modern sans-serif"; src: url(http://mirror.ctan.org/fonts/cm/ps-type1/bakoma/ttf/cmss10.ttf) format("truetype")}
-@font-face {font-family: "Computer Modern Dunhill"; src: url(http://mirror.ctan.org/fonts/cm/ps-type1/bakoma/ttf/cmdunh10.ttf) format("truetype")}
-@font-face {font-family: "Computer Modern small caps"; src: url(http://mirror.ctan.org/fonts/cm/ps-type1/bakoma/ttf/cmcsc10.ttf) format("truetype")}
-
 a {
    text-decoration: none;
 }
