@@ -864,7 +864,7 @@ var runDemo = function () {
          : 1
       );
       lowPhantomFactor = 0;
-      highPhantomFactor = 1;
+      highPhantomFactor = points.length;
       do {
          const newPhantomFactor = (lowPhantomFactor + highPhantomFactor) / 2;
          const allPoints = [
@@ -873,7 +873,7 @@ var runDemo = function () {
                {length: numPhantoms},
                (ignore, index) => Array.from(
                   {length: numDims},
-                  () => index * newPhantomFactor
+                  () => index * newPhantomFactor / points.length
                )
             )
          ];
