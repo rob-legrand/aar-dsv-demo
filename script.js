@@ -864,7 +864,7 @@ var runDemo = function () {
          : 1
       );
       lowPhantomFactor = 0;
-      highPhantomFactor = points.length;
+      highPhantomFactor = 2;
       do {
          const newPhantomFactor = (lowPhantomFactor + highPhantomFactor) / 2;
          const allPoints = [
