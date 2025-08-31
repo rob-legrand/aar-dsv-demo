@@ -849,6 +849,20 @@ var runDemo = function () {
       let lowPhantomFactor;
       let outcome;
       const numPhantoms = points.length + 1;
+      const minOutcomeTotal = (
+         simplexRadio.checked
+         ? 1
+         : truncatedSimplexRadio.checked
+         ? 1.5
+         : 0
+      );
+      const maxOutcomeTotal = (
+         hypercubeRadio.checked
+         ? 2
+         : truncatedSimplexRadio.checked
+         ? 1.5
+         : 1
+      );
       lowPhantomFactor = 0;
       highPhantomFactor = 1;
       do {
@@ -868,9 +882,9 @@ var runDemo = function () {
             (x, y) => x + y,
             0
          );
-         if (outcomeTotal < 1) {
+         if (outcomeTotal < minOutcomeTotal) {
             lowPhantomFactor = newPhantomFactor;
-         } else if (outcomeTotal > 1) {
+         } else if (outcomeTotal > maxOutcomeTotal) {
             highPhantomFactor = newPhantomFactor;
          } else {
             return outcome;
