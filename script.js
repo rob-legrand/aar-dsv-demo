@@ -1692,7 +1692,7 @@ var runDemo = function () {
    var getPointFromTextboxes = function (num) {
       var input, whichDim;
       for (whichDim = 0; whichDim < numDims; whichDim += 1) {
-         input = parseFloat(votePointTextboxes[num][whichDim].value, 10);
+         input = parseFloat(votePointTextboxes[num][whichDim].value);
          if (!isNaN(input)) {
             votePoints[num][whichDim] = input;
          }
@@ -2359,11 +2359,11 @@ var runDemo = function () {
          resetAnimation();
       }
       // update movement limit and timeout length based on user input
-      userInput = parseFloat(velocityLimitTextbox.value, 10);
+      userInput = parseFloat(velocityLimitTextbox.value);
       if (!isNaN(userInput)) {
          animatedMovementLimitBase = userInput > 0 ? userInput : animatedMovementLimitBase;
       }
-      userInput = parseFloat(timeIntervalTextbox.value, 10);
+      userInput = parseFloat(timeIntervalTextbox.value);
       timeIncrementBase = (
          (Number.isFinite(userInput) && userInput > 0)
          ? userInput
