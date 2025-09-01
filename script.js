@@ -127,7 +127,7 @@ var runDemo = function () {
 
    // points used to run demo
    var strategicPoints = [];
-   var animatedVote, animateIntervalId, animationInProgress = false, animatedMovementLimit, animatedMovementLimitBase = 0.01, timeIncrementBase = 50, votesLocked = false;
+   var animatedVote, animateIntervalId, animationInProgress = false, animatedMovementLimit, animatedMovementLimitBase = 0.0005, timeIncrementBase = 0, votesLocked = false;
    // used to keep track of votepoint updates from textboxes
    var updateInProgress, updateRow;
 
@@ -2364,9 +2364,11 @@ var runDemo = function () {
          animatedMovementLimitBase = userInput > 0 ? userInput : animatedMovementLimitBase;
       }
       userInput = parseFloat(timeIntervalTextbox.value, 10);
-      if (!isNaN(userInput)) {
-         timeIncrementBase = userInput > 1 ? userInput : 1;
-      }
+      timeIncrementBase = (
+         (Number.isFinite(userInput) && userInput > 0)
+         ? userInput
+         : 0
+      );
       timeIntervalTextbox.value = timeIncrementBase.toString();
       velocityLimitTextbox.value = animatedMovementLimitBase.toString();
       animatedMovementLimit = animatedMovementLimitBase;
