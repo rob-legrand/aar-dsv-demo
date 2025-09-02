@@ -80,7 +80,9 @@ var runDemo = function () {
    var resetStrategicButton = document.getElementById('reset-strategic-points');
    var votePointTable = document.getElementById('votepoints');
 
-   const votePointRows = [...votePointTable.querySelectorAll('tr')].filter(
+   const votePointRows = [
+      ...votePointTable.querySelectorAll('tr')
+   ].filter(
       (row) => row.id?.indexOf?.('votepoint') === 0
    );
 
