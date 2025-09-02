@@ -3,13 +3,8 @@
 var runDemo = function () {
    'use strict';
 
-   var votespaceCanvas = document.getElementById('votespace');
-   var votespaceContext = votespaceCanvas && votespaceCanvas.getContext && votespaceCanvas.getContext('2d');
-   if (!votespaceContext) {
-      document.getElementById('instructions').innerHTML = 'Your browser does not seem to support the <code>&lt;canvas&gt;</code> element correctly.&nbsp; Please use a recent version of a standards-compliant browser such as <a href="http://www.opera.com/">Opera</a>, <a href="http://www.google.com/chrome/">Chrome</a> or <a href="http://www.getfirefox.com/">Firefox</a>.';
-      window.alert('Your browser does not seem to support the <canvas> element correctly.\nPlease use a recent version of a standards-compliant browser such as Opera, Chrome or Firefox.');
-      return;
-   }
+   const votespaceCanvas = document.getElementById('votespace');
+   const votespaceContext = votespaceCanvas.getContext('2d');
 
    var maxNumVoters = 9;
    var hypercubeBottomY = 570;
