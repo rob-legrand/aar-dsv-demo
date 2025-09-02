@@ -67,15 +67,10 @@ var runDemo = function () {
    var showOutcomeBorderCheckbox = document.getElementById('show-outcome-border');
    var resetStrategicButton = document.getElementById('reset-strategic-points');
    var votePointTable = document.getElementById('votepoints');
-   var votePointRowCollection = votePointTable.getElementsByTagName('tr');
-   var votePointRows = [];
-   var rowId, whichRow;
-   for (whichRow = 0; whichRow < votePointRowCollection.length; whichRow += 1) {
-      rowId = votePointRowCollection[whichRow].id;
-      if (rowId && rowId.indexOf('votepoint') === 0) {
-         votePointRows.push(votePointRowCollection[whichRow]);
-      }
-   }
+
+   const votePointRows = [...votePointTable.querySelectorAll('tr')].filter(
+      (row) => row.id?.indexOf?.('votepoint') === 0
+   );
 
    const votePointCells = [...'xyz'].map(
       (dim) => votePointTable.querySelectorAll(
