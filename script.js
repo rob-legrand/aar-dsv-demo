@@ -107,20 +107,23 @@ var runDemo = function () {
    }
    var updateVotepointsButton = document.getElementById('update-votepoints');
 
-   var fixNumDims = function () {
-      var whichDim, whichRow;
-      if (lineSegmentRadio.checked) {
-         numDims = 1;
-      } else if (hypercubeRadio.checked || orthogonalSimplexRadio.checked) {
-         numDims = 2;
-      } else if (simplexRadio.checked || truncatedSimplexRadio.checked) {
-         numDims = 3;
-      }
-      for (whichDim = 0; whichDim < 3; whichDim += 1) {
-         for (whichRow = 0; whichRow < votePointCells[whichDim].length; whichRow += 1) {
-            votePointCells[whichDim][whichRow].style.display = whichDim < numDims ? '' : 'none';
-         }
-      }
+   const fixNumDims = function () {
+      numDims = (
+         lineSegmentRadio.checked
+         ? 1
+         : (hypercubeRadio.checked || orthogonalSimplexRadio.checked)
+         ? 2
+         : 3
+      );
+      votePointCells.forEach(function (dim, whichDim) {
+         dim.forEach(function (row) {
+            row.style.display = (
+               whichDim < numDims
+               ? ''
+               : 'none'
+            );
+         });
+      });
    };
    fixNumDims();
 
