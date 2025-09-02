@@ -2,6 +2,19 @@
 
 var runDemo = function () {
    'use strict';
+   let animateIntervalId;
+   let animatedMovementLimit;
+   let animatedMovementLimitBase;
+   let animatedVote;
+   let animationInProgress;
+   let numDims;
+   let numVoters;
+   let strategicPoints; // points used to run demo
+   let timeIncrementBase;
+   let updateInProgress; // used to keep track of votepoint updates from textboxes
+   let updateRow; // used to keep track of votepoint updates from textboxes
+   let votePoints; // the voters' voted points
+   let votesLocked;
 
    const votespaceCanvas = document.getElementById('votespace');
    const votespaceContext = votespaceCanvas.getContext('2d');
@@ -31,14 +44,13 @@ var runDemo = function () {
    var orthogonalSimplexRightX = 570;
    var orthogonalSimplexTopY = 70;
    var selectNElement = document.getElementById('select-n');
-   var numVoters = parseInt(selectNElement.options[selectNElement.selectedIndex].value, 10);
+   numVoters = parseInt(selectNElement.options[selectNElement.selectedIndex].value, 10);
    var lineSegmentRadio = document.getElementById('use-line-segment');
    var hypercubeRadio = document.getElementById('use-hypercube');
    var simplexRadio = document.getElementById('use-simplex');
    var truncatedSimplexRadio = document.getElementById('use-truncated-simplex');
    var orthogonalSimplexRadio = document.getElementById('use-orthogonal-simplex');
    var drawGridLinesCheckbox = document.getElementById('draw-grid-lines');
-   var numDims;
    var startAnimationButton = document.getElementById('start-animation');
    var stopAnimationButton = document.getElementById('stop-animation');
    var displayAarDsvCheckbox = document.getElementById('display-aar-dsv');
@@ -112,14 +124,13 @@ var runDemo = function () {
    };
    fixNumDims();
 
-   // the voters' voted points
-   var votePoints = []; // each votePoints[whichPoint][whichDimension] must be between 0 and 1
+   votePoints = []; // each votePoints[whichPoint][whichDimension] must be between 0 and 1
+   strategicPoints = [];
 
-   // points used to run demo
-   var strategicPoints = [];
-   var animatedVote, animateIntervalId, animationInProgress = false, animatedMovementLimit, animatedMovementLimitBase = 0.0005, timeIncrementBase = 0, votesLocked = false;
-   // used to keep track of votepoint updates from textboxes
-   var updateInProgress, updateRow;
+   animationInProgress = false;
+   animatedMovementLimitBase = 0.0005;
+   timeIncrementBase = 0;
+   votesLocked = false;
 
    timeIntervalTextbox.value = timeIncrementBase.toString();
    velocityLimitTextbox.value = animatedMovementLimitBase.toString();
