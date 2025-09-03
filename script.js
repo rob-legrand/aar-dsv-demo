@@ -16,7 +16,7 @@ var runDemo = function () {
    let votePoints; // the voters' voted points
    let votesLocked;
 
-   const votespaceCanvas = document.getElementById('votespace');
+   const votespaceCanvas = document.querySelector('#votespace');
    const votespaceContext = votespaceCanvas.getContext('2d');
 
    const maxNumVoters = 9;
@@ -43,42 +43,42 @@ var runDemo = function () {
    const orthogonalSimplexLeftX = 70;
    const orthogonalSimplexRightX = 570;
    const orthogonalSimplexTopY = 70;
-   var selectNElement = document.getElementById('select-n');
+   var selectNElement = document.querySelector('#select-n');
    numVoters = parseInt(selectNElement.options[selectNElement.selectedIndex].value, 10);
-   var lineSegmentRadio = document.getElementById('use-line-segment');
-   var hypercubeRadio = document.getElementById('use-hypercube');
-   var simplexRadio = document.getElementById('use-simplex');
-   var truncatedSimplexRadio = document.getElementById('use-truncated-simplex');
-   var orthogonalSimplexRadio = document.getElementById('use-orthogonal-simplex');
-   var drawGridLinesCheckbox = document.getElementById('draw-grid-lines');
-   var startAnimationButton = document.getElementById('start-animation');
-   var stopAnimationButton = document.getElementById('stop-animation');
-   var displayAarDsvCheckbox = document.getElementById('display-aar-dsv');
-   var displayAverageCheckbox = document.getElementById('display-average');
-   var displayFermatWeberCheckbox = document.getElementById('display-fermat-weber');
-   var displayPerDimMedianCheckbox = document.getElementById('display-per-dim-median');
-   var displayPerDimMidrangeCheckbox = document.getElementById('display-per-dim-midrange');
+   var lineSegmentRadio = document.querySelector('#use-line-segment');
+   var hypercubeRadio = document.querySelector('#use-hypercube');
+   var simplexRadio = document.querySelector('#use-simplex');
+   var truncatedSimplexRadio = document.querySelector('#use-truncated-simplex');
+   var orthogonalSimplexRadio = document.querySelector('#use-orthogonal-simplex');
+   var drawGridLinesCheckbox = document.querySelector('#draw-grid-lines');
+   var startAnimationButton = document.querySelector('#start-animation');
+   var stopAnimationButton = document.querySelector('#stop-animation');
+   var displayAarDsvCheckbox = document.querySelector('#display-aar-dsv');
+   var displayAverageCheckbox = document.querySelector('#display-average');
+   var displayFermatWeberCheckbox = document.querySelector('#display-fermat-weber');
+   var displayPerDimMedianCheckbox = document.querySelector('#display-per-dim-median');
+   var displayPerDimMidrangeCheckbox = document.querySelector('#display-per-dim-midrange');
 
-   var animationModeDefaultRadio = document.getElementById('ordered-mode-default');
-   var animationModeOrderedVLRadio = document.getElementById('ordered-mode-with-vl');
-   var animationModeBatchVLRadio = document.getElementById('batch-mode-with-vl');
-   var timeIntervalTextbox = document.getElementById('time-interval');
-   var velocityLimitTextbox = document.getElementById('velocity-limit');
-   var animationStartSincereRadio = document.getElementById('start-sincere');
-   var animationStartRandomRadio = document.getElementById('start-random');
-   var animationStartSameCornerRadio = document.getElementById('start-in-zero-corner');
-   var animationStartNearCornerRadio = document.getElementById('start-in-nearest-corner');
-   var animationStartStrategicRadio = document.getElementById('start-strategic');
+   var animationModeDefaultRadio = document.querySelector('#ordered-mode-default');
+   var animationModeOrderedVLRadio = document.querySelector('#ordered-mode-with-vl');
+   var animationModeBatchVLRadio = document.querySelector('#batch-mode-with-vl');
+   var timeIntervalTextbox = document.querySelector('#time-interval');
+   var velocityLimitTextbox = document.querySelector('#velocity-limit');
+   var animationStartSincereRadio = document.querySelector('#start-sincere');
+   var animationStartRandomRadio = document.querySelector('#start-random');
+   var animationStartSameCornerRadio = document.querySelector('#start-in-zero-corner');
+   var animationStartNearCornerRadio = document.querySelector('#start-in-nearest-corner');
+   var animationStartStrategicRadio = document.querySelector('#start-strategic');
 
-   var lockVotesCheckbox = document.getElementById('lock-votes');
+   var lockVotesCheckbox = document.querySelector('#lock-votes');
    lockVotesCheckbox.checked = false;
-   var moveStrategicCheckbox = document.getElementById('move-strategic');
+   var moveStrategicCheckbox = document.querySelector('#move-strategic');
    moveStrategicCheckbox.checked = false;
-   var automaticStrategyCheckbox = document.getElementById('automatic-strategy');
-   var showStrategicOutcomesCheckbox = document.getElementById('show-strategic-outcomes');
-   var showOutcomeBorderCheckbox = document.getElementById('show-outcome-border');
-   var resetStrategicButton = document.getElementById('reset-strategic-points');
-   var votePointTable = document.getElementById('votepoints');
+   var automaticStrategyCheckbox = document.querySelector('#automatic-strategy');
+   var showStrategicOutcomesCheckbox = document.querySelector('#show-strategic-outcomes');
+   var showOutcomeBorderCheckbox = document.querySelector('#show-outcome-border');
+   var resetStrategicButton = document.querySelector('#reset-strategic-points');
+   var votePointTable = document.querySelector('#votepoints');
 
    const votePointRows = [
       ...votePointTable.querySelectorAll('tr')
@@ -107,7 +107,7 @@ var runDemo = function () {
          votePointTextboxes[whichVoter].push(votePointTextboxCollection[whichTextbox]);
       }
    }
-   var updateVotepointsButton = document.getElementById('update-votepoints');
+   var updateVotepointsButton = document.querySelector('#update-votepoints');
 
    const fixNumDims = function () {
       numDims = (
@@ -1622,20 +1622,20 @@ var runDemo = function () {
                      closerByDim[whichDim] = 'Overshot ideal';
                   }
                }
-               document.getElementById('aar-dsv-output').innerHTML = 'x: ' + closerByDim[0];
+               document.querySelector('#aar-dsv-output').innerHTML = 'x: ' + closerByDim[0];
                if (numDims > 1) {
-                  document.getElementById('aar-dsv-output').innerHTML += ', y: ' + closerByDim[1];
+                  document.querySelector('#aar-dsv-output').innerHTML += ', y: ' + closerByDim[1];
                   if (numDims > 2) {
-                     document.getElementById('aar-dsv-output').innerHTML += ', z: ' + closerByDim[2];
+                     document.querySelector('#aar-dsv-output').innerHTML += ', z: ' + closerByDim[2];
                   }
                }
                var closerByEuclidean = isOutcomeCloserByMetric(votePoints[pointBeingDragged], outcomeFunction(strategicPoints), outcomeFunction(focalSincerePoints), 2);
                if (closerByEuclidean === 0) {
-                  document.getElementById('aar-dsv-output').innerHTML += '; by Euclidean distance: ' + 'No change';
+                  document.querySelector('#aar-dsv-output').innerHTML += '; by Euclidean distance: ' + 'No change';
                } else if (closerByEuclidean === 1) {
-                  document.getElementById('aar-dsv-output').innerHTML += '; by Euclidean distance: ' + 'Closer to ideal';
+                  document.querySelector('#aar-dsv-output').innerHTML += '; by Euclidean distance: ' + 'Closer to ideal';
                } else if (closerByEuclidean === -1) {
-                  document.getElementById('aar-dsv-output').innerHTML += '; by Euclidean distance: ' + 'Farther from ideal';
+                  document.querySelector('#aar-dsv-output').innerHTML += '; by Euclidean distance: ' + 'Farther from ideal';
                }
             }
             if (displayPerDimMidrangeCheckbox.checked) {
@@ -1855,7 +1855,7 @@ var runDemo = function () {
       redrawSpace();
    };
 
-   document.getElementById('strategy-system-options-radio').onchange = redrawSpace;
+   document.querySelector('#strategy-system-options-radio').onchange = redrawSpace;
    displayAarDsvCheckbox.onchange = redrawSpace;
    displayAverageCheckbox.onchange = redrawSpace;
    displayFermatWeberCheckbox.onchange = redrawSpace;
@@ -1939,19 +1939,19 @@ var runDemo = function () {
             // highlight table row for selected point
             votePointRows[whichPoint].style.backgroundColor = '#ffff55';
             if (moveStrategicCheckbox.checked) {
-               document.getElementById('click-output').innerHTML = 'x = ' + strategicPoints[whichPoint][0].toFixed(5);
+               document.querySelector('#click-output').innerHTML = 'x = ' + strategicPoints[whichPoint][0].toFixed(5);
                if (numDims > 1) {
-                  document.getElementById('click-output').innerHTML += ', y = ' + strategicPoints[whichPoint][1].toFixed(5);
+                  document.querySelector('#click-output').innerHTML += ', y = ' + strategicPoints[whichPoint][1].toFixed(5);
                   if (numDims > 2) {
-                     document.getElementById('click-output').innerHTML += ', z = ' + strategicPoints[whichPoint][2].toFixed(5);
+                     document.querySelector('#click-output').innerHTML += ', z = ' + strategicPoints[whichPoint][2].toFixed(5);
                   }
                }
             } else {
-               document.getElementById('click-output').innerHTML = 'x = ' + votePoints[whichPoint][0].toFixed(5);
+               document.querySelector('#click-output').innerHTML = 'x = ' + votePoints[whichPoint][0].toFixed(5);
                if (numDims > 1) {
-                  document.getElementById('click-output').innerHTML += ', y = ' + votePoints[whichPoint][1].toFixed(5);
+                  document.querySelector('#click-output').innerHTML += ', y = ' + votePoints[whichPoint][1].toFixed(5);
                   if (numDims > 2) {
-                     document.getElementById('click-output').innerHTML += ', z = ' + votePoints[whichPoint][2].toFixed(5);
+                     document.querySelector('#click-output').innerHTML += ', z = ' + votePoints[whichPoint][2].toFixed(5);
                   }
                }
             }
@@ -1981,33 +1981,33 @@ var runDemo = function () {
       } else { // give result of testing according to AAR DSV inequalities
          var clickedPoint = projectVotePointToSpace(toVoteDims(getMouse(ev)));
          var testResult = testInequalities(clickedPoint, votePoints);
-         document.getElementById('click-output').innerHTML = 'x = ' + clickedPoint[0].toFixed(5);
+         document.querySelector('#click-output').innerHTML = 'x = ' + clickedPoint[0].toFixed(5);
          if (numDims > 1) {
-            document.getElementById('click-output').innerHTML += ', y = ' + clickedPoint[1].toFixed(5);
+            document.querySelector('#click-output').innerHTML += ', y = ' + clickedPoint[1].toFixed(5);
             if (numDims > 2) {
-               document.getElementById('click-output').innerHTML += ', z = ' + clickedPoint[2].toFixed(5);
+               document.querySelector('#click-output').innerHTML += ', z = ' + clickedPoint[2].toFixed(5);
             }
          }
-         document.getElementById('click-output').innerHTML += '<br />by inequalities: ' + (testResult.dimSize[0] < 0 ? 'x too small' : testResult.dimSize[0] > 0 ? 'x too big' : 'x just right');
+         document.querySelector('#click-output').innerHTML += '<br />by inequalities: ' + (testResult.dimSize[0] < 0 ? 'x too small' : testResult.dimSize[0] > 0 ? 'x too big' : 'x just right');
          if (numDims > 1) {
-            document.getElementById('click-output').innerHTML += '; ' + (testResult.dimSize[1] < 0 ? 'y too small' : testResult.dimSize[1] > 0 ? 'y too big' : 'y just right');
+            document.querySelector('#click-output').innerHTML += '; ' + (testResult.dimSize[1] < 0 ? 'y too small' : testResult.dimSize[1] > 0 ? 'y too big' : 'y just right');
             if (numDims > 2) {
-               document.getElementById('click-output').innerHTML += '; ' + (testResult.dimSize[2] < 0 ? 'z too small' : testResult.dimSize[2] > 0 ? 'z too big' : 'z just right');
+               document.querySelector('#click-output').innerHTML += '; ' + (testResult.dimSize[2] < 0 ? 'z too small' : testResult.dimSize[2] > 0 ? 'z too big' : 'z just right');
             }
          }
          var outcome = calcAarDsv(votePoints);
-         document.getElementById('click-output').innerHTML += '<br />by DSV outcome: ' + (clickedPoint[0] < outcome[0] ? 'x too small' : clickedPoint[0] > outcome[0] ? 'x too big' : 'x just right');
+         document.querySelector('#click-output').innerHTML += '<br />by DSV outcome: ' + (clickedPoint[0] < outcome[0] ? 'x too small' : clickedPoint[0] > outcome[0] ? 'x too big' : 'x just right');
          if (numDims > 1) {
-            document.getElementById('click-output').innerHTML += '; ' + (clickedPoint[1] < outcome[1] ? 'y too small' : clickedPoint[1] > outcome[1] ? 'y too big' : 'y just right');
+            document.querySelector('#click-output').innerHTML += '; ' + (clickedPoint[1] < outcome[1] ? 'y too small' : clickedPoint[1] > outcome[1] ? 'y too big' : 'y just right');
             if (numDims > 2) {
-               document.getElementById('click-output').innerHTML += '; ' + (clickedPoint[2] < outcome[2] ? 'z too small' : clickedPoint[2] > outcome[2] ? 'z too big' : 'z just right');
+               document.querySelector('#click-output').innerHTML += '; ' + (clickedPoint[2] < outcome[2] ? 'z too small' : clickedPoint[2] > outcome[2] ? 'z too big' : 'z just right');
             }
          }
       }
       return true; // allow the default event handler to be called
    };
 
-   document.getElementById('randomize-points').onclick = function () {
+   document.querySelector('#randomize-points').onclick = function () {
       votePoints = [];
       strategicPoints = [];
       addOrRemoveVotePoints();
