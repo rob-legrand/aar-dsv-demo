@@ -109,6 +109,9 @@ var runDemo = function () {
    }
    var updateVotepointsButton = document.querySelector('#update-votepoints');
 
+   const aarDsvOutput = document.querySelector('#aar-dsv-output');
+   const clickOutput = document.querySelector('#click-output');
+
    const fixNumDims = function () {
       numDims = (
          lineSegmentRadio.checked
@@ -1622,20 +1625,20 @@ var runDemo = function () {
                      closerByDim[whichDim] = 'Overshot ideal';
                   }
                }
-               document.querySelector('#aar-dsv-output').innerHTML = 'x: ' + closerByDim[0];
+               aarDsvOutput.innerHTML = 'x: ' + closerByDim[0];
                if (numDims > 1) {
-                  document.querySelector('#aar-dsv-output').innerHTML += ', y: ' + closerByDim[1];
+                  aarDsvOutput.innerHTML += ', y: ' + closerByDim[1];
                   if (numDims > 2) {
-                     document.querySelector('#aar-dsv-output').innerHTML += ', z: ' + closerByDim[2];
+                     aarDsvOutput.innerHTML += ', z: ' + closerByDim[2];
                   }
                }
                var closerByEuclidean = isOutcomeCloserByMetric(votePoints[pointBeingDragged], outcomeFunction(strategicPoints), outcomeFunction(focalSincerePoints), 2);
                if (closerByEuclidean === 0) {
-                  document.querySelector('#aar-dsv-output').innerHTML += '; by Euclidean distance: ' + 'No change';
+                  aarDsvOutput.innerHTML += '; by Euclidean distance: ' + 'No change';
                } else if (closerByEuclidean === 1) {
-                  document.querySelector('#aar-dsv-output').innerHTML += '; by Euclidean distance: ' + 'Closer to ideal';
+                  aarDsvOutput.innerHTML += '; by Euclidean distance: ' + 'Closer to ideal';
                } else if (closerByEuclidean === -1) {
-                  document.querySelector('#aar-dsv-output').innerHTML += '; by Euclidean distance: ' + 'Farther from ideal';
+                  aarDsvOutput.innerHTML += '; by Euclidean distance: ' + 'Farther from ideal';
                }
             }
             if (displayPerDimMidrangeCheckbox.checked) {
@@ -1939,19 +1942,19 @@ var runDemo = function () {
             // highlight table row for selected point
             votePointRows[whichPoint].style.backgroundColor = '#ffff55';
             if (moveStrategicCheckbox.checked) {
-               document.querySelector('#click-output').innerHTML = 'x = ' + strategicPoints[whichPoint][0].toFixed(5);
+               clickOutput.innerHTML = 'x = ' + strategicPoints[whichPoint][0].toFixed(5);
                if (numDims > 1) {
-                  document.querySelector('#click-output').innerHTML += ', y = ' + strategicPoints[whichPoint][1].toFixed(5);
+                  clickOutput.innerHTML += ', y = ' + strategicPoints[whichPoint][1].toFixed(5);
                   if (numDims > 2) {
-                     document.querySelector('#click-output').innerHTML += ', z = ' + strategicPoints[whichPoint][2].toFixed(5);
+                     clickOutput.innerHTML += ', z = ' + strategicPoints[whichPoint][2].toFixed(5);
                   }
                }
             } else {
-               document.querySelector('#click-output').innerHTML = 'x = ' + votePoints[whichPoint][0].toFixed(5);
+               clickOutput.innerHTML = 'x = ' + votePoints[whichPoint][0].toFixed(5);
                if (numDims > 1) {
-                  document.querySelector('#click-output').innerHTML += ', y = ' + votePoints[whichPoint][1].toFixed(5);
+                  clickOutput.innerHTML += ', y = ' + votePoints[whichPoint][1].toFixed(5);
                   if (numDims > 2) {
-                     document.querySelector('#click-output').innerHTML += ', z = ' + votePoints[whichPoint][2].toFixed(5);
+                     clickOutput.innerHTML += ', z = ' + votePoints[whichPoint][2].toFixed(5);
                   }
                }
             }
@@ -1981,26 +1984,26 @@ var runDemo = function () {
       } else { // give result of testing according to AAR DSV inequalities
          var clickedPoint = projectVotePointToSpace(toVoteDims(getMouse(ev)));
          var testResult = testInequalities(clickedPoint, votePoints);
-         document.querySelector('#click-output').innerHTML = 'x = ' + clickedPoint[0].toFixed(5);
+         clickOutput.innerHTML = 'x = ' + clickedPoint[0].toFixed(5);
          if (numDims > 1) {
-            document.querySelector('#click-output').innerHTML += ', y = ' + clickedPoint[1].toFixed(5);
+            clickOutput.innerHTML += ', y = ' + clickedPoint[1].toFixed(5);
             if (numDims > 2) {
-               document.querySelector('#click-output').innerHTML += ', z = ' + clickedPoint[2].toFixed(5);
+               clickOutput.innerHTML += ', z = ' + clickedPoint[2].toFixed(5);
             }
          }
-         document.querySelector('#click-output').innerHTML += '<br />by inequalities: ' + (testResult.dimSize[0] < 0 ? 'x too small' : testResult.dimSize[0] > 0 ? 'x too big' : 'x just right');
+         clickOutput.innerHTML += '<br />by inequalities: ' + (testResult.dimSize[0] < 0 ? 'x too small' : testResult.dimSize[0] > 0 ? 'x too big' : 'x just right');
          if (numDims > 1) {
-            document.querySelector('#click-output').innerHTML += '; ' + (testResult.dimSize[1] < 0 ? 'y too small' : testResult.dimSize[1] > 0 ? 'y too big' : 'y just right');
+            clickOutput.innerHTML += '; ' + (testResult.dimSize[1] < 0 ? 'y too small' : testResult.dimSize[1] > 0 ? 'y too big' : 'y just right');
             if (numDims > 2) {
-               document.querySelector('#click-output').innerHTML += '; ' + (testResult.dimSize[2] < 0 ? 'z too small' : testResult.dimSize[2] > 0 ? 'z too big' : 'z just right');
+               clickOutput.innerHTML += '; ' + (testResult.dimSize[2] < 0 ? 'z too small' : testResult.dimSize[2] > 0 ? 'z too big' : 'z just right');
             }
          }
          var outcome = calcAarDsv(votePoints);
-         document.querySelector('#click-output').innerHTML += '<br />by DSV outcome: ' + (clickedPoint[0] < outcome[0] ? 'x too small' : clickedPoint[0] > outcome[0] ? 'x too big' : 'x just right');
+         clickOutput.innerHTML += '<br />by DSV outcome: ' + (clickedPoint[0] < outcome[0] ? 'x too small' : clickedPoint[0] > outcome[0] ? 'x too big' : 'x just right');
          if (numDims > 1) {
-            document.querySelector('#click-output').innerHTML += '; ' + (clickedPoint[1] < outcome[1] ? 'y too small' : clickedPoint[1] > outcome[1] ? 'y too big' : 'y just right');
+            clickOutput.innerHTML += '; ' + (clickedPoint[1] < outcome[1] ? 'y too small' : clickedPoint[1] > outcome[1] ? 'y too big' : 'y just right');
             if (numDims > 2) {
-               document.querySelector('#click-output').innerHTML += '; ' + (clickedPoint[2] < outcome[2] ? 'z too small' : clickedPoint[2] > outcome[2] ? 'z too big' : 'z just right');
+               clickOutput.innerHTML += '; ' + (clickedPoint[2] < outcome[2] ? 'z too small' : clickedPoint[2] > outcome[2] ? 'z too big' : 'z just right');
             }
          }
       }
