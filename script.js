@@ -92,9 +92,9 @@ var runDemo = function () {
       )
    );
 
-   var strategySystemOptions = document.getElementsByName('strategy-system-options');
+   const strategySystemOptions = [...document.querySelectorAll('[name=strategy-system-options]')];
 
-   var votePointTextboxCollection = votePointTable.getElementsByTagName('input');
+   const votePointTextboxCollection = [...votePointTable.querySelectorAll('input')];
    var votePointTextboxes = [];
    var textboxId, whichTextbox, whichVoter;
    for (whichTextbox = 0; whichTextbox < votePointTextboxCollection.length; whichTextbox += 1) {
