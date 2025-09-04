@@ -20,6 +20,7 @@ var runDemo = function () {
    const votespaceContext = votespaceCanvas.getContext('2d');
 
    const maxNumVoters = 9;
+   const dimNames = [...'xyz'];
    const hypercubeBottomY = 570;
    const hypercubeLeftX = 70;
    const hypercubeRightX = 570;
@@ -86,9 +87,9 @@ var runDemo = function () {
       (row) => row.id?.indexOf?.('votepoint') === 0
    );
 
-   const votePointCells = [...'xyz'].map(
-      (dim) => votePointTable.querySelectorAll(
-         '.' + dim + '-dim'
+   const votePointCells = dimNames.map(
+      (dimName) => votePointTable.querySelectorAll(
+         '.' + dimName + '-dim'
       )
    );
 
@@ -1613,33 +1614,36 @@ var runDemo = function () {
                   drawLimits(limitPoints, '#aaaaaa');
                   drawVotePoint(outcomeFunction(focalSincerePoints), '#aaaaaa', 6);
                }
-               var closerByDim = isOutcomeCloserByDim(votePoints[pointBeingDragged], outcomeFunction(strategicPoints), outcomeFunction(focalSincerePoints));
-               for (whichDim = 0; whichDim < numDims; whichDim += 1) {
-                  if (closerByDim[whichDim] === 0) {
-                     closerByDim[whichDim] = 'No change';
-                  } else if (closerByDim[whichDim] === 1) {
-                     closerByDim[whichDim] = 'Closer to ideal';
-                  } else if (closerByDim[whichDim] === -1) {
-                     closerByDim[whichDim] = 'Farther from ideal';
-                  } else {
-                     closerByDim[whichDim] = 'Overshot ideal';
-                  }
-               }
-               aarDsvOutput.innerHTML = 'x: ' + closerByDim[0];
-               if (numDims > 1) {
-                  aarDsvOutput.innerHTML += ', y: ' + closerByDim[1];
-                  if (numDims > 2) {
-                     aarDsvOutput.innerHTML += ', z: ' + closerByDim[2];
-                  }
-               }
-               var closerByEuclidean = isOutcomeCloserByMetric(votePoints[pointBeingDragged], outcomeFunction(strategicPoints), outcomeFunction(focalSincerePoints), 2);
-               if (closerByEuclidean === 0) {
-                  aarDsvOutput.innerHTML += '; by Euclidean distance: ' + 'No change';
-               } else if (closerByEuclidean === 1) {
-                  aarDsvOutput.innerHTML += '; by Euclidean distance: ' + 'Closer to ideal';
-               } else if (closerByEuclidean === -1) {
-                  aarDsvOutput.innerHTML += '; by Euclidean distance: ' + 'Farther from ideal';
-               }
+               const closerByDim = isOutcomeCloserByDim(
+                  votePoints[pointBeingDragged],
+                  outcomeFunction(strategicPoints),
+                  outcomeFunction(focalSincerePoints)
+               );
+               const closerByEuclidean = isOutcomeCloserByMetric(
+                  votePoints[pointBeingDragged],
+                  outcomeFunction(strategicPoints),
+                  outcomeFunction(focalSincerePoints),
+                  2
+               );
+               aarDsvOutput.innerHTML = closerByDim.map(
+                  (closerInDim, whichDim) => dimNames[whichDim] + ': ' + (
+                     closerInDim === 0
+                     ? 'no change'
+                     : closerInDim > 0
+                     ? 'closer to ideal'
+                     : closerInDim < 0
+                     ? 'farther from ideal'
+                     : 'overshot ideal'
+                  )
+               ).join(', ') + '; by Euclidean distance: ' + (
+                  closerByEuclidean === 0
+                  ? 'no change'
+                  : closerByEuclidean > 0
+                  ? 'closer to ideal'
+                  : closerByEuclidean < 0
+                  ? 'farther from ideal'
+                  : '?'
+               );
             }
             if (displayPerDimMidrangeCheckbox.checked) {
                midOutcome = calcPerDimMidrange(strategicPoints);
