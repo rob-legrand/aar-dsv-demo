@@ -1,6 +1,6 @@
 /*jslint browser: true, vars: true, indent: 3 */
 
-var runDemo = function () {
+document.addEventListener('DOMContentLoaded', function () {
    'use strict';
    let animateIntervalId;
    let animatedMovementLimit;
@@ -2476,4 +2476,4 @@ var runDemo = function () {
    };
 
    redrawSpace(); // show initial points
-};
+});
