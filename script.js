@@ -96,20 +96,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
    const strategySystemOptions = [...document.querySelectorAll('[name=strategy-system-options]')];
 
-   const votePointTextboxCollection = [...votePointTable.querySelectorAll('input')];
-   var votePointTextboxes = [];
-   var textboxId, whichTextbox, whichVoter;
-   for (whichTextbox = 0; whichTextbox < votePointTextboxCollection.length; whichTextbox += 1) {
-      textboxId = votePointTextboxCollection[whichTextbox].id;
-      if (textboxId && textboxId.indexOf('votepoint') === 0) {
-         whichVoter = Number(textboxId[9]);
-         if (!votePointTextboxes[whichVoter]) {
-            votePointTextboxes[whichVoter] = [];
-         }
-         votePointTextboxes[whichVoter].push(votePointTextboxCollection[whichTextbox]);
-      }
-   }
-   var updateVotepointsButton = document.querySelector('#update-votepoints');
+   const votePointTextboxes = votePointRows.map(
+      (row, whichRow) => [...row.querySelectorAll('input')]
+   );
 
    const aarDsvOutput = document.querySelector('#aar-dsv-output');
    const clickOutput = document.querySelector('#click-output');
