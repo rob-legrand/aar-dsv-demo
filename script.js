@@ -1804,7 +1804,7 @@ document.addEventListener('DOMContentLoaded', function () {
       redrawSpace();
    };
 
-   lineSegmentRadio.onchange = function () {
+   const changeVotespace = function () {
       fixNumDims();
       votePoints = [];
       strategicPoints = [];
@@ -1812,37 +1812,11 @@ document.addEventListener('DOMContentLoaded', function () {
       redrawSpace();
    };
 
-   hypercubeRadio.onchange = function () {
-      fixNumDims();
-      votePoints = [];
-      strategicPoints = [];
-      addOrRemoveVotePoints();
-      redrawSpace();
-   };
-
-   simplexRadio.onchange = function () {
-      fixNumDims();
-      votePoints = [];
-      strategicPoints = [];
-      addOrRemoveVotePoints();
-      redrawSpace();
-   };
-
-   truncatedSimplexRadio.onchange = function () {
-      fixNumDims();
-      votePoints = [];
-      strategicPoints = [];
-      addOrRemoveVotePoints();
-      redrawSpace();
-   };
-
-   orthogonalSimplexRadio.onchange = function () {
-      fixNumDims();
-      votePoints = [];
-      strategicPoints = [];
-      addOrRemoveVotePoints();
-      redrawSpace();
-   };
+   lineSegmentRadio.addEventListener('change', changeVotespace);
+   hypercubeRadio.addEventListener('change', changeVotespace);
+   simplexRadio.addEventListener('change', changeVotespace);
+   truncatedSimplexRadio.addEventListener('change', changeVotespace);
+   orthogonalSimplexRadio.addEventListener('change', changeVotespace);
 
    automaticStrategyCheckbox.onchange = function () {
       redrawSpace();
