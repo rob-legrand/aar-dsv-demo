@@ -1818,22 +1818,16 @@ document.addEventListener('DOMContentLoaded', function () {
    truncatedSimplexRadio.addEventListener('change', changeVotespace);
    orthogonalSimplexRadio.addEventListener('change', changeVotespace);
 
-   automaticStrategyCheckbox.onchange = function () {
-      redrawSpace();
-   };
-
-   drawGridLinesCheckbox.onchange = function () {
-      redrawSpace();
-   };
-
-   document.querySelector('#strategy-system-options-radio').onchange = redrawSpace;
-   displayAarDsvCheckbox.onchange = redrawSpace;
-   displayAverageCheckbox.onchange = redrawSpace;
-   displayFermatWeberCheckbox.onchange = redrawSpace;
-   displayPerDimMedianCheckbox.onchange = redrawSpace;
-   displayPerDimMidrangeCheckbox.onchange = redrawSpace;
-   showOutcomeBorderCheckbox.addEventListener('change', redrawSpace, false);
-   showStrategicOutcomesCheckbox.addEventListener('change', redrawSpace, false);
+   drawGridLinesCheckbox.addEventListener('change', redrawSpace);
+   displayAarDsvCheckbox.addEventListener('change', redrawSpace);
+   displayAverageCheckbox.addEventListener('change', redrawSpace);
+   displayFermatWeberCheckbox.addEventListener('change', redrawSpace);
+   displayPerDimMedianCheckbox.addEventListener('change', redrawSpace);
+   displayPerDimMidrangeCheckbox.addEventListener('change', redrawSpace);
+   showStrategicOutcomesCheckbox.addEventListener('change', redrawSpace);
+   document.querySelector('#strategy-system-options-radio').addEventListener('change', redrawSpace);
+   showOutcomeBorderCheckbox.addEventListener('change', redrawSpace);
+   automaticStrategyCheckbox.addEventListener('change', redrawSpace);
 
    // allow the user to drag a vote point around
    votespaceCanvas.onmousedown = function (ev) {
