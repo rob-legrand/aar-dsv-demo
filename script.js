@@ -1798,11 +1798,11 @@ document.addEventListener('DOMContentLoaded', function () {
       }
    }, false);
 
-   selectNElement.onchange = function () {
+   selectNElement.addEventListener('change', function () {
       numVoters = parseInt(selectNElement.options[selectNElement.selectedIndex].value, 10);
       addOrRemoveVotePoints();
       redrawSpace();
-   };
+   });
 
    const changeVotespace = function () {
       fixNumDims();
