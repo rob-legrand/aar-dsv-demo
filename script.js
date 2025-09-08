@@ -1772,11 +1772,6 @@ document.addEventListener('DOMContentLoaded', function () {
       }
    }());
 
-   // no longer resets strategic points (was kind of awkward)
-   moveStrategicCheckbox.addEventListener('change', function () {
-      redrawSpace();
-   }, false);
-
    lockVotesCheckbox.addEventListener('change', function () {
       var num, num2;
       if (this.checked) {
@@ -1827,6 +1822,7 @@ document.addEventListener('DOMContentLoaded', function () {
    showStrategicOutcomesCheckbox.addEventListener('change', redrawSpace);
    document.querySelector('#strategy-system-options-radio').addEventListener('change', redrawSpace);
    showOutcomeBorderCheckbox.addEventListener('change', redrawSpace);
+   moveStrategicCheckbox.addEventListener('change', redrawSpace);
    automaticStrategyCheckbox.addEventListener('change', redrawSpace);
 
    // allow the user to drag a vote point around
