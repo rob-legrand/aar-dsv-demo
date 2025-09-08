@@ -1773,25 +1773,15 @@ document.addEventListener('DOMContentLoaded', function () {
    }());
 
    lockVotesCheckbox.addEventListener('change', function () {
-      var num, num2;
-      if (this.checked) {
-         for (num = 1; num < votePointTextboxes.length; num += 1) {
-            for (num2 = 0; num2 < votePointTextboxes[num].length; num2 += 1) {
-               votePointTextboxes[num][num2].disabled = true;
-            }
-         }
-         votesLocked = true;
-         redrawSpace();
-      } else {
-         for (num = 1; num < votePointTextboxes.length; num += 1) {
-            for (num2 = 0; num2 < votePointTextboxes[num].length; num2 += 1) {
-               votePointTextboxes[num][num2].disabled = false;
-            }
-         }
-         votesLocked = false;
-         redrawSpace();
-      }
-   }, false);
+      votesLocked = lockVotesCheckbox.checked;
+      votePointTextboxes.forEach(function (row, whichVoter) {
+         row.forEach(function (votePointTextbox) {
+            // don't lock focal voter
+            votePointTextbox.disabled = whichVoter > 0 && votesLocked;
+         });
+      });
+      redrawSpace();
+   });
 
    selectNElement.addEventListener('change', function () {
       numVoters = parseInt(selectNElement.options[selectNElement.selectedIndex].value, 10);
