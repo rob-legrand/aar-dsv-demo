@@ -582,14 +582,16 @@ document.addEventListener('DOMContentLoaded', function () {
       x[0] * y[1] - x[1] * y[0]
    ];
 
+   const dotProduct = (x, y) => (
+      x[0] * y[0]
+      + x[1] * y[1]
+      + x[2] * y[2]
+   );
+
    // find AAR DSV outcome of input points
    var calcAarDsv = function (points) {
       // x and y are each assumed to be pairs of points in the same plane
       var findIntersection = function (x, y) {
-         var dotProduct = function (x, y) {
-            var num = x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
-            return num;
-         };
          var a = [], b, c, aXb, normaXbsquared, cXb, cXbDaXb, s, intersection;
          a = [(x[1][0] - x[0][0]), (x[1][1] - x[0][1]), (x[1][2] - x[0][2])];
          b = [y[1][0] - y[0][0], y[1][1] - y[0][1], y[1][2] - y[0][2]];
