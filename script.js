@@ -576,51 +576,8 @@ document.addEventListener('DOMContentLoaded', function () {
       )
    );
 
-   const crossMultiply = (x, y) => [
-      x[1] * y[2] - x[2] * y[1],
-      x[2] * y[0] - x[0] * y[2],
-      x[0] * y[1] - x[1] * y[0]
-   ];
-
-   const dotProduct = (x, y) => x.map(
-      (dim, whichDim) => dim * y[whichDim]
-   ).reduce(
-      (a, b) => a + b
-   );
-
    // find AAR DSV outcome of input points
    var calcAarDsv = function (points) {
-      // x and y are each assumed to be pairs of points in the same plane
-      var findIntersection = function (x, y) {
-         var a = [], b, c, aXb, normaXbsquared, cXb, cXbDaXb, s, intersection;
-         a = [(x[1][0] - x[0][0]), (x[1][1] - x[0][1]), (x[1][2] - x[0][2])];
-         b = [y[1][0] - y[0][0], y[1][1] - y[0][1], y[1][2] - y[0][2]];
-         c = [y[0][0] - x[0][0], y[0][1] - x[0][1], y[0][2] - x[0][2]];
-         aXb = crossMultiply(a, b);
-         normaXbsquared = dotProduct(aXb, aXb);
-         if (normaXbsquared < 0.00001) {
-            return null;
-         }
-         cXb = crossMultiply(c, b);
-         cXbDaXb = dotProduct(cXb, aXb);
-         s = cXbDaXb / normaXbsquared;
-         a[0] *= s;
-         a[1] *= s;
-         a[2] *= s;
-         intersection = [x[0][0] + a[0], x[0][1] + a[1], x[0][2] + a[2]];
-         return intersection;
-      };
-      // points should all be in the plane, so x + y + z is assumed (approximately) to equal 1
-      var isPointInSpace = function (x) {
-         var whichDim;
-         for (whichDim = 0; whichDim < numDims; whichDim += 1) {
-            if (x[whichDim] > 1 || x[whichDim] < 0) {
-               return false;
-            }
-         }
-         return true;
-      };
-
       var numPoints = points.length;
       var outcome = [];
       var newStrategicPoint, somethingChanged, sortedPoints, strategicPoints, whichDim, whichPoint, whichOtherPoint;
