@@ -576,14 +576,16 @@ document.addEventListener('DOMContentLoaded', function () {
       )
    );
 
+   const crossMultiply = (x, y) => [
+      x[1] * y[2] - x[2] * y[1],
+      x[2] * y[0] - x[0] * y[2],
+      x[0] * y[1] - x[1] * y[0]
+   ];
+
    // find AAR DSV outcome of input points
    var calcAarDsv = function (points) {
       // x and y are each assumed to be pairs of points in the same plane
       var findIntersection = function (x, y) {
-         var crossMultiply = function (x, y) {
-            var result = [x[1] * y[2] - x[2] * y[1], x[2] * y[0] - x[0] * y[2], x[0] * y[1] - x[1] * y[0]];
-            return result;
-         };
          var dotProduct = function (x, y) {
             var num = x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
             return num;
