@@ -582,10 +582,10 @@ document.addEventListener('DOMContentLoaded', function () {
       x[0] * y[1] - x[1] * y[0]
    ];
 
-   const dotProduct = (x, y) => (
-      x[0] * y[0]
-      + x[1] * y[1]
-      + x[2] * y[2]
+   const dotProduct = (x, y) => x.map(
+      (dim, whichDim) => dim * y[whichDim]
+   ).reduce(
+      (a, b) => a + b
    );
 
    // find AAR DSV outcome of input points
