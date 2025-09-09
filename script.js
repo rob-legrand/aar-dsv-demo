@@ -566,19 +566,15 @@ document.addEventListener('DOMContentLoaded', function () {
    const smallestToLargest = (a, b) => a - b;
 
    // find Average outcome of input points
-   var calcAverage = function (points) {
-      var numPoints = points.length;
-      var outcome = [];
-      var whichDim, whichPoint;
-      for (whichDim = 0; whichDim < numDims; whichDim += 1) {
-         outcome[whichDim] = 0;
-         for (whichPoint = 0; whichPoint < numPoints; whichPoint += 1) {
-            outcome[whichDim] += points[whichPoint][whichDim];
-         }
-         outcome[whichDim] /= numPoints;
-      }
-      return projectVotePointToSpace(outcome);
-   };
+   const calcAverage = (points) => projectVotePointToSpace(
+      points.reduce(
+         (totalSoFar, point) => totalSoFar.map(
+            (dim, whichDim) => dim + point[whichDim]
+         )
+      ).map(
+         (dim) => dim / points.length
+      )
+   );
 
    // find AAR DSV outcome of input points
    var calcAarDsv = function (points) {
