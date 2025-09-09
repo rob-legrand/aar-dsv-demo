@@ -562,9 +562,8 @@ document.addEventListener('DOMContentLoaded', function () {
       }
    };
 
-   var smallestToLargest = function (a, b) {
-      return a - b;
-   };
+   // used to sort arrays
+   const smallestToLargest = (a, b) => a - b;
 
    // find Average outcome of input points
    var calcAverage = function (points) {
