@@ -577,24 +577,22 @@ document.addEventListener('DOMContentLoaded', function () {
    );
 
    // find AAR DSV outcome of input points
-   var calcAarDsv = function (points) {
+   const calcAarDsv = function (points) {
       var numPoints = points.length;
       var outcome = [];
       var newStrategicPoint, somethingChanged, sortedPoints, strategicPoints, whichDim, whichPoint, whichOtherPoint;
       var largestVal, largestAt;
       if (lineSegmentRadio.checked || hypercubeRadio.checked) {
-         for (whichDim = 0; whichDim < numDims; whichDim += 1) {
-            sortedPoints = [];
-            for (whichPoint = 0; whichPoint < numPoints; whichPoint += 1) {
-               sortedPoints.push(points[whichPoint][whichDim]);
-            }
-            for (whichPoint = 1; whichPoint < numPoints; whichPoint += 1) {
-               sortedPoints.push(whichPoint / numPoints);
-            }
-            sortedPoints.sort(smallestToLargest);
-            outcome.push(sortedPoints[numPoints - 1]);
-         }
-         return projectVotePointToSpace(outcome);
+         return calcPerDimMedian([
+            ...points,
+            ...Array.from(
+               {length: points.length + 1},
+               (ignore, whichPoint) => Array.from(
+                  {length: numDims},
+                  () => whichPoint / points.length
+               )
+            )
+         ]);
       } else if (simplexRadio.checked || truncatedSimplexRadio.checked || orthogonalSimplexRadio.checked) {
          strategicPoints = [];
          for (whichPoint = 0; whichPoint < numPoints; whichPoint += 1) {
