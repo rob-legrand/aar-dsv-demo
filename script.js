@@ -580,7 +580,7 @@ document.addEventListener('DOMContentLoaded', function () {
    const calcAarDsv = function (points) {
       var numPoints = points.length;
       var outcome = [];
-      var newStrategicPoint, somethingChanged, sortedPoints, strategicPoints, whichDim, whichPoint, whichOtherPoint;
+      var newStrategicPoint, somethingChanged, sortedPoints, whichDim, whichPoint, whichOtherPoint;
       var largestVal, largestAt;
       if (lineSegmentRadio.checked || hypercubeRadio.checked) {
          return calcPerDimMedian([
@@ -594,16 +594,15 @@ document.addEventListener('DOMContentLoaded', function () {
             )
          ]);
       } else if (simplexRadio.checked || truncatedSimplexRadio.checked || orthogonalSimplexRadio.checked) {
-         strategicPoints = [];
-         for (whichPoint = 0; whichPoint < numPoints; whichPoint += 1) {
-            if (simplexRadio.checked) {
-               strategicPoints.push([1 / 3, 1 / 3, 1 / 3]);
-            } else if (truncatedSimplexRadio.checked) {
-               strategicPoints.push([1 / 2, 1 / 2, 1 / 2]);
-            } else if (orthogonalSimplexRadio.checked) {
-               strategicPoints.push([1 / 3, 1 / 3]);
-            }
-         }
+         const strategicPoints = Array.from(
+            {length: points.length},
+            () => projectVotePointToSpace(
+               Array.from(
+                  {length: numDims},
+                  () => 1
+               )
+            )
+         );
          do {
             somethingChanged = false;
             for (whichPoint = 0; whichPoint < numPoints; whichPoint += 1) {
