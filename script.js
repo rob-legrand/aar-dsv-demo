@@ -632,22 +632,17 @@ document.addEventListener('DOMContentLoaded', function () {
    var calcAarDsvOblique = function (points) {
       var numPoints = points.length;
       var outcome = [];
-      var newStrategicPoint, somethingChanged, sortedPoints, strategicPoints, whichDim, whichPoint, whichOtherPoint;
+      var newStrategicPoint, somethingChanged, sortedPoints, whichDim, whichPoint, whichOtherPoint;
       var largestVal, largestAt;
-      strategicPoints = [];
-      for (whichPoint = 0; whichPoint < numPoints; whichPoint += 1) {
-         if (lineSegmentRadio.checked) {
-            strategicPoints.push([1 / 2]);
-         } else if (hypercubeRadio.checked) {
-            strategicPoints.push([1 / 2, 1 / 2]);
-         } else if (simplexRadio.checked) {
-            strategicPoints.push([1 / 3, 1 / 3, 1 / 3]);
-         } else if (truncatedSimplexRadio.checked) {
-            strategicPoints.push([1 / 2, 1 / 2, 1 / 2]);
-         } else if (orthogonalSimplexRadio.checked) {
-            strategicPoints.push([1 / 3, 1 / 3]);
-         }
-      }
+      const strategicPoints = Array.from(
+         {length: points.length},
+         () => projectVotePointToSpace(
+            Array.from(
+               {length: numDims},
+               () => 1 / 2
+            )
+         )
+      );
       do {
          somethingChanged = false;
          for (whichPoint = 0; whichPoint < numPoints; whichPoint += 1) {
