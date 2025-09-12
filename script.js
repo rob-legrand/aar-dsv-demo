@@ -674,18 +674,16 @@ document.addEventListener('DOMContentLoaded', function () {
       var newStrategicPoint, somethingChanged, sortedPoints, strategicPoints, whichDim, whichPoint, whichOtherPoint;
       if (lineSegmentRadio.checked || hypercubeRadio.checked) {
          // internal votespace is -votespaceSize <= x <= votespaceSize + 1 in each dimension
-         for (whichDim = 0; whichDim < numDims; whichDim += 1) {
-            sortedPoints = [];
-            for (whichPoint = 0; whichPoint < numPoints; whichPoint += 1) {
-               sortedPoints.push(points[whichPoint][whichDim]);
-            }
-            for (whichPoint = 1; whichPoint < numPoints; whichPoint += 1) {
-               sortedPoints.push(whichPoint * (2 * votespaceSize + 1) / numPoints - votespaceSize);
-            }
-            sortedPoints.sort(smallestToLargest);
-            outcome.push(sortedPoints[numPoints - 1]);
-         }
-         return projectVotePointToSpace(outcome);
+         return calcPerDimMedian([
+            ...points,
+            ...Array.from(
+               {length: points.length + 1},
+               (ignore, whichPoint) => Array.from(
+                  {length: numDims},
+                  () => whichPoint * (2 * votespaceSize + 1) / points.length - votespaceSize
+               )
+            )
+         ]);
       } else if (simplexRadio.checked) {
          // if votespaceSize < 1, internal votespace is x >= 0, y >= 0, z >= 0
          // if votespaceSize >= 1, internal votespace is x <= votespaceSize, y <= votespaceSize, z <= votespaceSize
