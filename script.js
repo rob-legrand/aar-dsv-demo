@@ -786,9 +786,9 @@ document.addEventListener('DOMContentLoaded', function () {
    };
 
    // find Median outcome of input points
-   const calcPerDimMedian = function (points) {
-      return projectVotePointToSpace(calcPerDimMedianUnprojected(points));
-   };
+   const calcPerDimMedian = (points) => projectVotePointToSpace(
+      calcPerDimMedianUnprojected(points)
+   );
 
    // find moving-phamtom-median outcome of input points
    const calcMovingPhantomMedian = function (points) {
