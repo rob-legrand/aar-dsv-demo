@@ -671,7 +671,7 @@ document.addEventListener('DOMContentLoaded', function () {
    var calcAarDsvLargerSpace = function (points, votespaceSize) {
       var numPoints = points.length;
       var outcome = [];
-      var newStrategicPoint, somethingChanged, sortedPoints, strategicPoints, whichDim, whichPoint, whichOtherPoint;
+      var newStrategicPoint, somethingChanged, sortedPoints, whichDim, whichPoint, whichOtherPoint;
       if (lineSegmentRadio.checked || hypercubeRadio.checked) {
          // internal votespace is -votespaceSize <= x <= votespaceSize + 1 in each dimension
          return calcPerDimMedian([
@@ -687,10 +687,15 @@ document.addEventListener('DOMContentLoaded', function () {
       } else if (simplexRadio.checked) {
          // if votespaceSize < 1, internal votespace is x >= 0, y >= 0, z >= 0
          // if votespaceSize >= 1, internal votespace is x <= votespaceSize, y <= votespaceSize, z <= votespaceSize
-         strategicPoints = [];
-         for (whichPoint = 0; whichPoint < numPoints; whichPoint += 1) {
-            strategicPoints.push([0, 0, 0]);
-         }
+         const strategicPoints = Array.from(
+            {length: points.length},
+            () => projectVotePointToSpace(
+               Array.from(
+                  {length: numDims},
+                  () => 0
+               )
+            )
+         );
          do {
             somethingChanged = false;
             for (whichPoint = 0; whichPoint < numPoints; whichPoint += 1) {
@@ -715,12 +720,8 @@ document.addEventListener('DOMContentLoaded', function () {
          return calcAverage(strategicPoints);
       } else if (truncatedSimplexRadio.checked) {
          window.alert('FIXME calcAarDsvLargerSpace');
-         return null;
       } else if (orthogonalSimplexRadio.checked) {
          window.alert('FIXME calcAarDsvLargerSpace');
-         return null;
-      } else {
-         return null;
       }
    };
 
