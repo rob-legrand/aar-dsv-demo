@@ -767,23 +767,25 @@ document.addEventListener('DOMContentLoaded', function () {
    };
 
    // find Median outcome of input points without projecting to votespace
-   var calcPerDimMedianUnprojected = function (points) {
-      var numPoints = points.length;
-      var outcome = [];
-      var sortedPoints, whichDim, whichPoint;
-      for (whichDim = 0; whichDim < numDims; whichDim += 1) {
-         sortedPoints = [];
-         for (whichPoint = 0; whichPoint < numPoints; whichPoint += 1) {
-            sortedPoints.push(points[whichPoint][whichDim]);
-         }
-         if (numPoints % 2 === 0) {
-            sortedPoints.push(0.5);
-         }
-         sortedPoints.sort(smallestToLargest);
-         outcome.push(sortedPoints[Math.floor(numPoints / 2)]);
-      }
-      return outcome;
-   };
+   const calcPerDimMedianUnprojected = (points) => points.reduce(
+      (dimsSoFar, point) => dimsSoFar.map(
+         (dim, whichDim) => [
+            ...dim,
+            point[whichDim]
+         ]
+      ),
+      points[0].map(
+         () => []
+      )
+   ).map(
+      (dim) => (
+         dim.length % 2 === 0
+         ? [...dim, 0.5]
+         : dim
+      ).toSorted(smallestToLargest)[
+         Math.floor(points.length / 2)
+      ]
+   );
 
    // find Median outcome of input points
    const calcPerDimMedian = (points) => projectVotePointToSpace(
