@@ -766,6 +766,13 @@ document.addEventListener('DOMContentLoaded', function () {
       return projectVotePointToSpace(outcome);
    };
 
+   // transpose rows and columns of rectangular matrix
+   const transposeMatrix = (a) => a[0].map(
+      (ignore, whichColumn) => a.map(
+         (row) => row[whichColumn]
+      )
+   );
+
    // find Median outcome of input points without projecting to votespace
    const calcPerDimMedianUnprojected = (points) => points.reduce(
       (dimsSoFar, point) => dimsSoFar.map(
