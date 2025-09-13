@@ -774,16 +774,8 @@ document.addEventListener('DOMContentLoaded', function () {
    );
 
    // find Median outcome of input points without projecting to votespace
-   const calcPerDimMedianUnprojected = (points) => points.reduce(
-      (dimsSoFar, point) => dimsSoFar.map(
-         (dim, whichDim) => [
-            ...dim,
-            point[whichDim]
-         ]
-      ),
-      points[0].map(
-         () => []
-      )
+   const calcPerDimMedianUnprojected = (points) => transposeMatrix(
+      points
    ).map(
       (dim) => (
          dim.length % 2 === 0
