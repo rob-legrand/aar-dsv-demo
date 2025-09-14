@@ -842,20 +842,14 @@ document.addEventListener('DOMContentLoaded', function () {
    };
 
    // find Midrange outcome of input points
-   var calcPerDimMidrange = function (points) {
-      var numPoints = points.length;
-      var outcome = [];
-      var sortedPoints, whichDim, whichPoint;
-      for (whichDim = 0; whichDim < numDims; whichDim += 1) {
-         sortedPoints = [];
-         for (whichPoint = 0; whichPoint < numPoints; whichPoint += 1) {
-            sortedPoints.push(points[whichPoint][whichDim]);
-         }
-         sortedPoints.sort(smallestToLargest);
-         outcome.push((sortedPoints[0] + sortedPoints[numPoints - 1]) / 2);
-      }
-      return projectVotePointToSpace(outcome);
-   };
+   const calcPerDimMidrange = (points) => transposeMatrix(
+      points
+   ).map(
+      (dim) => (
+         Math.min(...dim)
+         + Math.max(...dim)
+      ) / 2
+   );
 
    // add references to associated functions and colors to each strategy system option
    strategySystemOptions[0].func = calcPerDimMidrange;
