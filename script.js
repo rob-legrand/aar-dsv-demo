@@ -134,19 +134,14 @@ document.addEventListener('DOMContentLoaded', function () {
    timeIntervalTextbox.value = timeIncrementBase.toString();
    velocityLimitTextbox.value = animatedMovementLimitBase.toString();
 
-   var resetAnimation = function () {
-      var whichPoint, whichDim;
+   const resetAnimation = function () {
       window.clearTimeout(animateIntervalId);
       animatedMovementLimit = animatedMovementLimitBase;
       // if animation is interrupted early, make sure strategicPoints has been updated
       if (animationInProgress) {
          animationInProgress = false;
          if (animatedVote) {
-            for (whichPoint = 0; whichPoint < numVoters; whichPoint += 1) {
-               for (whichDim = 0; whichDim < numDims; whichDim += 1) {
-                  strategicPoints[whichPoint][whichDim] = animatedVote[whichPoint][whichDim];
-               }
-            }
+            strategicPoints = [...animatedVote];
          }
       }
    };
