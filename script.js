@@ -837,13 +837,15 @@ document.addEventListener('DOMContentLoaded', function () {
    };
 
    // find Midrange outcome of input points
-   const calcPerDimMidrange = (points) => transposeMatrix(
-      points
-   ).map(
-      (dim) => (
-         Math.min(...dim)
-         + Math.max(...dim)
-      ) / 2
+   const calcPerDimMidrange = (points) => projectVotePointToSpace(
+      transposeMatrix(
+         points
+      ).map(
+         (dim) => (
+            Math.min(...dim)
+            + Math.max(...dim)
+         ) / 2
+      )
    );
 
    // add references to associated functions and colors to each strategy system option
