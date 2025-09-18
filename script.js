@@ -40,6 +40,11 @@ document.addEventListener('DOMContentLoaded', function () {
    const truncatedSimplexMiddleX = (truncatedSimplexLeftX + truncatedSimplexRightX) / 2;
    const truncatedSimplexNearBottomY = (3 * truncatedSimplexBottomY + truncatedSimplexTopY) / 4;
    const truncatedSimplexNearTopY = (truncatedSimplexBottomY + 3 * truncatedSimplexTopY) / 4;
+   const tSimplexRightX = truncatedSimplexRightX;
+   const tSimplexLeftX = (3 * truncatedSimplexLeftX - truncatedSimplexRightX) / 2;
+   const tSimplexBottomY = 2 * truncatedSimplexNearBottomY - truncatedSimplexNearTopY;
+   const tSimplexTopY = 2 * truncatedSimplexNearTopY - truncatedSimplexNearBottomY;
+   const tSimplexMiddleY = (truncatedSimplexBottomY + truncatedSimplexTopY) / 2;
    const orthogonalSimplexBottomY = 570;
    const orthogonalSimplexLeftX = 70;
    const orthogonalSimplexRightX = 570;
