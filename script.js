@@ -151,32 +151,40 @@ document.addEventListener('DOMContentLoaded', function () {
       }
    };
 
-   var toScreenCoords = function (vote) {
-      if (!vote || vote.length !== numDims) {
-         return null;
-      } else if (lineSegmentRadio.checked) {
-         return {x: lineSegmentLeftX + (lineSegmentRightX - lineSegmentLeftX) * vote[0], y: lineSegmentY};
-      } else if (hypercubeRadio.checked) {
-         return {x: hypercubeLeftX + (hypercubeRightX - hypercubeLeftX) * vote[0],
-                 y: hypercubeBottomY - (hypercubeBottomY - hypercubeTopY) * vote[1]};
-      } else if (simplexRadio.checked) {
-         return {x: simplexRightX * (vote[0] + vote[1]) + simplexLeftX * vote[2],
-                 y: simplexBottomY * vote[0] + simplexTopY * vote[1] + simplexMiddleY * vote[2]};
-      } else if (truncatedSimplexRadio.checked) {
-         var tSimplexRightX = truncatedSimplexRightX;
-         var tSimplexLeftX = (3 * truncatedSimplexLeftX - truncatedSimplexRightX) / 2;
-         var tSimplexBottomY = 2 * truncatedSimplexNearBottomY - truncatedSimplexNearTopY;
-         var tSimplexTopY = 2 * truncatedSimplexNearTopY - truncatedSimplexNearBottomY;
-         var tSimplexMiddleY = (truncatedSimplexBottomY + truncatedSimplexTopY) / 2;
-         return {x: (tSimplexRightX * (vote[0] + vote[1]) + tSimplexLeftX * vote[2]) / 1.5,
-                 y: (tSimplexBottomY * vote[0] + tSimplexTopY * vote[1] + tSimplexMiddleY * vote[2]) / 1.5};
-      } else if (orthogonalSimplexRadio.checked) {
-         return {x: orthogonalSimplexLeftX + (orthogonalSimplexRightX - orthogonalSimplexLeftX) * vote[0],
-                 y: orthogonalSimplexBottomY - (orthogonalSimplexBottomY - orthogonalSimplexTopY) * vote[1]};
-      } else {
-         return null;
+   const toScreenCoords = (vote) => (
+      vote?.length !== numDims
+      ? undefined
+      : lineSegmentRadio.checked
+      ? {
+         x: lineSegmentLeftX + (lineSegmentRightX - lineSegmentLeftX) * vote[0],
+         y: lineSegmentY
       }
-   };
+      : hypercubeRadio.checked
+      ? {
+         x: hypercubeLeftX + (hypercubeRightX - hypercubeLeftX) * vote[0],
+         y: hypercubeBottomY - (hypercubeBottomY - hypercubeTopY) * vote[1]
+      }
+      : simplexRadio.checked
+      ? {
+         x: simplexRightX * (vote[0] + vote[1]) + simplexLeftX * vote[2],
+         y: simplexBottomY * vote[0] + simplexTopY * vote[1] + simplexMiddleY * vote[2]
+      }
+      : truncatedSimplexRadio.checked
+      ? {
+         x: (
+            tSimplexRightX * (vote[0] + vote[1]) + tSimplexLeftX * vote[2]
+         ) / 1.5,
+         y: (
+            tSimplexBottomY * vote[0] + tSimplexTopY * vote[1] + tSimplexMiddleY * vote[2]
+         ) / 1.5
+      }
+      : orthogonalSimplexRadio.checked
+      ? {
+         x: orthogonalSimplexLeftX + (orthogonalSimplexRightX - orthogonalSimplexLeftX) * vote[0],
+         y: orthogonalSimplexBottomY - (orthogonalSimplexBottomY - orthogonalSimplexTopY) * vote[1]
+      }
+      : undefined
+   );
 
    var toVoteDims = function (screen) {
       if (typeof screen !== 'object' || typeof screen.x !== 'number' || typeof screen.y !== 'number') {
