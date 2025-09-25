@@ -186,34 +186,47 @@ document.addEventListener('DOMContentLoaded', function () {
       : undefined
    );
 
-   var toVoteDims = function (screen) {
-      if (typeof screen !== 'object' || typeof screen.x !== 'number' || typeof screen.y !== 'number') {
-         return null;
-      } else if (lineSegmentRadio.checked) {
-         return [(screen.x - lineSegmentLeftX) / (lineSegmentRightX - lineSegmentLeftX)];
-      } else if (hypercubeRadio.checked) {
-         return [(screen.x - hypercubeLeftX) / (hypercubeRightX - hypercubeLeftX),
-                 (hypercubeBottomY - screen.y) / (hypercubeBottomY - hypercubeTopY)];
-      } else if (simplexRadio.checked) {
-         return [((screen.x - simplexLeftX) / (simplexRightX - simplexLeftX) + (screen.y - simplexMiddleY) / (simplexBottomY - simplexMiddleY)) / 2,
-                 ((screen.x - simplexLeftX) / (simplexRightX - simplexLeftX) + (simplexMiddleY - screen.y) / (simplexMiddleY - simplexTopY)) / 2,
-                 (simplexRightX - screen.x) / (simplexRightX - simplexLeftX)];
-      } else if (truncatedSimplexRadio.checked) {
-         var tSimplexRightX = truncatedSimplexRightX;
-         var tSimplexLeftX = (3 * truncatedSimplexLeftX - truncatedSimplexRightX) / 2;
-         var tSimplexBottomY = 2 * truncatedSimplexNearBottomY - truncatedSimplexNearTopY;
-         var tSimplexTopY = 2 * truncatedSimplexNearTopY - truncatedSimplexNearBottomY;
-         var tSimplexMiddleY = (truncatedSimplexBottomY + truncatedSimplexTopY) / 2;
-         return [((screen.x - tSimplexLeftX) / (tSimplexRightX - tSimplexLeftX) + (screen.y - tSimplexMiddleY) / (tSimplexBottomY - tSimplexMiddleY)) / 2 * 1.5,
-                 ((screen.x - tSimplexLeftX) / (tSimplexRightX - tSimplexLeftX) + (tSimplexMiddleY - screen.y) / (tSimplexMiddleY - tSimplexTopY)) / 2 * 1.5,
-                 (tSimplexRightX - screen.x) / (tSimplexRightX - tSimplexLeftX) * 1.5];
-      } else if (orthogonalSimplexRadio.checked) {
-         return [(screen.x - orthogonalSimplexLeftX) / (orthogonalSimplexRightX - orthogonalSimplexLeftX),
-                 (orthogonalSimplexBottomY - screen.y) / (orthogonalSimplexBottomY - orthogonalSimplexTopY)];
-      } else {
-         return null;
-      }
-   };
+   const toVoteDims = (screen) => (
+      (!Number.isFinite(screen?.x) || !Number.isFinite(screen?.y))
+      ? undefined
+      : lineSegmentRadio.checked
+      ? [(screen.x - lineSegmentLeftX) / (lineSegmentRightX - lineSegmentLeftX)]
+      : hypercubeRadio.checked
+      ? [
+         (screen.x - hypercubeLeftX) / (hypercubeRightX - hypercubeLeftX),
+         (hypercubeBottomY - screen.y) / (hypercubeBottomY - hypercubeTopY)
+      ]
+      : simplexRadio.checked
+      ? [
+         (
+            (screen.x - simplexLeftX) / (simplexRightX - simplexLeftX)
+            + (screen.y - simplexMiddleY) / (simplexBottomY - simplexMiddleY)
+         ) / 2,
+         (
+            (screen.x - simplexLeftX) / (simplexRightX - simplexLeftX)
+            + (simplexMiddleY - screen.y) / (simplexMiddleY - simplexTopY)
+         ) / 2,
+         (simplexRightX - screen.x) / (simplexRightX - simplexLeftX)
+      ]
+      : truncatedSimplexRadio.checked
+      ? [
+         (
+            (screen.x - tSimplexLeftX) / (tSimplexRightX - tSimplexLeftX)
+            + (screen.y - tSimplexMiddleY) / (tSimplexBottomY - tSimplexMiddleY)
+         ) / 2 * 1.5,
+         (
+            (screen.x - tSimplexLeftX) / (tSimplexRightX - tSimplexLeftX)
+            + (tSimplexMiddleY - screen.y) / (tSimplexMiddleY - tSimplexTopY)
+         ) / 2 * 1.5,
+         (tSimplexRightX - screen.x) / (tSimplexRightX - tSimplexLeftX) * 1.5
+      ]
+      : orthogonalSimplexRadio.checked
+      ? [
+         (screen.x - orthogonalSimplexLeftX) / (orthogonalSimplexRightX - orthogonalSimplexLeftX),
+         (orthogonalSimplexBottomY - screen.y) / (orthogonalSimplexBottomY - orthogonalSimplexTopY)
+      ]
+      : undefined
+   );
 
    var projectVotePointToSpace = function (point) {
       var surplus;
