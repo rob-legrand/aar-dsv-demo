@@ -232,10 +232,10 @@ document.addEventListener('DOMContentLoaded', function () {
       var surplus;
       if (!point || point.length !== numDims) {
          return null;
-      } else if (lineSegmentRadio.checked) {
-         return [Math.min(Math.max(point[0], 0), 1)];
-      } else if (hypercubeRadio.checked) {
-         return [Math.min(Math.max(point[0], 0), 1), Math.min(Math.max(point[1], 0), 1)];
+      } else if (lineSegmentRadio.checked || hypercubeRadio.checked) {
+         return point.map(
+            (dim) => Math.min(Math.max(dim, 0), 1)
+         );
       } else if (simplexRadio.checked) {
          if (point[0] + point[1] + point[2] !== 1) {
             surplus = (point[0] + point[1] + point[2] - 1) / 3;
