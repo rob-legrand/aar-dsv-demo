@@ -244,12 +244,7 @@ document.addEventListener('DOMContentLoaded', function () {
             (dim) => Math.min(Math.max(dim, 0), 1)
          );
       } else if (simplexRadio.checked) {
-         if (point[0] + point[1] + point[2] !== 1) {
-            surplus = (point[0] + point[1] + point[2] - 1) / 3;
-            point[0] -= surplus;
-            point[1] -= surplus;
-            point[2] = 1 - point[0] - point[1];
-         }
+         point = projectPointToPlane(point, 1);
          if (point[0] >= point[1] + 1 && point[0] >= point[2] + 1) {
             return [1, 0, 0];
          } else if (point[1] >= point[0] + 1 && point[1] >= point[2] + 1) {
@@ -266,12 +261,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return [point[0], point[1], point[2]];
          }
       } else if (truncatedSimplexRadio.checked) {
-         if (point[0] + point[1] + point[2] !== 1.5) {
-            surplus = (point[0] + point[1] + point[2] - 1.5) / 3;
-            point[0] -= surplus;
-            point[1] -= surplus;
-            point[2] = 1.5 - point[0] - point[1];
-         }
+         point = projectPointToPlane(point, 1.5);
          if (point[0] >= point[1] + 1 / 2 && point[1] >= point[2] + 1 / 2) {
             return [1, 1 / 2, 0];
          } else if (point[0] >= point[2] + 1 / 2 && point[2] >= point[1] + 1 / 2) {
@@ -307,9 +297,7 @@ document.addEventListener('DOMContentLoaded', function () {
             point[1] = 0;
          }
          if (point[0] + point[1] > 1) {
-            surplus = (point[0] + point[1] - 1) / 2;
-            point[0] -= surplus;
-            point[1] = 1 - point[0];
+            point = projectPointToPlane(point, 1);
          }
          if (point[0] < 0) {
             return [0, 1];
