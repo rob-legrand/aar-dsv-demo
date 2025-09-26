@@ -228,6 +228,13 @@ document.addEventListener('DOMContentLoaded', function () {
       : undefined
    );
 
+   const projectPointToPlane = (point, correctSum) => point.map(
+      (dim) => dim - point.reduce(
+         (x, y) => x + y,
+         -correctSum
+      ) / point.length
+   );
+
    var projectVotePointToSpace = function (point) {
       var surplus;
       if (!point || point.length !== numDims) {
