@@ -380,48 +380,6 @@ document.addEventListener('DOMContentLoaded', function () {
       }
    };
 
-   var projectVotePointToLargerSpace = function (point, spaceSize) {
-      var surplus;
-      if (typeof spaceSize !== 'number' || spaceSize < 0) {
-         spaceSize = 0;
-      }
-      if (!point || !point.length) {
-         return null;
-      } else if (point.length === 1) {
-         return [Math.min(Math.max(point[0], -spaceSize), spaceSize + 1)];
-      } else if (point.length === 2) {
-         return [Math.min(Math.max(point[0], -spaceSize), spaceSize + 1), Math.min(Math.max(point[1], -spaceSize), spaceSize + 1)];
-      } else if (point.length === 3) {
-         if (spaceSize < 1) {
-            return projectVotePointToSpace(point);
-         }
-         // project to x <= spaceSize, y <= spaceSize, z <= spaceSize
-         if (point[0] + point[1] + point[2] !== 1) {
-            surplus = (point[0] + point[1] + point[2] - 1) / 3;
-            point[0] -= surplus;
-            point[1] -= surplus;
-            point[2] = 1 - point[0] - point[1];
-         }
-         if (point[2] <= point[0] - 3 * spaceSize + 1 && point[2] <= point[1] - 3 * spaceSize + 1) {
-            return [spaceSize, spaceSize, 1 - 2 * spaceSize];
-         } else if (point[1] <= point[0] - 3 * spaceSize + 1 && point[1] <= point[2] - 3 * spaceSize + 1) {
-            return [spaceSize, 1 - 2 * spaceSize, spaceSize];
-         } else if (point[0] <= point[1] - 3 * spaceSize + 1 && point[0] <= point[2] - 3 * spaceSize + 1) {
-            return [1 - 2 * spaceSize, spaceSize, spaceSize];
-         } else if (point[0] > spaceSize) {
-            return [spaceSize, point[1] + (point[0] - spaceSize) / 2, 1 - point[1] - (point[0] + spaceSize) / 2];
-         } else if (point[1] > spaceSize) {
-            return [point[0] + (point[1] - spaceSize) / 2, spaceSize, 1 - point[0] - (point[1] + spaceSize) / 2];
-         } else if (point[2] > spaceSize) {
-            return [point[0] + (point[2] - spaceSize) / 2, 1 - point[0] - (point[2] + spaceSize) / 2, spaceSize];
-         } else {
-            return [point[0], point[1], point[2]];
-         }
-      } else {
-         return null;
-      }
-   };
-
    var drawVotePoint = function (point, color, size, isHollow) {
       var screen = toScreenCoords(point);
       votespaceContext.beginPath();
