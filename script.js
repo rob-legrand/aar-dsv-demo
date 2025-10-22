@@ -645,64 +645,6 @@ document.addEventListener('DOMContentLoaded', function () {
       }
    };
 
-   // find AAR DSV outcome of input points with larger internal votespace
-   var calcAarDsvLargerSpace = function (points, votespaceSize) {
-      var numPoints = points.length;
-      var outcome = [];
-      var newStrategicPoint, somethingChanged, sortedPoints, whichDim, whichPoint, whichOtherPoint;
-      if (lineSegmentRadio.checked || hypercubeRadio.checked) {
-         // internal votespace is -votespaceSize <= x <= votespaceSize + 1 in each dimension
-         return calcPerDimMedian([
-            ...points,
-            ...Array.from(
-               {length: points.length + 1},
-               (ignore, whichPoint) => Array.from(
-                  {length: numDims},
-                  () => whichPoint * (2 * votespaceSize + 1) / points.length - votespaceSize
-               )
-            )
-         ]);
-      } else if (simplexRadio.checked) {
-         // if votespaceSize < 1, internal votespace is x >= 0, y >= 0, z >= 0
-         // if votespaceSize >= 1, internal votespace is x <= votespaceSize, y <= votespaceSize, z <= votespaceSize
-         const strategicPoints = Array.from(
-            {length: points.length},
-            () => projectVotePointToSpace(
-               Array.from(
-                  {length: numDims},
-                  () => 0
-               )
-            )
-         );
-         do {
-            somethingChanged = false;
-            for (whichPoint = 0; whichPoint < numPoints; whichPoint += 1) {
-               newStrategicPoint = [];
-               for (whichDim = 0; whichDim < numDims; whichDim += 1) {
-                  newStrategicPoint.push(points[whichPoint][whichDim] * numVoters);
-                  for (whichOtherPoint = 0; whichOtherPoint < numPoints; whichOtherPoint += 1) {
-                     if (whichOtherPoint !== whichPoint) {
-                        newStrategicPoint[whichDim] -= strategicPoints[whichOtherPoint][whichDim];
-                     }
-                  }
-               }
-               newStrategicPoint = projectVotePointToLargerSpace(newStrategicPoint, votespaceSize);
-               for (whichDim = 0; whichDim < numDims; whichDim += 1) {
-                  if (Math.abs(newStrategicPoint[whichDim] - strategicPoints[whichPoint][whichDim]) > 0.00000001) {
-                     somethingChanged = true;
-                  }
-                  strategicPoints[whichPoint][whichDim] = newStrategicPoint[whichDim];
-               }
-            }
-         } while (somethingChanged);
-         return calcAverage(strategicPoints);
-      } else if (truncatedSimplexRadio.checked) {
-         window.alert('FIXME calcAarDsvLargerSpace');
-      } else if (orthogonalSimplexRadio.checked) {
-         window.alert('FIXME calcAarDsvLargerSpace');
-      }
-   };
-
    // find Fermat-Weber outcome of input points with Weiszfeld's algorithm
    var calcFermatWeber = function (points) {
       var numer, denom, dist, lastFWPoint, notCloseEnough;
