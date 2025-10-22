@@ -235,79 +235,80 @@ document.addEventListener('DOMContentLoaded', function () {
       ) / point.length
    );
 
-   var projectVotePointToSpace = function (point) {
-      var surplus;
-      if (!point || point.length !== numDims) {
-         return null;
+   const projectVotePointToSpace = function (point) {
+      if (
+         !Array.isArray(point)
+         || point.length !== numDims
+         || point.some(
+            (dim) => !Number.isFinite(dim)
+         )
+      ) {
+         return undefined;
       } else if (lineSegmentRadio.checked || hypercubeRadio.checked) {
          return point.map(
             (dim) => Math.min(Math.max(dim, 0), 1)
          );
       } else if (simplexRadio.checked) {
          point = projectPointToPlane(point, 1);
-         if (point[0] >= point[1] + 1 && point[0] >= point[2] + 1) {
-            return [1, 0, 0];
-         } else if (point[1] >= point[0] + 1 && point[1] >= point[2] + 1) {
-            return [0, 1, 0];
-         } else if (point[2] >= point[0] + 1 && point[2] >= point[1] + 1) {
-            return [0, 0, 1];
-         } else if (point[2] < 0) {
-            return [point[0] + point[2] / 2, 1 - (point[0] + point[2] / 2), 0];
-         } else if (point[1] < 0) {
-            return [point[0] + point[1] / 2, 0, 1 - (point[0] + point[1] / 2)];
-         } else if (point[0] < 0) {
-            return [0, point[1] + point[0] / 2, 1 - (point[1] + point[0] / 2)];
-         } else {
-            return [point[0], point[1], point[2]];
-         }
+         return (
+            point[0] >= point[1] + 1 && point[0] >= point[2] + 1
+            ? [1, 0, 0]
+            : point[1] >= point[0] + 1 && point[1] >= point[2] + 1
+            ? [0, 1, 0]
+            : point[2] >= point[0] + 1 && point[2] >= point[1] + 1
+            ? [0, 0, 1]
+            : point[2] < 0
+            ? [point[0] + point[2] / 2, 1 - (point[0] + point[2] / 2), 0]
+            : point[1] < 0
+            ? [point[0] + point[1] / 2, 0, 1 - (point[0] + point[1] / 2)]
+            : point[0] < 0
+            ? [0, point[1] + point[0] / 2, 1 - (point[1] + point[0] / 2)]
+            : [point[0], point[1], point[2]]
+         );
       } else if (truncatedSimplexRadio.checked) {
          point = projectPointToPlane(point, 1.5);
-         if (point[0] >= point[1] + 1 / 2 && point[1] >= point[2] + 1 / 2) {
-            return [1, 1 / 2, 0];
-         } else if (point[0] >= point[2] + 1 / 2 && point[2] >= point[1] + 1 / 2) {
-            return [1, 0, 1 / 2];
-         } else if (point[1] >= point[0] + 1 / 2 && point[0] >= point[2] + 1 / 2) {
-            return [1 / 2, 1, 0];
-         } else if (point[2] >= point[0] + 1 / 2 && point[0] >= point[1] + 1 / 2) {
-            return [1 / 2, 0, 1];
-         } else if (point[1] >= point[2] + 1 / 2 && point[2] >= point[0] + 1 / 2) {
-            return [0, 1, 1 / 2];
-         } else if (point[2] >= point[1] + 1 / 2 && point[1] >= point[0] + 1 / 2) {
-            return [0, 1 / 2, 1];
-         } else if (point[2] < 0 && point[0] < point[1] + 1 / 2 && point[1] < point[0] + 1 / 2) {
-            return [point[0] + point[2] / 2, 1.5 - (point[0] + point[2] / 2), 0];
-         } else if (point[1] < 0 && point[0] < point[2] + 1 / 2 && point[2] < point[0] + 1 / 2) {
-            return [point[0] + point[1] / 2, 0, 1.5 - (point[0] + point[1] / 2)];
-         } else if (point[0] < 0 && point[1] < point[2] + 1 / 2 && point[2] < point[1] + 1 / 2) {
-            return [0, point[1] + point[0] / 2, 1.5 - (point[1] + point[0] / 2)];
-         } else if (point[0] > 1 && point[1] < point[2] + 1 / 2 && point[2] < point[1] + 1 / 2) {
-            return [1, point[1] + (point[0] - 1) / 2, 1 / 2 - (point[1] + (point[0] - 1) / 2)];
-         } else if (point[1] > 1 && point[0] < point[2] + 1 / 2 && point[2] < point[0] + 1 / 2) {
-            return [point[0] + (point[1] - 1) / 2, 1, 1 / 2 - (point[0] + (point[1] - 1) / 2)];
-         } else if (point[2] > 1 && point[0] < point[1] + 1 / 2 && point[1] < point[0] + 1 / 2) {
-            return [point[0] + (point[2] - 1) / 2, 1 / 2 - (point[0] + (point[2] - 1) / 2), 1];
-         } else {
-            return [point[0], point[1], point[2]];
-         }
+         return (
+            point[0] >= point[1] + 1 / 2 && point[1] >= point[2] + 1 / 2
+            ? [1, 1 / 2, 0]
+            : point[0] >= point[2] + 1 / 2 && point[2] >= point[1] + 1 / 2
+            ? [1, 0, 1 / 2]
+            : point[1] >= point[0] + 1 / 2 && point[0] >= point[2] + 1 / 2
+            ? [1 / 2, 1, 0]
+            : point[2] >= point[0] + 1 / 2 && point[0] >= point[1] + 1 / 2
+            ? [1 / 2, 0, 1]
+            : point[1] >= point[2] + 1 / 2 && point[2] >= point[0] + 1 / 2
+            ? [0, 1, 1 / 2]
+            : point[2] >= point[1] + 1 / 2 && point[1] >= point[0] + 1 / 2
+            ? [0, 1 / 2, 1]
+            : point[2] < 0 && point[0] < point[1] + 1 / 2 && point[1] < point[0] + 1 / 2
+            ? [point[0] + point[2] / 2, 1.5 - (point[0] + point[2] / 2), 0]
+            : point[1] < 0 && point[0] < point[2] + 1 / 2 && point[2] < point[0] + 1 / 2
+            ? [point[0] + point[1] / 2, 0, 1.5 - (point[0] + point[1] / 2)]
+            : point[0] < 0 && point[1] < point[2] + 1 / 2 && point[2] < point[1] + 1 / 2
+            ? [0, point[1] + point[0] / 2, 1.5 - (point[1] + point[0] / 2)]
+            : point[0] > 1 && point[1] < point[2] + 1 / 2 && point[2] < point[1] + 1 / 2
+            ? [1, point[1] + (point[0] - 1) / 2, 1 / 2 - (point[1] + (point[0] - 1) / 2)]
+            : point[1] > 1 && point[0] < point[2] + 1 / 2 && point[2] < point[0] + 1 / 2
+            ? [point[0] + (point[1] - 1) / 2, 1, 1 / 2 - (point[0] + (point[1] - 1) / 2)]
+            : point[2] > 1 && point[0] < point[1] + 1 / 2 && point[1] < point[0] + 1 / 2
+            ? [point[0] + (point[2] - 1) / 2, 1 / 2 - (point[0] + (point[2] - 1) / 2), 1]
+            : [point[0], point[1], point[2]]
+         );
       } else if (orthogonalSimplexRadio.checked) {
-         if (point[0] < 0) {
-            point[0] = 0;
-         }
-         if (point[1] < 0) {
-            point[1] = 0;
-         }
+         point[0] = Math.max(point[0], 0);
+         point[1] = Math.max(point[1], 0);
          if (point[0] + point[1] > 1) {
             point = projectPointToPlane(point, 1);
          }
-         if (point[0] < 0) {
-            return [0, 1];
-         } else if (point[1] < 0) {
-            return [1, 0];
-         } else {
-            return [point[0], point[1]];
-         }
+         return (
+            point[0] < 0
+            ? [0, 1]
+            : point[1] < 0
+            ? [1, 0]
+            : [point[0], point[1]]
+         );
       } else {
-         return null;
+         return undefined;
       }
    };
 
