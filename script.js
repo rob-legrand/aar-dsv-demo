@@ -645,45 +645,6 @@ document.addEventListener('DOMContentLoaded', function () {
       }
    };
 
-   // find AAR DSV outcome of input points with oblique projection
-   var calcAarDsvOblique = function (points) {
-      var numPoints = points.length;
-      var outcome = [];
-      var newStrategicPoint, somethingChanged, sortedPoints, whichDim, whichPoint, whichOtherPoint;
-      var largestVal, largestAt;
-      const strategicPoints = Array.from(
-         {length: points.length},
-         () => projectVotePointToSpace(
-            Array.from(
-               {length: numDims},
-               () => 1 / 2
-            )
-         )
-      );
-      do {
-         somethingChanged = false;
-         for (whichPoint = 0; whichPoint < numPoints; whichPoint += 1) {
-            newStrategicPoint = [];
-            for (whichDim = 0; whichDim < numDims; whichDim += 1) {
-               newStrategicPoint.push(points[whichPoint][whichDim] * numVoters);
-               for (whichOtherPoint = 0; whichOtherPoint < numPoints; whichOtherPoint += 1) {
-                  if (whichOtherPoint !== whichPoint) {
-                     newStrategicPoint[whichDim] -= strategicPoints[whichOtherPoint][whichDim];
-                  }
-               }
-            }
-            newStrategicPoint = projectVotePointToSpaceObliquely(newStrategicPoint);
-            for (whichDim = 0; whichDim < numDims; whichDim += 1) {
-               if (Math.abs(newStrategicPoint[whichDim] - strategicPoints[whichPoint][whichDim]) > 0.00000001) {
-                  somethingChanged = true;
-               }
-               strategicPoints[whichPoint][whichDim] = newStrategicPoint[whichDim];
-            }
-         }
-      } while (somethingChanged);
-      return calcAverage(strategicPoints);
-   };
-
    // find AAR DSV outcome of input points with larger internal votespace
    var calcAarDsvLargerSpace = function (points, votespaceSize) {
       var numPoints = points.length;
