@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function () {
    };
 
    const toScreenCoords = (vote) => (
-      vote?.length !== numDims
+      (!Array.isArray(vote) || vote.length !== numDims)
       ? undefined
       : lineSegmentRadio.checked
       ? {
