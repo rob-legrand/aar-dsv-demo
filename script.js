@@ -312,8 +312,8 @@ document.addEventListener('DOMContentLoaded', function () {
       }
    };
 
-   var drawVotePoint = function (point, color, size, isHollow) {
-      var screen = toScreenCoords(point);
+   const drawVotePoint = function (point, color, size, isHollow) {
+      const screen = toScreenCoords(point);
       votespaceContext.beginPath();
       votespaceContext.arc(screen.x + 0.5, screen.y + 0.5, size, 0, 2 * Math.PI, false);
       if (isHollow) {
