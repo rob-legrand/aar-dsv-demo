@@ -565,11 +565,13 @@ document.addEventListener('DOMContentLoaded', function () {
             }
          }
          notCloseEnough = false;
-         for (whichDim = 0; whichDim < numDims; whichDim += 1) {
-            lastFWPoint = outcome[whichDim];
-            outcome[whichDim] = numer[whichDim] / denom;
-            if (outcome[whichDim] > lastFWPoint + 0.00001 || outcome[whichDim] + 0.00001 < lastFWPoint) {
-               notCloseEnough = true;
+         if (denom > 0) {
+            for (whichDim = 0; whichDim < numDims; whichDim += 1) {
+               lastFWPoint = outcome[whichDim];
+               outcome[whichDim] = numer[whichDim] / denom;
+               if (outcome[whichDim] > lastFWPoint + 0.00001 || outcome[whichDim] + 0.00001 < lastFWPoint) {
+                  notCloseEnough = true;
+               }
             }
          }
       } while (notCloseEnough);
