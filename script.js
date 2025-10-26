@@ -336,13 +336,13 @@ document.addEventListener('DOMContentLoaded', function () {
          votePoints[whichPoint] = [];
          if (lineSegmentRadio.checked || hypercubeRadio.checked) {
             for (whichDim = 0; whichDim < numDims; whichDim += 1) {
-               votePoints[whichPoint].push(Math.floor(Math.random() * 100001) / 100000);
+               votePoints[whichPoint].push(createRandomVoteDim());
             }
          } else if (simplexRadio.checked) {
             do {
                votePoints[whichPoint][0] = 1;
                for (whichDim = 1; whichDim < numDims; whichDim += 1) {
-                  votePoints[whichPoint][whichDim] = Math.floor(Math.random() * 100001) / 100000;
+                  votePoints[whichPoint][whichDim] = createRandomVoteDim();
                   votePoints[whichPoint][0] -= votePoints[whichPoint][whichDim];
                }
             } while (votePoints[whichPoint][0] < 0);
@@ -350,14 +350,14 @@ document.addEventListener('DOMContentLoaded', function () {
             do {
                votePoints[whichPoint][0] = 1.5;
                for (whichDim = 1; whichDim < numDims; whichDim += 1) {
-                  votePoints[whichPoint][whichDim] = Math.floor(Math.random() * 100001) / 100000;
+                  votePoints[whichPoint][whichDim] = createRandomVoteDim();
                   votePoints[whichPoint][0] -= votePoints[whichPoint][whichDim];
                }
             } while (votePoints[whichPoint][0] < 0 || votePoints[whichPoint][0] > 1);
          } else if (orthogonalSimplexRadio.checked) {
             do {
                for (whichDim = 0; whichDim < numDims; whichDim += 1) {
-                  votePoints[whichPoint][whichDim] = Math.floor(Math.random() * 100001) / 100000;
+                  votePoints[whichPoint][whichDim] = createRandomVoteDim();
                }
             } while (votePoints[whichPoint][0] + votePoints[whichPoint][1] > 1);
          }
@@ -1114,7 +1114,7 @@ document.addEventListener('DOMContentLoaded', function () {
                // generate random point
                if (lineSegmentRadio.checked || hypercubeRadio.checked) {
                   for (whichDim = 0; whichDim < numDims; whichDim += 1) {
-                     copy[currentVoter][whichDim] = Math.floor(Math.random() * 100001) / 100000;
+                     copy[currentVoter][whichDim] = createRandomVoteDim();
                   }
                   copy[currentVoter] = projectVotePointToSpace(copy[currentVoter]);
                } else if (simplexRadio.checked) {
@@ -1122,7 +1122,7 @@ document.addEventListener('DOMContentLoaded', function () {
                      copy[currentVoter] = [];
                      copy[currentVoter].push(1);
                      for (whichDim = 1; whichDim < numDims; whichDim += 1) {
-                        copy[currentVoter].push(Math.floor(Math.random() * 100001) / 100000);
+                        copy[currentVoter].push(createRandomVoteDim());
                         copy[currentVoter][0] -= copy[currentVoter][whichDim];
                      }
                   } while (copy[currentVoter][0] < 0);
@@ -1133,7 +1133,7 @@ document.addEventListener('DOMContentLoaded', function () {
                      copy[currentVoter].push(1);
                      for (whichDim = 1; whichDim < numDims; whichDim += 1) {
                         do {
-                           copy[currentVoter][whichDim] = Math.floor(Math.random() * 100001) / 100000;
+                           copy[currentVoter][whichDim] = createRandomVoteDim();
                         } while (copy[currentVoter][whichDim] > 2 / 3);
                         copy[currentVoter][0] -= copy[currentVoter][whichDim];
                      }
@@ -2107,14 +2107,14 @@ document.addEventListener('DOMContentLoaded', function () {
          for (whichVoter = votesLocked ? 1 : 0; whichVoter < numVoters; whichVoter += 1) {
             if (lineSegmentRadio.checked || hypercubeRadio.checked) {
                for (whichDim = 0; whichDim < numDims; whichDim += 1) {
-                  strategicPoints[whichVoter][whichDim] = Math.floor(Math.random() * 100001) / 100000;
+                  strategicPoints[whichVoter][whichDim] = createRandomVoteDim();
                }
                strategicPoints[whichVoter] = projectVotePointToSpace(strategicPoints[whichVoter]);
             } else if (simplexRadio.checked) {
                do {
                   strategicPoints[whichVoter][0] = 1;
                   for (whichDim = 1; whichDim < numDims; whichDim += 1) {
-                     strategicPoints[whichVoter][whichDim] = Math.floor(Math.random() * 100001) / 100000;
+                     strategicPoints[whichVoter][whichDim] = createRandomVoteDim();
                      strategicPoints[whichVoter][0] -= strategicPoints[whichVoter][whichDim];
                   }
                } while (strategicPoints[whichVoter][0] < 0);
