@@ -326,6 +326,10 @@ document.addEventListener('DOMContentLoaded', function () {
       }
    };
 
+   const createRandomVoteDim = () => Math.floor(
+      Math.random() * 100001
+   ) / 100000;
+
    var addOrRemoveVotePoints = function () {
       var whichDim, whichPoint;
       for (whichPoint = votePoints.length; whichPoint < numVoters; whichPoint += 1) {
