@@ -331,12 +331,7 @@ document.addEventListener('DOMContentLoaded', function () {
    ) / 100000;
 
    const createRandomVotePoint = () => projectVotePointToSpace(
-      (lineSegmentRadio.checked || hypercubeRadio.checked)
-      ? Array.from(
-         {length: numDims},
-         createRandomVoteDim
-      )
-      : simplexRadio.checked
+      simplexRadio.checked
       ? (function () {
          const newVotePoint = Array.from({length: numDims});
          do {
@@ -354,7 +349,10 @@ document.addEventListener('DOMContentLoaded', function () {
       ? window.alert('FIXME createRandomVotePoint')
       : orthogonalSimplexRadio.checked
       ? window.alert('FIXME createRandomVotePoint')
-      : window.alert('FIXME createRandomVotePoint')
+      : Array.from(
+         {length: numDims},
+         createRandomVoteDim
+      )
    );
 
    var addOrRemoveVotePoints = function () {
