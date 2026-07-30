@@ -330,6 +330,33 @@ document.addEventListener('DOMContentLoaded', function () {
       Math.random() * 100001
    ) / 100000;
 
+   const createRandomVotePoint = () => projectVotePointToSpace(
+      (lineSegmentRadio.checked || hypercubeRadio.checked)
+      ? Array.from(
+         {length: numDims},
+         createRandomVoteDim
+      )
+      : simplexRadio.checked
+      ? (function () {
+         const newVotePoint = Array.from({length: numDims});
+         do {
+            newVotePoint[0] = 1;
+            newVotePoint.forEach(function (ignore, whichDim) {
+               if (whichDim > 0) {
+                  newVotePoint[whichDim] = createRandomVoteDim();
+                  newVotePoint[0] -= newVotePoint[whichDim];
+               }
+            });
+         } while (newVotePoint[0] < 0);
+         return newVotePoint;
+      }())
+      : truncatedSimplexRadio.checked
+      ? window.alert('FIXME createRandomVotePoint')
+      : orthogonalSimplexRadio.checked
+      ? window.alert('FIXME createRandomVotePoint')
+      : window.alert('FIXME createRandomVotePoint')
+   );
+
    var addOrRemoveVotePoints = function () {
       var whichDim, whichPoint;
       for (whichPoint = votePoints.length; whichPoint < numVoters; whichPoint += 1) {
