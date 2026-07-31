@@ -355,7 +355,7 @@ document.addEventListener('DOMContentLoaded', function () {
       )
    );
 
-   var addOrRemoveVotePoints = function () {
+   const addOrRemoveVotePoints = function () {
       var whichDim, whichPoint;
       for (whichPoint = votePoints.length; whichPoint < numVoters; whichPoint += 1) {
          votePoints[whichPoint] = [];
@@ -391,15 +391,14 @@ document.addEventListener('DOMContentLoaded', function () {
       while (votePoints.length > numVoters) {
          votePoints.pop();
       }
-      for (whichPoint = strategicPoints.length; whichPoint < numVoters; whichPoint += 1) {
-         strategicPoints.push([]);
-         for (whichDim = 0; whichDim < votePoints[whichPoint].length; whichDim += 1) {
-            strategicPoints[whichPoint].push(votePoints[whichPoint][whichDim]);
-         }
-      }
-      while (strategicPoints.length > numVoters) {
-         strategicPoints.pop();
-      }
+      strategicPoints = Array.from(
+         {length: numVoters},
+         (ignore, whichPoint) => (
+            whichPoint < strategicPoints.length
+            ? [...strategicPoints[whichPoint]]
+            : [...votePoints[whichPoint]]
+         )
+      );
    };
    addOrRemoveVotePoints();
 
