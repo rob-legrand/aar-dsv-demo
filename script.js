@@ -393,11 +393,11 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       strategicPoints = Array.from(
          {length: numVoters},
-         (ignore, whichPoint) => (
+         (ignore, whichPoint) => [...(
             whichPoint < strategicPoints.length
-            ? [...strategicPoints[whichPoint]]
-            : [...votePoints[whichPoint]]
-         )
+            ? strategicPoints
+            : votePoints
+         )[whichPoint]]
       );
    };
    addOrRemoveVotePoints();
