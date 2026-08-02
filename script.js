@@ -391,13 +391,11 @@ document.addEventListener('DOMContentLoaded', function () {
       while (votePoints.length > numVoters) {
          votePoints.pop();
       }
-      strategicPoints = Array.from(
-         {length: numVoters},
-         (ignore, whichPoint) => [...(
-            whichPoint < strategicPoints.length
-            ? strategicPoints
-            : votePoints
-         )[whichPoint]]
+      strategicPoints = [
+         ...strategicPoints.slice(0, numVoters),
+         ...votePoints.slice(strategicPoints.length, numVoters)
+      ].map(
+         (x) => [...x]
       );
    };
    addOrRemoveVotePoints();
