@@ -360,7 +360,16 @@ document.addEventListener('DOMContentLoaded', function () {
          return newVotePoint;
       }())
       : orthogonalSimplexRadio.checked
-      ? window.alert('FIXME createRandomVotePoint')
+      ? (function () {
+         let newVotePoint;
+         do {
+            newVotePoint = Array.from(
+               {length: numDims},
+               createRandomVoteDim
+            );
+         } while (newVotePoint[0] + newVotePoint[1] > 1);
+         return newVotePoint;
+      }())
       : Array.from(
          {length: numDims},
          createRandomVoteDim
