@@ -346,7 +346,19 @@ document.addEventListener('DOMContentLoaded', function () {
          return newVotePoint;
       }())
       : truncatedSimplexRadio.checked
-      ? window.alert('FIXME createRandomVotePoint')
+      ? (function () {
+         const newVotePoint = Array.from({length: numDims});
+         do {
+            newVotePoint[0] = 1.5;
+            newVotePoint.forEach(function (ignore, whichDim) {
+               if (whichDim > 0) {
+                  newVotePoint[whichDim] = createRandomVoteDim();
+                  newVotePoint[0] -= newVotePoint[whichDim];
+               }
+            });
+         } while (newVotePoint[0] < 0 || newVotePoint[0] > 1);
+         return newVotePoint;
+      }())
       : orthogonalSimplexRadio.checked
       ? window.alert('FIXME createRandomVotePoint')
       : Array.from(
