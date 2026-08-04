@@ -377,14 +377,13 @@ document.addEventListener('DOMContentLoaded', function () {
    );
 
    const addOrRemoveVotePoints = function () {
-      votePoints = Array.from(
-         {length: numVoters},
-         (ignore, whichPoint) => (
-            whichPoint < votePoints.length
-            ? [...votePoints[whichPoint]]
-            : createRandomVotePoint()
+      votePoints = [
+         ...votePoints.slice(0, numVoters),
+         ...Array.from(
+            {length: numVoters - votePoints.length},
+            createRandomVotePoint
          )
-      );
+      ];
       strategicPoints = [
          ...strategicPoints.slice(0, numVoters),
          ...votePoints.slice(strategicPoints.length, numVoters)
