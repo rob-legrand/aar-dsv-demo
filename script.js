@@ -377,37 +377,9 @@ document.addEventListener('DOMContentLoaded', function () {
    );
 
    const addOrRemoveVotePoints = function () {
-      var whichDim, whichPoint;
+      let whichPoint;
       for (whichPoint = votePoints.length; whichPoint < numVoters; whichPoint += 1) {
-         votePoints[whichPoint] = [];
-         if (lineSegmentRadio.checked || hypercubeRadio.checked) {
-            for (whichDim = 0; whichDim < numDims; whichDim += 1) {
-               votePoints[whichPoint].push(createRandomVoteDim());
-            }
-         } else if (simplexRadio.checked) {
-            do {
-               votePoints[whichPoint][0] = 1;
-               for (whichDim = 1; whichDim < numDims; whichDim += 1) {
-                  votePoints[whichPoint][whichDim] = createRandomVoteDim();
-                  votePoints[whichPoint][0] -= votePoints[whichPoint][whichDim];
-               }
-            } while (votePoints[whichPoint][0] < 0);
-         } else if (truncatedSimplexRadio.checked) {
-            do {
-               votePoints[whichPoint][0] = 1.5;
-               for (whichDim = 1; whichDim < numDims; whichDim += 1) {
-                  votePoints[whichPoint][whichDim] = createRandomVoteDim();
-                  votePoints[whichPoint][0] -= votePoints[whichPoint][whichDim];
-               }
-            } while (votePoints[whichPoint][0] < 0 || votePoints[whichPoint][0] > 1);
-         } else if (orthogonalSimplexRadio.checked) {
-            do {
-               for (whichDim = 0; whichDim < numDims; whichDim += 1) {
-                  votePoints[whichPoint][whichDim] = createRandomVoteDim();
-               }
-            } while (votePoints[whichPoint][0] + votePoints[whichPoint][1] > 1);
-         }
-         votePoints[whichPoint] = projectVotePointToSpace(votePoints[whichPoint]);
+         votePoints[whichPoint] = createRandomVotePoint();
       }
       while (votePoints.length > numVoters) {
          votePoints.pop();
