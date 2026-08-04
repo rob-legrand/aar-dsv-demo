@@ -386,10 +386,10 @@ document.addEventListener('DOMContentLoaded', function () {
       ];
       strategicPoints = [
          ...strategicPoints.slice(0, numVoters),
-         ...votePoints.slice(strategicPoints.length, numVoters)
-      ].map(
-         (x) => [...x]
-      );
+         ...votePoints.slice(strategicPoints.length, numVoters).map(
+            (x) => [...x]
+         )
+      ];
    };
    addOrRemoveVotePoints();
 
