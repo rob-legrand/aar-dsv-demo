@@ -332,21 +332,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
    const createRandomVotePoint = () => projectVotePointToSpace(
       simplexRadio.checked
-      ? (function () {
-         let newVotePoint;
-         do {
-            const newVotePointMostDims = Array.from(
-               {length: numDims - 1},
-               createRandomVoteDim
-            );
-            newVotePoint = [
-               1 - newVotePointMostDims.reduce(
-                  (x, y) => x + y
-               ),
-               ...newVotePointMostDims
-            ];
-         } while (newVotePoint[0] < 0);
-         return newVotePoint;
+      ? (function createRandomSimplexVotePoint() {
+         const newVotePointMostDims = Array.from(
+            {length: numDims - 1},
+            createRandomVoteDim
+         );
+         const newVotePoint = [
+            1 - newVotePointMostDims.reduce(
+               (x, y) => x + y
+            ),
+            ...newVotePointMostDims
+         ];
+         return (
+            newVotePoint[0] >= 0
+            ? newVotePoint
+            : createRandomSimplexVotePoint()
+         );
       }())
       : truncatedSimplexRadio.checked
       ? (function () {
