@@ -337,15 +337,15 @@ document.addEventListener('DOMContentLoaded', function () {
             {length: numDims - 1},
             createRandomVoteDim
          );
-         const newVotePoint = [
-            1 - newVotePointMostDims.reduce(
-               (x, y) => x + y
-            ),
-            ...newVotePointMostDims
-         ];
+         const newVotePointFirstDim = 1 - newVotePointMostDims.reduce(
+            (x, y) => x + y
+         );
          return (
-            newVotePoint[0] >= 0
-            ? newVotePoint
+            newVotePointFirstDim >= 0
+            ? [
+               newVotePointFirstDim,
+               ...newVotePointMostDims
+            ]
             : createRandomSimplexVotePoint()
          );
       }())
