@@ -351,15 +351,15 @@ document.addEventListener('DOMContentLoaded', function () {
       }())
       : truncatedSimplexRadio.checked
       ? (function () {
-         const newVotePoint = Array.from({length: numDims});
+         let newVotePoint;
          do {
-            newVotePoint[0] = 1.5;
-            newVotePoint.forEach(function (ignore, whichDim) {
-               if (whichDim > 0) {
-                  newVotePoint[whichDim] = createRandomVoteDim();
-                  newVotePoint[0] -= newVotePoint[whichDim];
-               }
-            });
+            newVotePoint = Array.from(
+               {length: numDims},
+               createRandomVoteDim
+            );
+            newVotePoint[0] = 1.5 + newVotePoint[0] - newVotePoint.reduce(
+               (x, y) => x + y
+            );
          } while (newVotePoint[0] < 0 || newVotePoint[0] > 1);
          return newVotePoint;
       }())
