@@ -353,13 +353,16 @@ document.addEventListener('DOMContentLoaded', function () {
       ? (function () {
          let newVotePoint;
          do {
-            newVotePoint = Array.from(
-               {length: numDims},
+            const newVotePointMostDims = Array.from(
+               {length: numDims - 1},
                createRandomVoteDim
             );
-            newVotePoint[0] = 1.5 + newVotePoint[0] - newVotePoint.reduce(
-               (x, y) => x + y
-            );
+            newVotePoint = [
+               1.5 - newVotePointMostDims.reduce(
+                  (x, y) => x + y
+               ),
+               ...newVotePointMostDims
+            ];
          } while (newVotePoint[0] < 0 || newVotePoint[0] > 1);
          return newVotePoint;
       }())
