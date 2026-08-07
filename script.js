@@ -350,21 +350,22 @@ document.addEventListener('DOMContentLoaded', function () {
          );
       }())
       : truncatedSimplexRadio.checked
-      ? (function () {
-         let newVotePoint;
-         do {
-            const newVotePointMostDims = Array.from(
-               {length: numDims - 1},
-               createRandomVoteDim
-            );
-            newVotePoint = [
-               1.5 - newVotePointMostDims.reduce(
-                  (x, y) => x + y
-               ),
-               ...newVotePointMostDims
-            ];
-         } while (newVotePoint[0] < 0 || newVotePoint[0] > 1);
-         return newVotePoint;
+      ? (function createRandomTruncatedSimplexVotePoint() {
+         const newVotePointMostDims = Array.from(
+            {length: numDims - 1},
+            createRandomVoteDim
+         );
+         const newVotePoint = [
+            1.5 - newVotePointMostDims.reduce(
+               (x, y) => x + y
+            ),
+            ...newVotePointMostDims
+         ];
+         return (
+            (newVotePoint[0] >= 0 && newVotePoint[0] <= 1)
+            ? newVotePoint
+            : createRandomTruncatedSimplexVotePoint()
+         );
       }())
       : orthogonalSimplexRadio.checked
       ? (function () {
