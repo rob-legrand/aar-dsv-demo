@@ -355,15 +355,15 @@ document.addEventListener('DOMContentLoaded', function () {
             {length: numDims - 1},
             createRandomVoteDim
          );
-         const newVotePoint = [
-            1.5 - newVotePointMostDims.reduce(
-               (x, y) => x + y
-            ),
-            ...newVotePointMostDims
-         ];
+         const newVotePointFirstDim = 1.5 - newVotePointMostDims.reduce(
+            (x, y) => x + y
+         );
          return (
-            (newVotePoint[0] >= 0 && newVotePoint[0] <= 1)
-            ? newVotePoint
+            (newVotePointFirstDim >= 0 && newVotePointFirstDim <= 1)
+            ? [
+               newVotePointFirstDim,
+               ...newVotePointMostDims
+            ]
             : createRandomTruncatedSimplexVotePoint()
          );
       }())
