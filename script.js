@@ -368,15 +368,16 @@ document.addEventListener('DOMContentLoaded', function () {
          );
       }())
       : orthogonalSimplexRadio.checked
-      ? (function () {
-         let newVotePoint;
-         do {
-            newVotePoint = Array.from(
-               {length: numDims},
-               createRandomVoteDim
-            );
-         } while (newVotePoint[0] + newVotePoint[1] > 1);
-         return newVotePoint;
+      ? (function createRandomOrthogonalSimplexVotePoint() {
+         const newVotePoint = Array.from(
+            {length: numDims},
+            createRandomVoteDim
+         );
+         return (
+            newVotePoint[0] + newVotePoint[1] <= 1
+            ? newVotePoint
+            : createRandomOrthogonalSimplexVotePoint()
+         );
       }())
       : Array.from(
          {length: numDims},
