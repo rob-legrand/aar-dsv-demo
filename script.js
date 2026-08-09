@@ -374,7 +374,9 @@ document.addEventListener('DOMContentLoaded', function () {
             createRandomVoteDim
          );
          return (
-            newVotePoint[0] + newVotePoint[1] <= 1
+            newVotePoint.reduce(
+               (x, y) => x + y
+            ) <= 1
             ? newVotePoint
             : createRandomOrthogonalSimplexVotePoint()
          );
