@@ -330,6 +330,34 @@ document.addEventListener('DOMContentLoaded', function () {
       Math.random() * 100001
    ) / 100000;
 
+   const createRandomRestrictedVotePoint = function (args) {
+      const newVotePoint = Array.from(
+         {length: numDims},
+         createRandomVoteDim
+      );
+      if (Number.isFinite(args?.dimTotal)) {
+         newVotePoint[0] = args.dimTotal - newVotePoint.slice(1).reduce(
+            (x, y) => x + y,
+            0
+         );
+      }
+      return (
+         (
+            newVotePoint.every(
+               (x) => x >= 0 && x <= 1
+            )
+            && (
+               !Number.isFinite(args?.maxDimTotal)
+               || newVotePoint.reduce(
+                  (x, y) => x + y
+               ) <= args.maxDimTotal
+            )
+         )
+         ? newVotePoint
+         : createRandomRestrictedVotePoint(args)
+      );
+   };
+
    const createRandomVotePoint = () => projectVotePointToSpace(
       simplexRadio.checked
       ? (function createRandomSimplexVotePoint() {
