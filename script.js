@@ -360,59 +360,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
    const createRandomVotePoint = () => projectVotePointToSpace(
       simplexRadio.checked
-      ? (function createRandomSimplexVotePoint() {
-         const newVotePointMostDims = Array.from(
-            {length: numDims - 1},
-            createRandomVoteDim
-         );
-         const newVotePointFirstDim = 1 - newVotePointMostDims.reduce(
-            (x, y) => x + y
-         );
-         return (
-            newVotePointFirstDim >= 0
-            ? [
-               newVotePointFirstDim,
-               ...newVotePointMostDims
-            ]
-            : createRandomSimplexVotePoint()
-         );
-      }())
+      ? createRandomRestrictedVotePoint({dimTotal: 1})
       : truncatedSimplexRadio.checked
-      ? (function createRandomTruncatedSimplexVotePoint() {
-         const newVotePointMostDims = Array.from(
-            {length: numDims - 1},
-            createRandomVoteDim
-         );
-         const newVotePointFirstDim = 1.5 - newVotePointMostDims.reduce(
-            (x, y) => x + y
-         );
-         return (
-            (newVotePointFirstDim >= 0 && newVotePointFirstDim <= 1)
-            ? [
-               newVotePointFirstDim,
-               ...newVotePointMostDims
-            ]
-            : createRandomTruncatedSimplexVotePoint()
-         );
-      }())
+      ? createRandomRestrictedVotePoint({dimTotal: 1.5})
       : orthogonalSimplexRadio.checked
-      ? (function createRandomOrthogonalSimplexVotePoint() {
-         const newVotePoint = Array.from(
-            {length: numDims},
-            createRandomVoteDim
-         );
-         return (
-            newVotePoint.reduce(
-               (x, y) => x + y
-            ) <= 1
-            ? newVotePoint
-            : createRandomOrthogonalSimplexVotePoint()
-         );
-      }())
-      : Array.from(
-         {length: numDims},
-         createRandomVoteDim
-      )
+      ? createRandomRestrictedVotePoint({maxDimTotal: 1})
+      : createRandomRestrictedVotePoint()
    );
 
    const addOrRemoveVotePoints = function () {
