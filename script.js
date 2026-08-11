@@ -331,16 +331,21 @@ document.addEventListener('DOMContentLoaded', function () {
    ) / 100000;
 
    const createRandomRestrictedVotePoint = function (args) {
-      const newVotePoint = Array.from(
-         {length: numDims},
+      const newVotePointMostDims = Array.from(
+         {length: numDims - 1},
          createRandomVoteDim
       );
-      if (Number.isFinite(args?.dimTotal)) {
-         newVotePoint[0] = args.dimTotal - newVotePoint.slice(1).reduce(
-            (x, y) => x + y,
-            0
-         );
-      }
+      const newVotePoint = [
+         ...newVotePointMostDims,
+         (
+            Number.isFinite(args?.dimTotal)
+            ? args.dimTotal - newVotePointMostDims.reduce(
+               (x, y) => x + y,
+               0
+            )
+            : createRandomVoteDim()
+         )
+      ];
       return (
          (
             newVotePoint.every(
