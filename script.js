@@ -1741,9 +1741,7 @@ document.addEventListener('DOMContentLoaded', function () {
    };
 
    // for sorting arrays of objects or arrays by their first value (assuming numerical)
-   var sortOrder = function (a, b) {
-      return a[0] - b[0];
-   };
+   const sortOrder = (a, b) => a[0] - b[0];
 
    /* strategize, batchMode, and withLimits are all assumed to be boolean variables. Strategize determines whether an update function is
     * called (when it's true) or whether to animate directly to the values in strategicPoints. It's true for all user selected modes.
