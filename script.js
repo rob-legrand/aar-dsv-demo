@@ -364,13 +364,15 @@ document.addEventListener('DOMContentLoaded', function () {
    };
 
    const createRandomVotePoint = () => projectVotePointToSpace(
-      simplexRadio.checked
-      ? createRandomRestrictedVotePoint({dimTotal: 1})
-      : truncatedSimplexRadio.checked
-      ? createRandomRestrictedVotePoint({dimTotal: 1.5})
-      : orthogonalSimplexRadio.checked
-      ? createRandomRestrictedVotePoint({maxDimTotal: 1})
-      : createRandomRestrictedVotePoint()
+      createRandomRestrictedVotePoint(
+         simplexRadio.checked
+         ? {dimTotal: 1}
+         : truncatedSimplexRadio.checked
+         ? {dimTotal: 1.5}
+         : orthogonalSimplexRadio.checked
+         ? {maxDimTotal: 1}
+         : {}
+      )
    );
 
    const addOrRemoveVotePoints = function () {
