@@ -941,7 +941,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             for (whichVoter = 1; whichVoter < numVoters; whichVoter += 1) {
                votespaceContext.beginPath();
-               votespaceContext.beginPath();
                point = toScreenCoords([whichVoter / numVoters, 0]);
                votespaceContext.moveTo(point.x + 0.5, point.y + 0.5);
                point = toScreenCoords([whichVoter / numVoters, 1]);
