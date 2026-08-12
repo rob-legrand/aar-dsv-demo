@@ -923,23 +923,23 @@ document.addEventListener('DOMContentLoaded', function () {
          votespaceContext.fillStyle = '#ffffff';
          votespaceContext.fill();
          if (drawGridLinesCheckbox.checked) {
-            for (whichVoter = 0; whichVoter < numVoters; whichVoter += 1) {
+            votePoints.forEach(function (votePoint) {
                votespaceContext.beginPath();
-               point = toScreenCoords([votePoints[whichVoter][0], 0]);
+               point = toScreenCoords([votePoint[0], 0]);
                votespaceContext.moveTo(point.x + 0.5, point.y + 0.5);
-               point = toScreenCoords([votePoints[whichVoter][0], 1]);
+               point = toScreenCoords([votePoint[0], 1]);
                votespaceContext.lineTo(point.x + 0.5, point.y + 0.5);
                votespaceContext.strokeStyle = gridLineColor;
                votespaceContext.stroke();
                votespaceContext.beginPath();
-               point = toScreenCoords([0, votePoints[whichVoter][1]]);
+               point = toScreenCoords([0, votePoint[1]]);
                votespaceContext.moveTo(point.x + 0.5, point.y + 0.5);
-               point = toScreenCoords([1, votePoints[whichVoter][1]]);
+               point = toScreenCoords([1, votePoint[1]]);
                votespaceContext.lineTo(point.x + 0.5, point.y + 0.5);
                votespaceContext.strokeStyle = gridLineColor;
                votespaceContext.stroke();
-            }
-            for (whichVoter = 1; whichVoter < numVoters; whichVoter += 1) {
+            });
+            votePoints.forEach(function (ignore, whichVoter) {
                votespaceContext.beginPath();
                point = toScreenCoords([whichVoter / numVoters, 0]);
                votespaceContext.moveTo(point.x + 0.5, point.y + 0.5);
@@ -954,7 +954,7 @@ document.addEventListener('DOMContentLoaded', function () {
                votespaceContext.lineTo(point.x + 0.5, point.y + 0.5);
                votespaceContext.strokeStyle = gridLineColor;
                votespaceContext.stroke();
-            }
+            });
          }
          votespaceContext.beginPath();
          votespaceContext.moveTo(hypercubeLeftX + 0.5, hypercubeTopY + 0.5);
