@@ -973,30 +973,30 @@ document.addEventListener('DOMContentLoaded', function () {
          votespaceContext.fillStyle = '#ffffff';
          votespaceContext.fill();
          if (drawGridLinesCheckbox.checked) {
-            for (whichVoter = 0; whichVoter < numVoters; whichVoter += 1) {
+            votePoints.forEach(function (votePoint) {
                votespaceContext.beginPath();
-               point = toScreenCoords(votePoints[whichVoter]);
+               point = toScreenCoords(votePoint);
                votespaceContext.moveTo(point.x + 0.5, point.y + 0.5);
-               point = toScreenCoords(votePoints[whichVoter][0] > votePoints[whichVoter][1] ? [votePoints[whichVoter][0] - votePoints[whichVoter][1], 0, votePoints[whichVoter][2] + 2 * votePoints[whichVoter][1]] : [0, votePoints[whichVoter][1] - votePoints[whichVoter][0], votePoints[whichVoter][2] + 2 * votePoints[whichVoter][0]]);
+               point = toScreenCoords(votePoint[0] > votePoint[1] ? [votePoint[0] - votePoint[1], 0, votePoint[2] + 2 * votePoint[1]] : [0, votePoint[1] - votePoint[0], votePoint[2] + 2 * votePoint[0]]);
                votespaceContext.lineTo(point.x + 0.5, point.y + 0.5);
                votespaceContext.strokeStyle = gridLineColor;
                votespaceContext.stroke();
                votespaceContext.beginPath();
-               point = toScreenCoords(votePoints[whichVoter]);
+               point = toScreenCoords(votePoint);
                votespaceContext.moveTo(point.x + 0.5, point.y + 0.5);
-               point = toScreenCoords(votePoints[whichVoter][0] > votePoints[whichVoter][2] ? [votePoints[whichVoter][0] - votePoints[whichVoter][2], votePoints[whichVoter][1] + 2 * votePoints[whichVoter][2], 0] : [0, votePoints[whichVoter][1] + 2 * votePoints[whichVoter][0], votePoints[whichVoter][2] - votePoints[whichVoter][0]]);
+               point = toScreenCoords(votePoint[0] > votePoint[2] ? [votePoint[0] - votePoint[2], votePoint[1] + 2 * votePoint[2], 0] : [0, votePoint[1] + 2 * votePoint[0], votePoint[2] - votePoint[0]]);
                votespaceContext.lineTo(point.x + 0.5, point.y + 0.5);
                votespaceContext.strokeStyle = gridLineColor;
                votespaceContext.stroke();
                votespaceContext.beginPath();
-               point = toScreenCoords(votePoints[whichVoter]);
+               point = toScreenCoords(votePoint);
                votespaceContext.moveTo(point.x + 0.5, point.y + 0.5);
-               point = toScreenCoords(votePoints[whichVoter][1] > votePoints[whichVoter][2] ? [votePoints[whichVoter][0] + 2 * votePoints[whichVoter][2], votePoints[whichVoter][1] - votePoints[whichVoter][2], 0] : [votePoints[whichVoter][0] + 2 * votePoints[whichVoter][1], 0, votePoints[whichVoter][2] - votePoints[whichVoter][1]]);
+               point = toScreenCoords(votePoint[1] > votePoint[2] ? [votePoint[0] + 2 * votePoint[2], votePoint[1] - votePoint[2], 0] : [votePoint[0] + 2 * votePoint[1], 0, votePoint[2] - votePoint[1]]);
                votespaceContext.lineTo(point.x + 0.5, point.y + 0.5);
                votespaceContext.strokeStyle = gridLineColor;
                votespaceContext.stroke();
-            }
-            for (whichVoter = 1; whichVoter < numVoters; whichVoter += 1) {
+            });
+            votePoints.forEach(function (ignore, whichVoter) {
                votespaceContext.beginPath();
                point = toScreenCoords([whichVoter / numVoters, 1 - whichVoter / numVoters, 0]);
                votespaceContext.moveTo(point.x + 0.5, point.y + 0.5);
@@ -1018,7 +1018,7 @@ document.addEventListener('DOMContentLoaded', function () {
                votespaceContext.lineTo(point.x + 0.5, point.y + 0.5);
                votespaceContext.strokeStyle = gridLineColor;
                votespaceContext.stroke();
-            }
+            });
          }
          votespaceContext.beginPath();
          votespaceContext.moveTo(simplexLeftX + 0.5, simplexMiddleY + 0.5);
