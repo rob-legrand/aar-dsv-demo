@@ -977,21 +977,33 @@ document.addEventListener('DOMContentLoaded', function () {
                votespaceContext.beginPath();
                point = toScreenCoords(votePoint);
                votespaceContext.moveTo(point.x + 0.5, point.y + 0.5);
-               point = toScreenCoords(votePoint[0] > votePoint[1] ? [votePoint[0] - votePoint[1], 0, votePoint[2] + 2 * votePoint[1]] : [0, votePoint[1] - votePoint[0], votePoint[2] + 2 * votePoint[0]]);
+               point = toScreenCoords(
+                  votePoint[0] > votePoint[1]
+                  ? [votePoint[0] - votePoint[1], 0, votePoint[2] + 2 * votePoint[1]]
+                  : [0, votePoint[1] - votePoint[0], votePoint[2] + 2 * votePoint[0]]
+               );
                votespaceContext.lineTo(point.x + 0.5, point.y + 0.5);
                votespaceContext.strokeStyle = gridLineColor;
                votespaceContext.stroke();
                votespaceContext.beginPath();
                point = toScreenCoords(votePoint);
                votespaceContext.moveTo(point.x + 0.5, point.y + 0.5);
-               point = toScreenCoords(votePoint[0] > votePoint[2] ? [votePoint[0] - votePoint[2], votePoint[1] + 2 * votePoint[2], 0] : [0, votePoint[1] + 2 * votePoint[0], votePoint[2] - votePoint[0]]);
+               point = toScreenCoords(
+                  votePoint[0] > votePoint[2]
+                  ? [votePoint[0] - votePoint[2], votePoint[1] + 2 * votePoint[2], 0]
+                  : [0, votePoint[1] + 2 * votePoint[0], votePoint[2] - votePoint[0]]
+               );
                votespaceContext.lineTo(point.x + 0.5, point.y + 0.5);
                votespaceContext.strokeStyle = gridLineColor;
                votespaceContext.stroke();
                votespaceContext.beginPath();
                point = toScreenCoords(votePoint);
                votespaceContext.moveTo(point.x + 0.5, point.y + 0.5);
-               point = toScreenCoords(votePoint[1] > votePoint[2] ? [votePoint[0] + 2 * votePoint[2], votePoint[1] - votePoint[2], 0] : [votePoint[0] + 2 * votePoint[1], 0, votePoint[2] - votePoint[1]]);
+               point = toScreenCoords(
+                  votePoint[1] > votePoint[2]
+                  ? [votePoint[0] + 2 * votePoint[2], votePoint[1] - votePoint[2], 0]
+                  : [votePoint[0] + 2 * votePoint[1], 0, votePoint[2] - votePoint[1]]
+               );
                votespaceContext.lineTo(point.x + 0.5, point.y + 0.5);
                votespaceContext.strokeStyle = gridLineColor;
                votespaceContext.stroke();
